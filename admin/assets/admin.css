@@ -1,0 +1,64 @@
+.ac-admin { margin: -6px -12px -12px; color: #1b2430; }
+.ac-tabs { display: flex; overflow-x: auto; padding: 0 20px; border-bottom: 1px solid #dcdcde; background: #f6f7f7; }
+.ac-tab { flex: 0 0 auto; padding: 15px 14px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: #50575e; font-weight: 600; cursor: pointer; }
+.ac-tab:hover { color: #1d2327; }
+.ac-tab.is-active { border-bottom-color: #b08d2b; color: #1b2430; background: #fff; }
+.ac-panel { display: none; padding: 28px 30px 34px; }
+.ac-panel.is-active { display: block; }
+.ac-panel-heading { display: flex; justify-content: space-between; gap: 24px; align-items: flex-end; margin-bottom: 24px; }
+.ac-panel-heading h2 { margin: 4px 0 0; font-size: 24px; line-height: 1.2; }
+.ac-panel-heading p { margin: 0; color: #646970; }
+.ac-eyebrow { color: #9a7418; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.ac-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.ac-field { display: flex; flex-direction: column; gap: 7px; }
+.ac-field > span, .ac-answer-heading { color: #3c434a; font-size: 13px; font-weight: 600; }
+.ac-field input, .ac-field textarea, .ac-field select { width: 100%; border-color: #c3c4c7; }
+.ac-field-wide { grid-column: 1 / -1; }
+.ac-help { margin: -12px 0 24px; color: #646970; }
+.ac-stage-list { display: flex; flex-direction: column; gap: 18px; }
+.ac-stage { border: 1px solid #c3c4c7; border-radius: 4px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.ac-stage.is-dragging, .ac-question.is-dragging { opacity: .45; }
+.ac-stage-header, .ac-question-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #dcdcde; background: #f6f7f7; }
+.ac-stage-title { display: grid; flex: 1; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; min-width: 0; }
+.ac-stage-title strong, .ac-question-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ac-stage-title small { color: #646970; }
+.ac-stage-number, .ac-question-count { color: #9a7418; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.ac-row-actions { display: flex; gap: 14px; }
+.ac-drag { padding: 0; border: 0; background: transparent; color: #787c82; cursor: grab; }
+.ac-drag:active { cursor: grabbing; }
+.ac-stage-body { padding: 20px; }
+.ac-stage-fields { margin-bottom: 22px; }
+.ac-question-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
+.ac-question { border: 1px solid #dcdcde; border-radius: 3px; }
+.ac-question-header { padding: 11px 13px; background: #fff; }
+.ac-question-title { flex: 1; font-weight: 600; }
+.ac-question-body { padding: 16px; border-top: 1px solid #dcdcde; background: #fcfcfc; }
+.ac-question-settings { margin: 14px 0 18px; align-items: end; }
+.ac-switches { display: flex; gap: 20px; padding-bottom: 6px; }
+.ac-switches label { font-weight: 500; }
+.ac-answer-heading { display: grid; grid-template-columns: 1fr 90px 28px; gap: 10px; margin-bottom: 7px; padding-left: 30px; }
+.ac-answer-heading span:last-child { grid-column: 2; }
+.ac-answer-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
+.ac-answer { display: grid; grid-template-columns: 22px 1fr 90px 28px; gap: 8px; align-items: center; }
+.ac-answer .dashicons { color: #a7aaad; }
+.ac-answer input { width: 100%; }
+.ac-add-question .dashicons { width: 16px; height: 16px; margin: 3px 3px 0 0; font-size: 16px; }
+.ac-empty-state { padding: 48px 24px; border: 1px dashed #a7aaad; border-radius: 4px; text-align: center; background: #fafafa; }
+.ac-empty-state[hidden] { display: none; }
+.ac-empty-state .dashicons { width: 42px; height: 42px; color: #b08d2b; font-size: 42px; }
+.ac-empty-state h3 { margin: 10px 0 4px; font-size: 18px; }
+.ac-empty-state p { margin: 0 0 18px; color: #646970; }
+.ac-coming-soon { padding: 64px 24px; text-align: center; color: #646970; }
+.ac-coming-soon .dashicons { width: 44px; height: 44px; color: #b08d2b; font-size: 44px; }
+.ac-coming-soon h2 { color: #1b2430; }
+
+@media (max-width: 782px) {
+  .ac-panel { padding: 22px 18px; }
+  .ac-panel-heading { align-items: flex-start; flex-direction: column; }
+  .ac-form-grid { grid-template-columns: 1fr; }
+  .ac-field-wide { grid-column: auto; }
+  .ac-stage-title { grid-template-columns: auto 1fr; }
+  .ac-stage-title small { display: none; }
+  .ac-switches { flex-direction: column; gap: 8px; }
+}
+
