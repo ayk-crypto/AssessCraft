@@ -337,5 +337,40 @@
   root.querySelectorAll('[data-design]').forEach(function (input) { input.addEventListener('input', updateDesignPreview); input.addEventListener('change', updateDesignPreview); });
   root.querySelectorAll('.ac-design-color-code').forEach(function (input) { input.addEventListener('blur', function () { if (!/^#[0-9A-F]{6}$/.test(input.value.trim().toUpperCase())) { input.value = input.defaultValue.toUpperCase(); updateDesignPreview(); } }); });
   updateDesignPreview();
+
+  var saveTemplate = document.querySelector('[data-save-template]');
+  if (saveTemplate) {
+    saveTemplate.querySelector('.ac-save-template-submit').addEventListener('click', function () {
+      var nameInput = saveTemplate.querySelector('[data-template-field="name"]');
+      if (!nameInput.value.trim()) {
+        nameInput.focus();
+        nameInput.reportValidity();
+        return;
+      }
+
+      var form = document.createElement('form');
+      form.method = 'post';
+      form.action = saveTemplate.dataset.action;
+      form.hidden = true;
+      var values = {
+        action: 'assesscraft_save_template',
+        assessment_id: saveTemplate.dataset.assessment,
+        _wpnonce: saveTemplate.dataset.nonce,
+        template_name: nameInput.value,
+        template_category: saveTemplate.querySelector('[data-template-field="category"]').value,
+        template_version: saveTemplate.querySelector('[data-template-field="version"]').value,
+        template_description: saveTemplate.querySelector('[data-template-field="description"]').value
+      };
+      Object.keys(values).forEach(function (key) {
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = values[key];
+        form.appendChild(input);
+      });
+      document.body.appendChild(form);
+      form.submit();
+    });
+  }
   render();
 }());

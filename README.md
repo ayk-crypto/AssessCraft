@@ -4,7 +4,7 @@
 
 AssessCraft is a WordPress assessment and report builder for consultants and professional-service businesses. It is designed to turn visitor responses into structured scores, personalized reports, and opt-in qualified leads.
 
-> **Current status:** Feature-complete alpha. The core assessment journey, templates, portability, Gutenberg block, Elementor widget, and automated packaging are implemented; full WordPress installation testing and release hardening remain.
+> **Current status:** Staging-tested alpha. The core assessment journey, JSON templates, portability, Gutenberg block, Elementor widget, and automated packaging are implemented; broader compatibility testing and release hardening remain.
 
 ## Product direction
 
@@ -45,7 +45,7 @@ AssessCraft will provide:
 - Conditional profiles with personalized narratives and recommendations
 - Configurable result-report sections and consultation CTA
 - Consent-based lead form with secure assessment-summary email delivery
-- Extensible template registry with a generic Sustainable Growth starter
+- File-based JSON template registry with Sustainable Growth and Business Readiness starters
 - Versioned JSON import and export
 - Native dynamic Gutenberg block
 - Conditional Elementor widget
