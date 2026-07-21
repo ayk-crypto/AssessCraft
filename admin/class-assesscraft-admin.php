@@ -120,7 +120,49 @@ final class AssessCraft_Admin {
 				<div class="ac-empty-state" id="ac-empty-profiles"><div class="dashicons dashicons-groups"></div><h3><?php esc_html_e( 'No profiles yet', 'assesscraft' ); ?></h3><p><?php esc_html_e( 'Create a profile to turn scores into a meaningful result narrative.', 'assesscraft' ); ?></p><button type="button" class="button button-primary ac-add-profile"><?php esc_html_e( 'Add first profile', 'assesscraft' ); ?></button></div>
 			</section>
 
-			<?php foreach ( array( 'report', 'lead-form', 'design', 'publish' ) as $future_tab ) : ?>
+			<section class="ac-panel" data-panel="report">
+				<div class="ac-panel-heading"><div><span class="ac-eyebrow"><?php esc_html_e( 'Visitor results', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Report builder', 'assesscraft' ); ?></h2></div><p><?php esc_html_e( 'Choose the content that appears after completion.', 'assesscraft' ); ?></p></div>
+				<div class="ac-form-grid">
+					<label class="ac-field"><span><?php esc_html_e( 'Report heading', 'assesscraft' ); ?></span><input name="assesscraft_report_heading" value="<?php echo esc_attr( $config['report']['heading'] ); ?>"></label>
+					<label class="ac-field ac-field-wide"><span><?php esc_html_e( 'Report introduction', 'assesscraft' ); ?></span><textarea rows="3" name="assesscraft_report_intro"><?php echo esc_textarea( $config['report']['intro'] ); ?></textarea></label>
+				</div>
+				<div class="ac-section-picker">
+					<h3><?php esc_html_e( 'Visible report sections', 'assesscraft' ); ?></h3>
+					<?php
+					$report_sections = array(
+						'profile'         => __( 'Result profile', 'assesscraft' ),
+						'overall'         => __( 'Overall score', 'assesscraft' ),
+						'stage_scores'    => __( 'Stage scores', 'assesscraft' ),
+						'interpretations' => __( 'Score interpretation', 'assesscraft' ),
+						'recommendation'  => __( 'Recommended next step', 'assesscraft' ),
+						'cta'             => __( 'Consultation call to action', 'assesscraft' ),
+						'restart'         => __( 'Start-over button', 'assesscraft' ),
+					);
+					foreach ( $report_sections as $section_key => $section_label ) {
+						printf( '<label><input type="checkbox" name="assesscraft_report_sections[]" value="%s"%s> %s</label>', esc_attr( $section_key ), checked( in_array( $section_key, $config['report']['sections'], true ), true, false ), esc_html( $section_label ) );
+					}
+					?>
+				</div>
+				<div class="ac-form-grid ac-cta-settings">
+					<label class="ac-field"><span><?php esc_html_e( 'CTA heading', 'assesscraft' ); ?></span><input name="assesscraft_cta_heading" value="<?php echo esc_attr( $config['report']['cta_heading'] ); ?>"></label>
+					<label class="ac-field"><span><?php esc_html_e( 'CTA button', 'assesscraft' ); ?></span><input name="assesscraft_cta_label" value="<?php echo esc_attr( $config['report']['cta_label'] ); ?>"></label>
+					<label class="ac-field ac-field-wide"><span><?php esc_html_e( 'CTA description', 'assesscraft' ); ?></span><textarea rows="3" name="assesscraft_cta_text"><?php echo esc_textarea( $config['report']['cta_text'] ); ?></textarea></label>
+				</div>
+			</section>
+
+			<section class="ac-panel" data-panel="lead-form">
+				<div class="ac-panel-heading"><div><span class="ac-eyebrow"><?php esc_html_e( 'Opt-in conversion', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Consultation lead form', 'assesscraft' ); ?></h2></div></div>
+				<label class="ac-enable-card"><input type="checkbox" name="assesscraft_lead_enabled" value="1" <?php checked( ! empty( $config['lead_form']['enabled'] ) ); ?>><span><strong><?php esc_html_e( 'Enable consultation requests', 'assesscraft' ); ?></strong><small><?php esc_html_e( 'Results are sent only when the visitor submits this form.', 'assesscraft' ); ?></small></span></label>
+				<div class="ac-form-grid ac-lead-settings">
+					<label class="ac-field"><span><?php esc_html_e( 'Recipient email', 'assesscraft' ); ?></span><input type="email" name="assesscraft_lead_recipient" value="<?php echo esc_attr( $config['lead_form']['recipient'] ); ?>" placeholder="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>"></label>
+					<label class="ac-field"><span><?php esc_html_e( 'Email subject', 'assesscraft' ); ?></span><input name="assesscraft_lead_subject" value="<?php echo esc_attr( $config['lead_form']['subject'] ); ?>"></label>
+					<label class="ac-field ac-field-wide"><span><?php esc_html_e( 'Consent label', 'assesscraft' ); ?></span><textarea rows="2" name="assesscraft_consent_label"><?php echo esc_textarea( $config['lead_form']['consent_label'] ); ?></textarea></label>
+					<label class="ac-field ac-field-wide"><span><?php esc_html_e( 'Success message', 'assesscraft' ); ?></span><textarea rows="2" name="assesscraft_success_message"><?php echo esc_textarea( $config['lead_form']['success_message'] ); ?></textarea></label>
+				</div>
+				<div class="ac-privacy-note"><span class="dashicons dashicons-lock"></span><p><strong><?php esc_html_e( 'Privacy-first default', 'assesscraft' ); ?></strong><br><?php esc_html_e( 'Completing an assessment never sends or stores a visitor’s result. Transmission occurs only after explicit consent and form submission.', 'assesscraft' ); ?></p></div>
+			</section>
+
+			<?php foreach ( array( 'design', 'publish' ) as $future_tab ) : ?>
 				<section class="ac-panel" data-panel="<?php echo esc_attr( $future_tab ); ?>">
 					<div class="ac-coming-soon"><span class="dashicons dashicons-admin-tools"></span><h2><?php echo esc_html( $tabs[ $future_tab ] ); ?></h2><p><?php esc_html_e( 'This workspace is part of the next AssessCraft milestone.', 'assesscraft' ); ?></p></div>
 				</section>
@@ -154,6 +196,19 @@ final class AssessCraft_Admin {
 		$config['overview']['start_label']    = $this->posted_text( 'assesscraft_start_label' );
 		$config['overview']['estimated_time'] = $this->posted_text( 'assesscraft_estimated_time' );
 		$config['overview']['disclaimer']     = $this->posted_textarea( 'assesscraft_disclaimer' );
+		$config['report']['heading']          = $this->posted_text( 'assesscraft_report_heading' );
+		$config['report']['intro']            = $this->posted_textarea( 'assesscraft_report_intro' );
+		$config['report']['cta_heading']      = $this->posted_text( 'assesscraft_cta_heading' );
+		$config['report']['cta_label']        = $this->posted_text( 'assesscraft_cta_label' );
+		$config['report']['cta_text']         = $this->posted_textarea( 'assesscraft_cta_text' );
+		$allowed_sections = array( 'profile', 'overall', 'stage_scores', 'interpretations', 'recommendation', 'cta', 'restart' );
+		$posted_sections = isset( $_POST['assesscraft_report_sections'] ) && is_array( $_POST['assesscraft_report_sections'] ) ? array_map( 'sanitize_key', wp_unslash( $_POST['assesscraft_report_sections'] ) ) : array();
+		$config['report']['sections'] = array_values( array_intersect( $allowed_sections, $posted_sections ) );
+		$config['lead_form']['enabled']         = ! empty( $_POST['assesscraft_lead_enabled'] );
+		$config['lead_form']['recipient']       = isset( $_POST['assesscraft_lead_recipient'] ) ? sanitize_email( wp_unslash( $_POST['assesscraft_lead_recipient'] ) ) : '';
+		$config['lead_form']['subject']         = $this->posted_text( 'assesscraft_lead_subject' );
+		$config['lead_form']['consent_label']   = $this->posted_textarea( 'assesscraft_consent_label' );
+		$config['lead_form']['success_message'] = $this->posted_textarea( 'assesscraft_success_message' );
 
 		if ( isset( $_POST['assesscraft_stages_json'] ) ) {
 			$stages = json_decode( wp_unslash( $_POST['assesscraft_stages_json'] ), true );

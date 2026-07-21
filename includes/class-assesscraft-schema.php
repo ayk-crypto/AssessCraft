@@ -27,12 +27,21 @@ final class AssessCraft_Schema {
 			),
 			'profiles' => array(),
 			'report'   => array(
-				'sections' => array( 'profile', 'scores', 'interpretations', 'strengths', 'concerns', 'recommendation', 'cta' ),
+				'sections' => array( 'profile', 'overall', 'stage_scores', 'interpretations', 'recommendation', 'cta', 'restart' ),
+				'heading'  => __( 'Your preliminary results', 'assesscraft' ),
+				'intro'    => __( 'This summary reflects the scoring configured for the questions you completed.', 'assesscraft' ),
+				'cta_heading' => __( 'Ready to take the next step?', 'assesscraft' ),
+				'cta_text'    => __( 'Share your results with us to discuss a more comprehensive assessment.', 'assesscraft' ),
+				'cta_label'   => __( 'Request a Comprehensive Assessment', 'assesscraft' ),
 			),
 			'lead_form' => array(
 				'enabled'         => false,
 				'store_responses' => false,
 				'send_results'    => true,
+				'recipient'       => '',
+				'subject'         => __( 'New AssessCraft consultation request', 'assesscraft' ),
+				'success_message' => __( 'Thank you. Your request and assessment summary have been sent.', 'assesscraft' ),
+				'consent_label'   => __( 'I agree to share my contact details and assessment results for follow-up.', 'assesscraft' ),
 			),
 			'design' => array(
 				'primary'    => '#1B2430',

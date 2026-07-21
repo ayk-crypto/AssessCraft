@@ -242,17 +242,20 @@
     var bands = (this.config.scoring || {}).bands || [];
     var overallBand = bandFor(result.overall, bands);
     var profile = resolveProfile(this.config.profiles || [], result);
+    var reportConfig = this.config.report || {};
+    var sections = reportConfig.sections || [];
+    var has = function (section) { return sections.indexOf(section) !== -1; };
     this.clear();
     var shell = element('section', 'ac-front-shell ac-result-screen');
     shell.appendChild(element('div', 'ac-front-eyebrow', 'Assessment complete'));
-    shell.appendChild(element('h2', 'ac-front-title', 'Your preliminary results'));
-    shell.appendChild(element('p', 'ac-front-description', profile ? 'Your responses have been matched with the most relevant result profile.' : 'This summary reflects the scoring configured for the questions you completed.'));
-    if (profile) {
+    shell.appendChild(element('h2', 'ac-front-title', reportConfig.heading || 'Your preliminary results'));
+    if (reportConfig.intro) shell.appendChild(element('p', 'ac-front-description', reportConfig.intro));
+    if (profile && has('profile')) {
       var profileCard = element('div', 'ac-profile-result');
       profileCard.appendChild(element('span', '', 'Your result profile'));
       profileCard.appendChild(element('h3', '', profile.title || 'Assessment profile'));
       if (profile.description) profileCard.appendChild(element('p', '', profile.description));
-      if (profile.recommendation) {
+      if (profile.recommendation && has('recommendation')) {
         var recommendation = element('div', 'ac-profile-recommendation');
         recommendation.appendChild(element('strong', '', 'Recommended next step'));
         recommendation.appendChild(element('p', '', profile.recommendation));
@@ -260,39 +263,96 @@
       }
       shell.appendChild(profileCard);
     }
-    var overall = element('div', 'ac-overall-score');
-    var overallLabel = element('div', '');
-    overallLabel.appendChild(element('span', '', 'Overall score'));
-    if (overallBand) {
-      var classification = element('em', '', overallBand.label || '');
-      classification.style.color = overallBand.color || 'var(--ac-accent)';
-      overallLabel.appendChild(classification);
-    }
-    overall.appendChild(overallLabel);
-    overall.appendChild(element('strong', '', Math.round(result.overall) + '%'));
-    shell.appendChild(overall);
-    if (overallBand && overallBand.interpretation) shell.appendChild(element('p', 'ac-band-interpretation-result', overallBand.interpretation));
-    var scores = element('div', 'ac-result-grid');
-    result.stages.forEach(function (stage) {
-      var card = element('div', 'ac-result-card');
-      card.appendChild(element('strong', '', stage.name));
-      card.appendChild(element('span', '', Math.round(stage.score) + '%'));
-      var stageBand = bandFor(stage.score, bands);
-      if (stageBand) {
-        var badge = element('em', 'ac-result-band', stageBand.label || '');
-        badge.style.color = stageBand.color || 'var(--ac-accent)';
-        card.appendChild(badge);
+    if (has('overall')) {
+      var overall = element('div', 'ac-overall-score');
+      var overallLabel = element('div', '');
+      overallLabel.appendChild(element('span', '', 'Overall score'));
+      if (overallBand) {
+        var classification = element('em', '', overallBand.label || '');
+        classification.style.color = overallBand.color || 'var(--ac-accent)';
+        overallLabel.appendChild(classification);
       }
-      var meter = element('div', 'ac-result-meter');
-      var fill = element('div', ''); fill.style.width = stage.score + '%'; meter.appendChild(fill); card.appendChild(meter);
-      scores.appendChild(card);
-    });
-    shell.appendChild(scores);
-    var restart = element('button', 'ac-front-button ac-front-button-secondary', 'Start over');
-    restart.type = 'button'; restart.addEventListener('click', function () { self.responses = {}; self.index = 0; self.renderIntro(); });
-    shell.appendChild(restart);
+      overall.appendChild(overallLabel);
+      overall.appendChild(element('strong', '', Math.round(result.overall) + '%'));
+      shell.appendChild(overall);
+    }
+    if (has('interpretations') && overallBand && overallBand.interpretation) shell.appendChild(element('p', 'ac-band-interpretation-result', overallBand.interpretation));
+    if (has('stage_scores')) {
+      var scores = element('div', 'ac-result-grid');
+      result.stages.forEach(function (stage) {
+        var card = element('div', 'ac-result-card');
+        card.appendChild(element('strong', '', stage.name));
+        card.appendChild(element('span', '', Math.round(stage.score) + '%'));
+        var stageBand = bandFor(stage.score, bands);
+        if (stageBand) {
+          var badge = element('em', 'ac-result-band', stageBand.label || '');
+          badge.style.color = stageBand.color || 'var(--ac-accent)';
+          card.appendChild(badge);
+        }
+        var meter = element('div', 'ac-result-meter');
+        var fill = element('div', ''); fill.style.width = stage.score + '%'; meter.appendChild(fill); card.appendChild(meter);
+        scores.appendChild(card);
+      });
+      shell.appendChild(scores);
+    }
+    if (has('cta') && (this.config.lead_form || {}).enabled) {
+      var cta = element('div', 'ac-report-cta');
+      cta.appendChild(element('h3', '', reportConfig.cta_heading || 'Ready to take the next step?'));
+      if (reportConfig.cta_text) cta.appendChild(element('p', '', reportConfig.cta_text));
+      var ctaButton = element('button', 'ac-front-button', reportConfig.cta_label || 'Request a Comprehensive Assessment');
+      ctaButton.type = 'button';
+      ctaButton.addEventListener('click', function () { ctaButton.remove(); self.renderLeadForm(cta, result, profile, overallBand); });
+      cta.appendChild(ctaButton);
+      cta.appendChild(element('small', '', 'Your results are shared only if you submit the form.'));
+      shell.appendChild(cta);
+    }
+    if (has('restart')) {
+      var restart = element('button', 'ac-front-button ac-front-button-secondary', 'Start over');
+      restart.type = 'button'; restart.addEventListener('click', function () { self.responses = {}; self.index = 0; self.renderIntro(); });
+      shell.appendChild(restart);
+    }
     this.root.appendChild(shell);
     this.root.dispatchEvent(new CustomEvent('assesscraft:complete', { detail: { assessment: this.payload, result: result, profile: profile, overallBand: overallBand, responses: this.responses } }));
+  };
+
+  Runner.prototype.renderLeadForm = function (container, result, profile, overallBand) {
+    var self = this;
+    var leadConfig = this.config.lead_form || {};
+    var form = element('form', 'ac-lead-form');
+    form.noValidate = true;
+    form.innerHTML =
+      '<div class="ac-lead-grid">' +
+        '<label><span>Name *</span><input name="name" autocomplete="name" required></label>' +
+        '<label><span>Email *</span><input name="email" type="email" autocomplete="email" required></label>' +
+        '<label><span>Company</span><input name="company" autocomplete="organization"></label>' +
+        '<label><span>Phone</span><input name="phone" autocomplete="tel"></label>' +
+        '<label class="ac-lead-wide"><span>How can we help?</span><textarea name="message" rows="3"></textarea></label>' +
+        '<label class="ac-honeypot" aria-hidden="true"><span>Website</span><input name="website" tabindex="-1" autocomplete="off"></label>' +
+      '</div>';
+    var consent = element('label', 'ac-lead-consent');
+    var consentInput = document.createElement('input'); consentInput.type = 'checkbox'; consentInput.name = 'consent'; consentInput.required = true;
+    consent.appendChild(consentInput); consent.appendChild(element('span', '', leadConfig.consent_label || 'I agree to share my contact details and assessment results for follow-up.'));
+    form.appendChild(consent);
+    var status = element('p', 'ac-lead-status'); status.setAttribute('role', 'status'); form.appendChild(status);
+    var submit = element('button', 'ac-front-button', 'Send request'); submit.type = 'submit'; form.appendChild(submit);
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      submit.disabled = true; submit.textContent = 'Sending...'; status.textContent = '';
+      var data = new FormData(form);
+      var payload = {
+        assessment_id: self.payload.id,
+        name: data.get('name'), email: data.get('email'), company: data.get('company'), phone: data.get('phone'), message: data.get('message'), website: data.get('website'),
+        consent: data.get('consent') === 'on',
+        result: { overall: result.overall, classification: overallBand ? overallBand.label : '', profile: profile ? profile.title : '', stages: result.stages.map(function (stage) { return { name: stage.name, score: stage.score }; }) }
+      };
+      fetch(self.payload.lead_endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'same-origin' })
+        .then(function (response) { return response.json().then(function (body) { if (!response.ok) throw new Error(body.message || 'The request could not be sent.'); return body; }); })
+        .then(function (body) { form.innerHTML = ''; var success = element('div', 'ac-lead-success', body.message || leadConfig.success_message || 'Thank you. Your request has been sent.'); success.setAttribute('role', 'status'); form.appendChild(success); })
+        .catch(function (error) { status.textContent = error.message; status.classList.add('is-error'); submit.disabled = false; submit.textContent = 'Send request'; });
+    });
+    container.appendChild(form);
+    form.querySelector('input[name="name"]').focus();
   };
 
   document.querySelectorAll('.assesscraft-app').forEach(function (root) {

@@ -66,6 +66,17 @@
 .ac-condition select, .ac-condition input { width: 100%; }
 .ac-condition-value2 { visibility: hidden; }
 .ac-condition.is-between .ac-condition-value2 { visibility: visible; }
+.ac-section-picker { margin: 24px 0; padding: 20px; border: 1px solid #dcdcde; background: #fafafa; }
+.ac-section-picker h3 { margin: 0 0 14px; }
+.ac-section-picker label { display: inline-flex; align-items: center; gap: 5px; min-width: 210px; margin: 0 14px 10px 0; }
+.ac-cta-settings { padding-top: 22px; border-top: 1px solid #dcdcde; }
+.ac-enable-card { display: flex; gap: 13px; align-items: flex-start; margin-bottom: 22px; padding: 17px; border: 1px solid #b08d2b; background: #fffaf0; }
+.ac-enable-card input { margin-top: 3px; }
+.ac-enable-card span { display: grid; gap: 3px; }
+.ac-enable-card small { color: #646970; }
+.ac-privacy-note { display: flex; gap: 12px; margin-top: 22px; padding: 15px; border-left: 3px solid #6e7f6a; background: #eef2ec; }
+.ac-privacy-note .dashicons { color: #4e6b4a; }
+.ac-privacy-note p { margin: 0; }
 
 @media (max-width: 782px) {
   .ac-panel { padding: 22px 18px; }
