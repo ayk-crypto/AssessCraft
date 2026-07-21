@@ -10,6 +10,7 @@ final class AssessCraft_Templates_Admin {
 		add_action( 'admin_post_assesscraft_duplicate', array( $this, 'duplicate' ) );
 		add_action( 'admin_post_assesscraft_save_template', array( $this, 'save_template' ) );
 		add_action( 'admin_post_assesscraft_import_template', array( $this, 'import_template' ) );
+		add_action( 'admin_post_assesscraft_import_json', array( $this, 'import_json' ) );
 	}
 
 	public function menu(): void {
@@ -55,25 +56,16 @@ final class AssessCraft_Templates_Admin {
 					</dialog>
 				<?php endforeach; ?>
 			</div>
-			<div class="ac-import-card">
-				<h2><?php esc_html_e( 'Import template package', 'assesscraft' ); ?></h2>
-				<p><?php esc_html_e( 'Add a reusable AssessCraft template JSON package to this website’s custom template library.', 'assesscraft' ); ?></p>
+			<div class="ac-import-card ac-unified-import">
+				<div><span class="ac-eyebrow"><?php esc_html_e( 'Optional', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Import AssessCraft JSON', 'assesscraft' ); ?></h2>
+				<p><?php esc_html_e( 'Move an assessment from another website or install a reusable template pack. AssessCraft detects the file type automatically.', 'assesscraft' ); ?></p></div>
 				<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post" enctype="multipart/form-data">
-					<input type="hidden" name="action" value="assesscraft_import_template">
-					<?php wp_nonce_field( 'assesscraft_import_template' ); ?>
-					<input type="file" name="template_file" accept="application/json,.json" required>
-					<button class="button button-secondary" type="submit"><?php esc_html_e( 'Import Template', 'assesscraft' ); ?></button>
+					<input type="hidden" name="action" value="assesscraft_import_json">
+					<?php wp_nonce_field( 'assesscraft_import_json' ); ?>
+					<input type="file" name="json_file" accept="application/json,.json" required>
+					<button class="button button-secondary" type="submit"><?php esc_html_e( 'Import File', 'assesscraft' ); ?></button>
 				</form>
-			</div>
-			<div class="ac-import-card">
-				<h2><?php esc_html_e( 'Import assessment', 'assesscraft' ); ?></h2>
-				<p><?php esc_html_e( 'Choose an AssessCraft JSON export. Imported content is sanitized before it is saved.', 'assesscraft' ); ?></p>
-				<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post" enctype="multipart/form-data">
-					<input type="hidden" name="action" value="assesscraft_import">
-					<?php wp_nonce_field( 'assesscraft_import' ); ?>
-					<input type="file" name="assessment_file" accept="application/json,.json" required>
-					<button class="button button-secondary" type="submit"><?php esc_html_e( 'Import JSON', 'assesscraft' ); ?></button>
-				</form>
+				<small><?php esc_html_e( 'Accepted: AssessCraft assessment exports and template packages up to 2 MB.', 'assesscraft' ); ?></small>
 			</div>
 		</div>
 		<?php
@@ -195,6 +187,39 @@ final class AssessCraft_Templates_Admin {
 		}
 		wp_safe_redirect( add_query_arg( 'assesscraft_notice', 'template-imported', admin_url( 'edit.php?post_type=' . AssessCraft_Post_Type::TYPE . '&page=assesscraft-templates' ) ) );
 		exit;
+	}
+
+	public function import_json(): void {
+		$this->guard( 'assesscraft_import_json' );
+		$file = $_FILES['json_file'] ?? null;
+		if ( ! is_array( $file ) || UPLOAD_ERR_OK !== (int) ( $file['error'] ?? -1 ) || ! is_uploaded_file( $file['tmp_name'] ?? '' ) || (int) ( $file['size'] ?? 0 ) > 2 * MB_IN_BYTES ) {
+			wp_die( esc_html__( 'Please upload a valid AssessCraft JSON file smaller than 2 MB.', 'assesscraft' ) );
+		}
+		$data = json_decode( (string) file_get_contents( $file['tmp_name'] ), true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		if ( ! is_array( $data ) || ! is_array( $data['config'] ?? null ) ) {
+			wp_die( esc_html__( 'This file does not contain a valid AssessCraft configuration.', 'assesscraft' ) );
+		}
+
+		if ( 1 === (int) ( $data['assesscraft_template'] ?? 0 ) ) {
+			$result = AssessCraft_Template_Registry::write_custom( $data );
+			if ( is_wp_error( $result ) ) {
+				wp_die( esc_html( $result->get_error_message() ) );
+			}
+			wp_safe_redirect( add_query_arg( 'assesscraft_notice', 'template-imported', admin_url( 'edit.php?post_type=' . AssessCraft_Post_Type::TYPE . '&page=assesscraft-templates' ) ) );
+			exit;
+		}
+
+		if ( 1 === (int) ( $data['assesscraft_export'] ?? 0 ) ) {
+			$post_id = wp_insert_post( array( 'post_type' => AssessCraft_Post_Type::TYPE, 'post_status' => 'draft', 'post_title' => sanitize_text_field( $data['title'] ?? __( 'Imported Assessment', 'assesscraft' ) ) ), true );
+			if ( is_wp_error( $post_id ) ) {
+				wp_die( esc_html( $post_id->get_error_message() ) );
+			}
+			update_post_meta( $post_id, '_assesscraft_config', AssessCraft_Schema::sanitize( $data['config'] ) );
+			wp_safe_redirect( get_edit_post_link( $post_id, 'url' ) );
+			exit;
+		}
+
+		wp_die( esc_html__( 'AssessCraft could not identify this JSON file as an assessment export or template package.', 'assesscraft' ) );
 	}
 
 	private function render_notice(): void {

@@ -95,6 +95,11 @@
 .ac-import-card { max-width: 1050px; margin-top: 20px; }
 .ac-import-card h2 { margin-top: 0; }
 .ac-import-card form { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.ac-unified-import { display: grid; grid-template-columns: minmax(280px, 1fr) auto; gap: 10px 28px; align-items: center; }
+.ac-unified-import h2 { margin: 5px 0 7px; }
+.ac-unified-import p { margin: 0; color: #646970; }
+.ac-unified-import form { justify-content: flex-end; }
+.ac-unified-import > small { grid-column: 1 / -1; padding-top: 10px; border-top: 1px solid #edf0f3; color: #727b87; }
 .ac-template-dialog { width: min(760px, calc(100vw - 40px)); max-height: calc(100vh - 60px); padding: 0; overflow: auto; border: 0; border-radius: 12px; box-shadow: 0 24px 70px rgba(18,27,38,.25); }
 .ac-template-dialog::backdrop { background: rgba(18,27,38,.58); backdrop-filter: blur(2px); }
 .ac-template-dialog > p { margin: 0; padding: 0 28px 22px; color: #59616c; font-size: 14px; }
@@ -280,4 +285,6 @@
   .ac-answer-option-number { display: none; }
   .ac-band-body { grid-template-columns: 1fr; }
   .ac-band-interpretation { grid-column: auto; }
+  .ac-unified-import { grid-template-columns: 1fr; }
+  .ac-unified-import form { justify-content: flex-start; }
 }
