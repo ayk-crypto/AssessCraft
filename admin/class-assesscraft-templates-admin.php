@@ -11,6 +11,7 @@ final class AssessCraft_Templates_Admin {
 		add_action( 'admin_post_assesscraft_save_template', array( $this, 'save_template' ) );
 		add_action( 'admin_post_assesscraft_import_template', array( $this, 'import_template' ) );
 		add_action( 'admin_post_assesscraft_import_json', array( $this, 'import_json' ) );
+		add_action( 'admin_post_assesscraft_delete_template', array( $this, 'delete_template' ) );
 	}
 
 	public function menu(): void {
@@ -60,6 +61,10 @@ final class AssessCraft_Templates_Admin {
 						<span class="screen-reader-text"><?php esc_html_e( 'Filter by source', 'assesscraft' ); ?></span>
 						<select id="ac-template-source"><option value=""><?php esc_html_e( 'All sources', 'assesscraft' ); ?></option><?php foreach ( $sources as $source ) : ?><option value="<?php echo esc_attr( strtolower( $source ) ); ?>"><?php echo esc_html( ucfirst( $source ) ); ?></option><?php endforeach; ?></select>
 					</label>
+					<label>
+						<span class="screen-reader-text"><?php esc_html_e( 'Sort templates', 'assesscraft' ); ?></span>
+						<select id="ac-template-sort"><option value="name"><?php esc_html_e( 'Name A–Z', 'assesscraft' ); ?></option><option value="category"><?php esc_html_e( 'Category', 'assesscraft' ); ?></option><option value="newest"><?php esc_html_e( 'Newest first', 'assesscraft' ); ?></option><option value="source"><?php esc_html_e( 'Source', 'assesscraft' ); ?></option></select>
+					</label>
 					<button class="button ac-template-reset" id="ac-template-reset" type="button"><?php esc_html_e( 'Reset', 'assesscraft' ); ?></button>
 				</div>
 				<div class="ac-template-grid" id="ac-template-grid" data-per-page="9">
@@ -70,13 +75,13 @@ final class AssessCraft_Templates_Admin {
 					$source = (string) ( $template['source'] ?? __( 'Bundled', 'assesscraft' ) );
 					$search_text = implode( ' ', array( $template['name'] ?? '', $template['description'] ?? '', $template['category'] ?? '', $source ) );
 					?>
-					<article class="ac-template-card" data-search="<?php echo esc_attr( strtolower( $search_text ) ); ?>" data-category="<?php echo esc_attr( strtolower( (string) ( $template['category'] ?? '' ) ) ); ?>" data-source="<?php echo esc_attr( strtolower( $source ) ); ?>">
-						<span><?php echo esc_html( $template['category'] ); ?></span>
+					<article class="ac-template-card" data-search="<?php echo esc_attr( strtolower( $search_text ) ); ?>" data-name="<?php echo esc_attr( strtolower( (string) ( $template['name'] ?? '' ) ) ); ?>" data-category="<?php echo esc_attr( strtolower( (string) ( $template['category'] ?? '' ) ) ); ?>" data-source="<?php echo esc_attr( strtolower( $source ) ); ?>" data-modified="<?php echo absint( $template['modified_at'] ?? 0 ); ?>">
+						<div class="ac-template-card-heading"><span class="ac-template-icon dashicons dashicons-<?php echo esc_attr( $template['icon'] ?? 'analytics' ); ?>" aria-hidden="true"></span><span><?php echo esc_html( $template['category'] ); ?></span></div>
 						<h2><?php echo esc_html( $template['name'] ); ?></h2>
 						<p><?php echo esc_html( $template['description'] ); ?></p>
 						<div class="ac-template-meta"><span><strong><?php echo absint( $stage_count ); ?></strong> <?php esc_html_e( 'stages', 'assesscraft' ); ?></span><span><strong><?php echo absint( $question_count ); ?></strong> <?php esc_html_e( 'questions', 'assesscraft' ); ?></span></div>
-						<div class="ac-template-card-actions"><a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_use_template&template=' . rawurlencode( $slug ) ), 'assesscraft_use_template' ) ); ?>"><?php esc_html_e( 'Use this template', 'assesscraft' ); ?></a><button class="button ac-preview-template" type="button" data-template="<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Preview', 'assesscraft' ); ?></button></div>
-						<footer><span><?php echo esc_html( $source ); ?></span><span>v<?php echo esc_html( $template['version'] ?? '1.0.0' ); ?></span></footer>
+						<div class="ac-template-card-actions"><a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_use_template&template=' . rawurlencode( $slug ) ), 'assesscraft_use_template' ) ); ?>"><?php esc_html_e( 'Use this template', 'assesscraft' ); ?></a><button class="button ac-preview-template" type="button" data-template="<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Preview', 'assesscraft' ); ?></button><?php if ( ! empty( $template['is_custom'] ) ) : ?><a class="button-link-delete ac-delete-template" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_delete_template&template=' . rawurlencode( $slug ) ), 'assesscraft_delete_template' ) ); ?>" data-template-name="<?php echo esc_attr( $template['name'] ); ?>"><?php esc_html_e( 'Delete', 'assesscraft' ); ?></a><?php endif; ?></div>
+						<footer><span><?php echo esc_html( $source ); ?><?php if ( empty( $template['is_custom'] ) ) : ?> <span class="dashicons dashicons-lock" aria-label="<?php esc_attr_e( 'Protected bundled template', 'assesscraft' ); ?>"></span><?php endif; ?></span><span>v<?php echo esc_html( $template['version'] ?? '1.0.0' ); ?></span></footer>
 					</article>
 					<dialog class="ac-template-dialog" id="ac-template-<?php echo esc_attr( $slug ); ?>">
 						<div class="ac-template-dialog-header"><div><span><?php echo esc_html( $template['category'] ); ?></span><h2><?php echo esc_html( $template['name'] ); ?></h2></div><button type="button" class="ac-dialog-close" aria-label="<?php esc_attr_e( 'Close preview', 'assesscraft' ); ?>">&times;</button></div>
@@ -129,6 +134,16 @@ final class AssessCraft_Templates_Admin {
 		}
 		update_post_meta( $post_id, '_assesscraft_config', AssessCraft_Schema::sanitize( $template['config'] ) );
 		wp_safe_redirect( get_edit_post_link( $post_id, 'url' ) );
+		exit;
+	}
+
+	public function delete_template(): void {
+		$this->guard( 'assesscraft_delete_template' );
+		$result = AssessCraft_Template_Registry::delete_custom( sanitize_key( wp_unslash( $_GET['template'] ?? '' ) ) );
+		if ( is_wp_error( $result ) ) {
+			wp_die( esc_html( $result->get_error_message() ) );
+		}
+		wp_safe_redirect( add_query_arg( 'assesscraft_notice', 'template-deleted', admin_url( 'edit.php?post_type=' . AssessCraft_Post_Type::TYPE . '&page=assesscraft-templates' ) ) );
 		exit;
 	}
 
@@ -263,7 +278,7 @@ final class AssessCraft_Templates_Admin {
 
 	private function render_notice(): void {
 		$notice = sanitize_key( wp_unslash( $_GET['assesscraft_notice'] ?? '' ) );
-		$messages = array( 'template-saved' => __( 'Assessment saved to the custom template library.', 'assesscraft' ), 'template-imported' => __( 'Template package imported successfully.', 'assesscraft' ) );
+		$messages = array( 'template-saved' => __( 'Assessment saved to the custom template library.', 'assesscraft' ), 'template-imported' => __( 'Template package imported successfully.', 'assesscraft' ), 'template-deleted' => __( 'Custom template deleted.', 'assesscraft' ) );
 		if ( isset( $messages[ $notice ] ) ) {
 			printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $messages[ $notice ] ) );
 		}
