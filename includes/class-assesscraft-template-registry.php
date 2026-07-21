@@ -3,143 +3,75 @@ defined( 'ABSPATH' ) || exit;
 
 final class AssessCraft_Template_Registry {
 	public static function all(): array {
-		$templates = array(
-			'sustainable-growth' => array(
-				'name'        => __( 'Sustainable Growth Assessment', 'assesscraft' ),
-				'description' => __( 'Evaluate growth direction, operational capacity, and the sustainability of current ways of working.', 'assesscraft' ),
-				'category'    => __( 'Business Strategy', 'assesscraft' ),
-				'config'      => self::sustainable_growth(),
-			),
-		);
+		$directories = apply_filters( 'assesscraft_template_directories', array( ASSESSCRAFT_DIR . 'templates' ) );
+		$templates   = array();
+
+		foreach ( array_unique( array_filter( array_map( 'strval', (array) $directories ) ) ) as $directory ) {
+			$path = realpath( $directory );
+			if ( ! $path || ! is_dir( $path ) || ! is_readable( $path ) ) {
+				continue;
+			}
+			foreach ( glob( trailingslashit( $path ) . '*.json' ) ?: array() as $file ) {
+				$template = self::load_file( $file );
+				if ( $template ) {
+					$templates[ $template['slug'] ] = $template;
+				}
+			}
+		}
+
+		ksort( $templates );
 		return apply_filters( 'assesscraft_templates', $templates );
 	}
 
 	public static function get( string $slug ): ?array {
 		$templates = self::all();
-		return $templates[ $slug ] ?? null;
+		return $templates[ sanitize_key( $slug ) ] ?? null;
 	}
 
-	private static function scale_answers( string $prefix ): array {
-		$labels = array( 'Strongly Disagree', 'Disagree', 'Neutral or Unsure', 'Agree', 'Strongly Agree' );
-		return array_map(
-			static fn( string $label, int $index ): array => array( 'id' => $prefix . '_a' . ( $index + 1 ), 'label' => $label, 'score' => $index + 1 ),
-			$labels,
-			array_keys( $labels )
-		);
-	}
-
-	private static function questions( string $stage, array $prompts, array $reverse = array() ): array {
-		$questions = array();
-		foreach ( $prompts as $index => $prompt ) {
-			$id = $stage . '_q' . ( $index + 1 );
-			$questions[] = array(
-				'id'       => $id,
-				'type'     => 'scale',
-				'prompt'   => $prompt,
-				'required' => true,
-				'reverse'  => in_array( $index + 1, $reverse, true ),
-				'answers'  => self::scale_answers( $id ),
-			);
+	private static function load_file( string $file ): ?array {
+		if ( ! is_readable( $file ) || filesize( $file ) > 2 * MB_IN_BYTES ) {
+			return null;
 		}
-		return $questions;
+		$contents = file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$data     = json_decode( (string) $contents, true );
+		if ( ! is_array( $data ) || 1 !== (int) ( $data['assesscraft_template'] ?? 0 ) || ! is_array( $data['config'] ?? null ) ) {
+			return null;
+		}
+		$slug = sanitize_key( $data['slug'] ?? pathinfo( $file, PATHINFO_FILENAME ) );
+		$name = sanitize_text_field( $data['name'] ?? '' );
+		if ( ! $slug || ! $name ) {
+			return null;
+		}
+		$config = self::hydrate_config( $data['config'], is_array( $data['scales'] ?? null ) ? $data['scales'] : array() );
+		return array(
+			'slug'        => $slug,
+			'name'        => $name,
+			'description' => sanitize_text_field( $data['description'] ?? '' ),
+			'category'    => sanitize_text_field( $data['category'] ?? __( 'General', 'assesscraft' ) ),
+			'version'     => sanitize_text_field( $data['version'] ?? '1.0.0' ),
+			'config'      => AssessCraft_Schema::sanitize( $config ),
+		);
 	}
 
-	private static function sustainable_growth(): array {
-		$config = AssessCraft_Schema::defaults();
-		$config['overview'] = array(
-			'heading'        => __( 'Sustainable Growth Assessment', 'assesscraft' ),
-			'description'    => __( 'Explore whether your organization’s ambitions, operating capacity, and day-to-day experience are developing at a sustainable pace.', 'assesscraft' ),
-			'start_label'    => __( 'Begin Assessment', 'assesscraft' ),
-			'estimated_time' => __( '4 minutes', 'assesscraft' ),
-			'disclaimer'     => __( 'This assessment offers an initial perspective and is not a comprehensive organizational diagnosis.', 'assesscraft' ),
-		);
-		$config['stages'] = array(
-			array(
-				'id'          => 'growth_direction',
-				'name'        => __( 'Growth Direction', 'assesscraft' ),
-				'description' => __( 'Clarity, opportunity readiness, and confidence in future growth.', 'assesscraft' ),
-				'weight'      => 1,
-				'questions'   => self::questions(
-					'growth',
-					array(
-						__( 'Our organization can point to meaningful progress during the past year.', 'assesscraft' ),
-						__( 'Leadership has a clear and practical direction for the next stage of growth.', 'assesscraft' ),
-						__( 'We can recognize and evaluate worthwhile opportunities when they appear.', 'assesscraft' ),
-						__( 'We are confident that demand or impact can continue to grow over the next year.', 'assesscraft' ),
-					)
-				),
-			),
-			array(
-				'id'          => 'operational_capacity',
-				'name'        => __( 'Operational Capacity', 'assesscraft' ),
-				'description' => __( 'People, leadership time, systems, and processes available to support demand.', 'assesscraft' ),
-				'weight'      => 1,
-				'questions'   => self::questions(
-					'capacity',
-					array(
-						__( 'Our team could absorb an unexpected increase in demand without major disruption.', 'assesscraft' ),
-						__( 'Our systems and processes reliably support the work expected of them.', 'assesscraft' ),
-						__( 'Leaders have sufficient time and information to guide the organization effectively.', 'assesscraft' ),
-						__( 'We strengthen capacity before operational pressure becomes urgent.', 'assesscraft' ),
-					)
-				),
-			),
-			array(
-				'id'          => 'sustainable_operations',
-				'name'        => __( 'Sustainable Operations', 'assesscraft' ),
-				'description' => __( 'How manageable, resilient, and repeatable the current operating model feels.', 'assesscraft' ),
-				'weight'      => 1,
-				'questions'   => self::questions(
-					'sustainability',
-					array(
-						__( 'New requests frequently leave team members feeling overloaded.', 'assesscraft' ),
-						__( 'Current workloads can usually be handled without persistent firefighting.', 'assesscraft' ),
-						__( 'Our present operating model can support where we intend to go.', 'assesscraft' ),
-						__( 'The organization’s growth feels manageable and repeatable.', 'assesscraft' ),
-					),
-					array( 1 )
-				),
-			),
-		);
-		$config['profiles'] = array(
-			array(
-				'id' => 'balanced_and_ready', 'title' => __( 'Balanced and Ready', 'assesscraft' ), 'priority' => 40, 'match' => 'all',
-				'description' => __( 'Growth direction and operating capacity appear to be developing together, with limited signs of strain.', 'assesscraft' ),
-				'recommendation' => __( 'Continue monitoring capacity as new opportunities are pursued.', 'assesscraft' ),
-				'conditions' => array(
-					array( 'metric' => 'stage_growth_direction', 'operator' => 'gte', 'value' => 70, 'value2' => 100 ),
-					array( 'metric' => 'stage_operational_capacity', 'operator' => 'gte', 'value' => 70, 'value2' => 100 ),
-				),
-			),
-			array(
-				'id' => 'growth_under_pressure', 'title' => __( 'Growth Under Pressure', 'assesscraft' ), 'priority' => 30, 'match' => 'all',
-				'description' => __( 'Growth ambition is stronger than the capacity currently available to support it.', 'assesscraft' ),
-				'recommendation' => __( 'Identify the operational constraints carrying the greatest risk before accelerating demand.', 'assesscraft' ),
-				'conditions' => array(
-					array( 'metric' => 'stage_growth_direction', 'operator' => 'gte', 'value' => 70, 'value2' => 100 ),
-					array( 'metric' => 'stage_operational_capacity', 'operator' => 'lt', 'value' => 55, 'value2' => 100 ),
-				),
-			),
-			array(
-				'id' => 'capacity_to_activate', 'title' => __( 'Capacity to Activate', 'assesscraft' ), 'priority' => 20, 'match' => 'all',
-				'description' => __( 'The organization may have useful capacity that is not yet being translated into clear growth opportunities.', 'assesscraft' ),
-				'recommendation' => __( 'Clarify which opportunities can be pursued using existing capabilities and resources.', 'assesscraft' ),
-				'conditions' => array(
-					array( 'metric' => 'stage_operational_capacity', 'operator' => 'gte', 'value' => 70, 'value2' => 100 ),
-					array( 'metric' => 'stage_growth_direction', 'operator' => 'lt', 'value' => 55, 'value2' => 100 ),
-				),
-			),
-			array(
-				'id' => 'foundation_first', 'title' => __( 'Foundation First', 'assesscraft' ), 'priority' => 10, 'match' => 'all',
-				'description' => __( 'Both direction and operating capacity would benefit from focused development.', 'assesscraft' ),
-				'recommendation' => __( 'Clarify priorities and strengthen the operating foundation before pursuing significant expansion.', 'assesscraft' ),
-				'conditions' => array(
-					array( 'metric' => 'stage_growth_direction', 'operator' => 'lt', 'value' => 55, 'value2' => 100 ),
-					array( 'metric' => 'stage_operational_capacity', 'operator' => 'lt', 'value' => 55, 'value2' => 100 ),
-				),
-			),
-		);
-		return AssessCraft_Schema::sanitize( $config );
+	private static function hydrate_config( array $config, array $scales ): array {
+		foreach ( $config['stages'] ?? array() as $stage_index => $stage ) {
+			foreach ( $stage['questions'] ?? array() as $question_index => $question ) {
+				if ( ! empty( $question['answers'] ) || empty( $question['scale'] ) || ! is_array( $scales[ $question['scale'] ] ?? null ) ) {
+					continue;
+				}
+				$answers = array();
+				foreach ( $scales[ $question['scale'] ] as $answer_index => $answer ) {
+					if ( is_array( $answer ) ) {
+						$answers[] = array(
+							'id'    => sanitize_key( ( $question['id'] ?? 'question' ) . '_a' . ( $answer_index + 1 ) ),
+							'label' => sanitize_text_field( $answer['label'] ?? '' ),
+							'score' => is_numeric( $answer['score'] ?? null ) ? (float) $answer['score'] : 0,
+						);
+					}
+				}
+				$config['stages'][ $stage_index ]['questions'][ $question_index ]['answers'] = $answers;
+			}
+		}
+		return $config;
 	}
 }
-

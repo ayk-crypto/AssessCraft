@@ -1,0 +1,81 @@
+{
+  "assesscraft_template": 1,
+  "schema_version": 1,
+  "version": "1.0.0",
+  "slug": "business-readiness",
+  "name": "Business Readiness Assessment",
+  "description": "Evaluate whether strategy, market understanding, operations, leadership, and financial foundations are ready to support execution.",
+  "category": "Business Performance",
+  "scales": {
+    "agreement": [
+      { "label": "Strongly Disagree", "score": 1 },
+      { "label": "Disagree", "score": 2 },
+      { "label": "Neutral or Unsure", "score": 3 },
+      { "label": "Agree", "score": 4 },
+      { "label": "Strongly Agree", "score": 5 }
+    ]
+  },
+  "config": {
+    "overview": {
+      "heading": "Business Readiness Assessment",
+      "description": "Assess how prepared your organization is to turn priorities into consistent execution across five essential business dimensions.",
+      "start_label": "Assess Our Readiness",
+      "estimated_time": "5 minutes",
+      "disclaimer": "This assessment provides a directional readiness view and should be considered alongside business context and professional judgment."
+    },
+    "stages": [
+      { "id": "strategic_clarity", "name": "Strategic Clarity", "description": "How clearly priorities, choices, and measures of success guide the organization.", "weight": 1, "questions": [
+        { "id": "strategy_q1", "type": "scale", "prompt": "Our organization has a small number of clearly defined priorities for the next 12 months.", "required": true, "reverse": false, "scale": "agreement" },
+        { "id": "strategy_q2", "type": "scale", "prompt": "Teams understand how their work contributes to the organization’s strategic priorities.", "required": true, "reverse": false, "scale": "agreement" },
+        { "id": "strategy_q3", "type": "scale", "prompt": "Leadership uses agreed measures to review progress and adjust direction.", "required": true, "reverse": false, "scale": "agreement" }
+      ] },
+      { "id": "market_readiness", "name": "Market & Customer Readiness", "description": "Understanding of target customers, market demand, differentiation, and opportunity.", "weight": 1, "questions": [
+        { "id": "market_q1", "type": "scale", "prompt": "We have a clear understanding of the customers or stakeholders we are best positioned to serve.", "required": true, "reverse": false, "scale": "agreement" },
+        { "id": "market_q2", "type": "scale", "prompt": "Customer feedback and market evidence regularly influence our decisions.", "required": true, "reverse": false, "scale": "agreement" },
+        { "id": "market_q3", "type": "scale", "prompt": "Our value proposition is meaningfully differentiated from available alternatives.", "required": true, "reverse": false, "scale": "agreement" }
+      ] },
+      { "id": "operational_readiness", "name": "Operational Readiness", "description": "The reliability, scalability, and visibility of processes and operating systems.", "weight": 1, "questions": [
+        { "id": "operations_q1", "type": "scale", "prompt": "Critical business processes are documented, understood, and followed consistently.", "required": true, "reverse": false, "scale": "agreement" },
+        { "id": "operations_q2", "type": "scale", "prompt": "Our systems and tools provide reliable information for day-to-day decisions.", "required": true, "reverse": false, "scale": "agreement" },
+        { "id": "operations_q3", "type": "scale", "prompt": "The organization can handle a meaningful increase in demand without major disruption.", "required": true, "reverse": false, "scale": "agreement" }
+      ] },
+      { "id": "leadership_people", "name": "Leadership & People", "description": "Leadership alignment, accountability, capability, and the capacity of the team.", "weight": 1, "questions": [
+        { "id": "people_q1", "type": "scale", "prompt": "Leadership communicates decisions and expectations clearly and consistently.", "required": true, "reverse": false, "scale": "agreement" },
+        { "id": "people_q2", "type": "scale", "prompt": "Responsibilities and decision ownership are clear across the organization.", "required": true, "reverse": false, "scale": "agreement" },
+        { "id": "people_q3", "type": "scale", "prompt": "We have the capabilities and leadership capacity needed for our current priorities.", "required": true, "reverse": false, "scale": "agreement" }
+      ] },
+      { "id": "financial_risk", "name": "Financial & Risk Readiness", "description": "Financial visibility, resource discipline, and preparedness for material business risks.", "weight": 1, "questions": [
+        { "id": "finance_q1", "type": "scale", "prompt": "Leadership has timely visibility of cash flow, costs, and financial performance.", "required": true, "reverse": false, "scale": "agreement" },
+        { "id": "finance_q2", "type": "scale", "prompt": "Resources are allocated according to agreed priorities rather than immediate pressure alone.", "required": true, "reverse": false, "scale": "agreement" },
+        { "id": "finance_q3", "type": "scale", "prompt": "Material business risks have clear owners and practical response plans.", "required": true, "reverse": false, "scale": "agreement" }
+      ] }
+    ],
+    "scoring": {
+      "method": "weighted_percentage",
+      "bands": [
+        { "id": "strong", "min": 85, "max": 100, "label": "Strong", "color": "#4E6B4A", "interpretation": "This area appears well established and capable of supporting confident execution." },
+        { "id": "established", "min": 70, "max": 84.99, "label": "Established", "color": "#6E7F6A", "interpretation": "A sound foundation is present, with selected opportunities to improve consistency or scale." },
+        { "id": "developing", "min": 55, "max": 69.99, "label": "Developing", "color": "#B08D2B", "interpretation": "Important elements are in place, but execution may still depend on individuals or informal practices." },
+        { "id": "constrained", "min": 40, "max": 54.99, "label": "Constrained", "color": "#A9583F", "interpretation": "Gaps in this area may limit execution and should be addressed through focused improvement." },
+        { "id": "critical", "min": 0, "max": 39.99, "label": "Critical", "color": "#8C3B2E", "interpretation": "This area requires immediate attention because it may materially affect business performance or resilience." }
+      ]
+    },
+    "profiles": [
+      { "id": "strategy_ahead_of_execution", "title": "Strategy Ahead of Execution", "priority": 90, "match": "all", "description": "Strategic direction is comparatively strong, but operating foundations may not yet support reliable delivery.", "recommendation": "Convert strategic priorities into repeatable processes, decision rights, capacity plans, and measurable operating commitments.", "conditions": [{ "metric": "stage_strategic_clarity", "operator": "gte", "value": 70, "value2": 100 }, { "metric": "stage_operational_readiness", "operator": "lt", "value": 60, "value2": 100 }] },
+      { "id": "financially_exposed", "title": "Operationally Capable, Financially Exposed", "priority": 85, "match": "all", "description": "Execution capability is developing, but financial visibility or risk preparedness may create avoidable exposure.", "recommendation": "Strengthen cash-flow visibility, resource allocation discipline, and ownership of priority risks before expanding commitments.", "conditions": [{ "metric": "stage_operational_readiness", "operator": "gte", "value": 65, "value2": 100 }, { "metric": "stage_financial_risk", "operator": "lt", "value": 55, "value2": 100 }] },
+      { "id": "opportunity_with_internal_gaps", "title": "Opportunity with Internal Gaps", "priority": 80, "match": "all", "description": "Market understanding appears promising, while internal capability may need strengthening before opportunity can be pursued consistently.", "recommendation": "Prioritize the people, process, and financial constraints that could prevent the organization from converting demand into sustainable results.", "conditions": [{ "metric": "stage_market_readiness", "operator": "gte", "value": 70, "value2": 100 }, { "metric": "stage_leadership_people", "operator": "lt", "value": 60, "value2": 100 }] },
+      { "id": "ready_to_execute", "title": "Ready to Execute", "priority": 60, "match": "all", "description": "The organization demonstrates broad readiness across the essential foundations required to execute priorities with confidence.", "recommendation": "Translate readiness into a focused execution roadmap with owners, milestones, and regular performance reviews.", "conditions": [{ "metric": "overall", "operator": "gte", "value": 75, "value2": 100 }] },
+      { "id": "developing_readiness", "title": "Developing Readiness", "priority": 30, "match": "all", "description": "The business has several useful foundations, but readiness is uneven and may reduce consistency of execution.", "recommendation": "Select the two lowest-scoring dimensions and define a 90-day improvement plan with clear owners and evidence of progress.", "conditions": [{ "metric": "overall", "operator": "between", "value": 55, "value2": 74.99 }] },
+      { "id": "foundation_building", "title": "Foundation Building", "priority": 20, "match": "all", "description": "Core business foundations require coordinated attention before the organization can execute major priorities reliably.", "recommendation": "Stabilize strategic focus, operating discipline, leadership accountability, and financial visibility before adding complexity.", "conditions": [{ "metric": "overall", "operator": "lt", "value": 55, "value2": 100 }] }
+    ],
+    "report": {
+      "sections": ["profile", "overall", "stage_scores", "interpretations", "recommendation", "cta", "restart"],
+      "heading": "Your Business Readiness Report",
+      "intro": "This report summarizes overall readiness, highlights the dimensions supporting execution, and identifies where focused improvement may have the greatest value.",
+      "cta_heading": "Ready to strengthen your business foundations?",
+      "cta_text": "Share your results to discuss the priorities, constraints, and next steps identified by your assessment.",
+      "cta_label": "Request a Readiness Consultation"
+    },
+    "design": { "primary": "#183153", "accent": "#2F7D6D", "background": "#F4F7F8", "surface": "#FFFFFF", "text": "#1B2430", "muted": "#5B6876", "button_text": "#FFFFFF", "font": "system", "radius": 2, "width": 760 }
+  }
+}

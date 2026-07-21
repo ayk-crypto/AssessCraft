@@ -88,6 +88,8 @@
 .ac-template-card > span { color: #9a7418; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .ac-template-card h2 { margin: 8px 0; font-size: 21px; }
 .ac-template-card p { min-height: 48px; color: #50575e; }
+.ac-template-meta { display: flex; gap: 16px; margin: 16px 0 20px; padding-top: 14px; border-top: 1px solid #edf0f3; color: #646970; font-size: 12px; }
+.ac-template-meta strong { color: #1b2430; font-size: 15px; }
 .ac-import-card { max-width: 1050px; margin-top: 20px; }
 .ac-import-card h2 { margin-top: 0; }
 .ac-import-card form { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }

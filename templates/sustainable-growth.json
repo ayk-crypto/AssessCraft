@@ -1,0 +1,71 @@
+{
+  "assesscraft_template": 1,
+  "schema_version": 1,
+  "version": "1.0.0",
+  "slug": "sustainable-growth",
+  "name": "Sustainable Growth Assessment",
+  "description": "Evaluate growth direction, operational capacity, and the sustainability of current ways of working.",
+  "category": "Business Strategy",
+  "scales": {
+    "agreement": [
+      { "label": "Strongly Disagree", "score": 1 },
+      { "label": "Disagree", "score": 2 },
+      { "label": "Neutral or Unsure", "score": 3 },
+      { "label": "Agree", "score": 4 },
+      { "label": "Strongly Agree", "score": 5 }
+    ]
+  },
+  "config": {
+    "overview": {
+      "heading": "Sustainable Growth Assessment",
+      "description": "Explore whether your organization’s ambitions, operating capacity, and day-to-day experience are developing at a sustainable pace.",
+      "start_label": "Begin Assessment",
+      "estimated_time": "4 minutes",
+      "disclaimer": "This assessment offers an initial perspective and is not a comprehensive organizational diagnosis."
+    },
+    "stages": [
+      {
+        "id": "growth_direction",
+        "name": "Growth Direction",
+        "description": "Clarity, opportunity readiness, and confidence in future growth.",
+        "weight": 1,
+        "questions": [
+          { "id": "growth_q1", "type": "scale", "prompt": "Our organization can point to meaningful progress during the past year.", "required": true, "reverse": false, "scale": "agreement" },
+          { "id": "growth_q2", "type": "scale", "prompt": "Leadership has a clear and practical direction for the next stage of growth.", "required": true, "reverse": false, "scale": "agreement" },
+          { "id": "growth_q3", "type": "scale", "prompt": "We can recognize and evaluate worthwhile opportunities when they appear.", "required": true, "reverse": false, "scale": "agreement" },
+          { "id": "growth_q4", "type": "scale", "prompt": "We are confident that demand or impact can continue to grow over the next year.", "required": true, "reverse": false, "scale": "agreement" }
+        ]
+      },
+      {
+        "id": "operational_capacity",
+        "name": "Operational Capacity",
+        "description": "People, leadership time, systems, and processes available to support demand.",
+        "weight": 1,
+        "questions": [
+          { "id": "capacity_q1", "type": "scale", "prompt": "Our team could absorb an unexpected increase in demand without major disruption.", "required": true, "reverse": false, "scale": "agreement" },
+          { "id": "capacity_q2", "type": "scale", "prompt": "Our systems and processes reliably support the work expected of them.", "required": true, "reverse": false, "scale": "agreement" },
+          { "id": "capacity_q3", "type": "scale", "prompt": "Leaders have sufficient time and information to guide the organization effectively.", "required": true, "reverse": false, "scale": "agreement" },
+          { "id": "capacity_q4", "type": "scale", "prompt": "We strengthen capacity before operational pressure becomes urgent.", "required": true, "reverse": false, "scale": "agreement" }
+        ]
+      },
+      {
+        "id": "sustainable_operations",
+        "name": "Sustainable Operations",
+        "description": "How manageable, resilient, and repeatable the current operating model feels.",
+        "weight": 1,
+        "questions": [
+          { "id": "sustainability_q1", "type": "scale", "prompt": "New requests frequently leave team members feeling overloaded.", "required": true, "reverse": true, "scale": "agreement" },
+          { "id": "sustainability_q2", "type": "scale", "prompt": "Current workloads can usually be handled without persistent firefighting.", "required": true, "reverse": false, "scale": "agreement" },
+          { "id": "sustainability_q3", "type": "scale", "prompt": "Our present operating model can support where we intend to go.", "required": true, "reverse": false, "scale": "agreement" },
+          { "id": "sustainability_q4", "type": "scale", "prompt": "The organization’s growth feels manageable and repeatable.", "required": true, "reverse": false, "scale": "agreement" }
+        ]
+      }
+    ],
+    "profiles": [
+      { "id": "balanced_and_ready", "title": "Balanced and Ready", "priority": 40, "match": "all", "description": "Growth direction and operating capacity appear to be developing together, with limited signs of strain.", "recommendation": "Continue monitoring capacity as new opportunities are pursued.", "conditions": [{ "metric": "stage_growth_direction", "operator": "gte", "value": 70, "value2": 100 }, { "metric": "stage_operational_capacity", "operator": "gte", "value": 70, "value2": 100 }] },
+      { "id": "growth_under_pressure", "title": "Growth Under Pressure", "priority": 30, "match": "all", "description": "Growth ambition is stronger than the capacity currently available to support it.", "recommendation": "Identify the operational constraints carrying the greatest risk before accelerating demand.", "conditions": [{ "metric": "stage_growth_direction", "operator": "gte", "value": 70, "value2": 100 }, { "metric": "stage_operational_capacity", "operator": "lt", "value": 55, "value2": 100 }] },
+      { "id": "capacity_to_activate", "title": "Capacity to Activate", "priority": 20, "match": "all", "description": "The organization may have useful capacity that is not yet being translated into clear growth opportunities.", "recommendation": "Clarify which opportunities can be pursued using existing capabilities and resources.", "conditions": [{ "metric": "stage_operational_capacity", "operator": "gte", "value": 70, "value2": 100 }, { "metric": "stage_growth_direction", "operator": "lt", "value": 55, "value2": 100 }] },
+      { "id": "foundation_first", "title": "Foundation First", "priority": 10, "match": "all", "description": "Both direction and operating capacity would benefit from focused development.", "recommendation": "Clarify priorities and strengthen the operating foundation before pursuing significant expansion.", "conditions": [{ "metric": "stage_growth_direction", "operator": "lt", "value": 55, "value2": 100 }, { "metric": "stage_operational_capacity", "operator": "lt", "value": 55, "value2": 100 }] }
+    ]
+  }
+}
