@@ -17,7 +17,13 @@ final class AssessCraft_Schema {
 			'stages'   => array(),
 			'scoring'  => array(
 				'method' => 'weighted_percentage',
-				'bands'  => array(),
+				'bands'  => array(
+					array( 'id' => 'strong', 'min' => 85, 'max' => 100, 'label' => __( 'Strong', 'assesscraft' ), 'color' => '#4E6B4A', 'interpretation' => '' ),
+					array( 'id' => 'established', 'min' => 70, 'max' => 84.99, 'label' => __( 'Established', 'assesscraft' ), 'color' => '#6E7F6A', 'interpretation' => '' ),
+					array( 'id' => 'developing', 'min' => 55, 'max' => 69.99, 'label' => __( 'Developing', 'assesscraft' ), 'color' => '#B08D2B', 'interpretation' => '' ),
+					array( 'id' => 'constrained', 'min' => 40, 'max' => 54.99, 'label' => __( 'Constrained', 'assesscraft' ), 'color' => '#A9583F', 'interpretation' => '' ),
+					array( 'id' => 'critical', 'min' => 0, 'max' => 39.99, 'label' => __( 'Critical', 'assesscraft' ), 'color' => '#8C3B2E', 'interpretation' => '' ),
+				),
 			),
 			'profiles' => array(),
 			'report'   => array(
@@ -41,7 +47,62 @@ final class AssessCraft_Schema {
 			return self::defaults();
 		}
 
-		return self::sanitize_recursive( array_replace_recursive( self::defaults(), $value ) );
+		$merged = array_replace_recursive( self::defaults(), $value );
+		$merged['stages'] = self::sanitize_stages( is_array( $value['stages'] ?? null ) ? $value['stages'] : array() );
+		$merged['scoring']['bands'] = self::sanitize_bands( is_array( $value['scoring']['bands'] ?? null ) ? $value['scoring']['bands'] : self::defaults()['scoring']['bands'] );
+		$merged['profiles'] = self::sanitize_profiles( is_array( $value['profiles'] ?? null ) ? $value['profiles'] : array() );
+		return self::sanitize_recursive( $merged );
+	}
+
+	public static function sanitize_bands( array $bands ): array {
+		$clean = array();
+		foreach ( $bands as $band ) {
+			if ( ! is_array( $band ) ) {
+				continue;
+			}
+			$color = sanitize_hex_color( $band['color'] ?? '' );
+			$clean[] = array(
+				'id'             => sanitize_key( $band['id'] ?? '' ),
+				'min'            => max( 0, min( 100, (float) ( $band['min'] ?? 0 ) ) ),
+				'max'            => max( 0, min( 100, (float) ( $band['max'] ?? 100 ) ) ),
+				'label'          => sanitize_text_field( $band['label'] ?? '' ),
+				'color'          => $color ?: '#6E7F6A',
+				'interpretation' => sanitize_textarea_field( $band['interpretation'] ?? '' ),
+			);
+		}
+		return $clean;
+	}
+
+	public static function sanitize_profiles( array $profiles ): array {
+		$clean = array();
+		foreach ( $profiles as $profile ) {
+			if ( ! is_array( $profile ) ) {
+				continue;
+			}
+			$conditions = array();
+			foreach ( $profile['conditions'] ?? array() as $condition ) {
+				if ( ! is_array( $condition ) ) {
+					continue;
+				}
+				$operator = in_array( $condition['operator'] ?? '', array( 'gte', 'lte', 'gt', 'lt', 'between' ), true ) ? $condition['operator'] : 'gte';
+				$conditions[] = array(
+					'metric'   => sanitize_key( $condition['metric'] ?? 'overall' ),
+					'operator' => $operator,
+					'value'    => (float) ( $condition['value'] ?? 0 ),
+					'value2'   => (float) ( $condition['value2'] ?? 100 ),
+				);
+			}
+			$clean[] = array(
+				'id'             => sanitize_key( $profile['id'] ?? '' ),
+				'title'          => sanitize_text_field( $profile['title'] ?? '' ),
+				'description'    => sanitize_textarea_field( $profile['description'] ?? '' ),
+				'recommendation' => sanitize_textarea_field( $profile['recommendation'] ?? '' ),
+				'match'          => 'any' === ( $profile['match'] ?? '' ) ? 'any' : 'all',
+				'priority'       => (int) ( $profile['priority'] ?? 0 ),
+				'conditions'     => $conditions,
+			);
+		}
+		return $clean;
 	}
 
 	public static function sanitize_stages( array $stages ): array {

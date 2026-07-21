@@ -54,6 +54,44 @@
     return { stages: stageResults, overall: overall };
   }
 
+  function bandFor(score, bands) {
+    return (bands || []).find(function (band) {
+      return score >= Number(band.min) && score <= Number(band.max);
+    }) || null;
+  }
+
+  function metricValue(metric, result) {
+    if (metric === 'overall') return result.overall;
+    if (metric.indexOf('stage_') === 0) {
+      var id = metric.slice(6);
+      var stage = result.stages.find(function (item) { return item.id === id; });
+      return stage ? stage.score : null;
+    }
+    return null;
+  }
+
+  function conditionMatches(condition, result) {
+    var actual = metricValue(condition.metric || 'overall', result);
+    var value = Number(condition.value) || 0;
+    var value2 = Number(condition.value2) || 0;
+    if (actual === null) return false;
+    if (condition.operator === 'lte') return actual <= value;
+    if (condition.operator === 'gt') return actual > value;
+    if (condition.operator === 'lt') return actual < value;
+    if (condition.operator === 'between') return actual >= Math.min(value, value2) && actual <= Math.max(value, value2);
+    return actual >= value;
+  }
+
+  function resolveProfile(profiles, result) {
+    return (profiles || []).slice().sort(function (a, b) { return (Number(b.priority) || 0) - (Number(a.priority) || 0); }).find(function (profile) {
+      var conditions = profile.conditions || [];
+      if (!conditions.length) return false;
+      return profile.match === 'any'
+        ? conditions.some(function (condition) { return conditionMatches(condition, result); })
+        : conditions.every(function (condition) { return conditionMatches(condition, result); });
+    }) || null;
+  }
+
   function Runner(root, payload) {
     this.root = root;
     this.payload = payload;
@@ -201,20 +239,50 @@
   Runner.prototype.renderReport = function () {
     var self = this;
     var result = calculate(this.stages, this.responses);
+    var bands = (this.config.scoring || {}).bands || [];
+    var overallBand = bandFor(result.overall, bands);
+    var profile = resolveProfile(this.config.profiles || [], result);
     this.clear();
     var shell = element('section', 'ac-front-shell ac-result-screen');
     shell.appendChild(element('div', 'ac-front-eyebrow', 'Assessment complete'));
     shell.appendChild(element('h2', 'ac-front-title', 'Your preliminary results'));
-    shell.appendChild(element('p', 'ac-front-description', 'This summary reflects the scoring configured for the questions you completed. Detailed profiles and recommendations will be available through the AssessCraft report builder.'));
+    shell.appendChild(element('p', 'ac-front-description', profile ? 'Your responses have been matched with the most relevant result profile.' : 'This summary reflects the scoring configured for the questions you completed.'));
+    if (profile) {
+      var profileCard = element('div', 'ac-profile-result');
+      profileCard.appendChild(element('span', '', 'Your result profile'));
+      profileCard.appendChild(element('h3', '', profile.title || 'Assessment profile'));
+      if (profile.description) profileCard.appendChild(element('p', '', profile.description));
+      if (profile.recommendation) {
+        var recommendation = element('div', 'ac-profile-recommendation');
+        recommendation.appendChild(element('strong', '', 'Recommended next step'));
+        recommendation.appendChild(element('p', '', profile.recommendation));
+        profileCard.appendChild(recommendation);
+      }
+      shell.appendChild(profileCard);
+    }
     var overall = element('div', 'ac-overall-score');
-    overall.appendChild(element('span', '', 'Overall score'));
+    var overallLabel = element('div', '');
+    overallLabel.appendChild(element('span', '', 'Overall score'));
+    if (overallBand) {
+      var classification = element('em', '', overallBand.label || '');
+      classification.style.color = overallBand.color || 'var(--ac-accent)';
+      overallLabel.appendChild(classification);
+    }
+    overall.appendChild(overallLabel);
     overall.appendChild(element('strong', '', Math.round(result.overall) + '%'));
     shell.appendChild(overall);
+    if (overallBand && overallBand.interpretation) shell.appendChild(element('p', 'ac-band-interpretation-result', overallBand.interpretation));
     var scores = element('div', 'ac-result-grid');
     result.stages.forEach(function (stage) {
       var card = element('div', 'ac-result-card');
       card.appendChild(element('strong', '', stage.name));
       card.appendChild(element('span', '', Math.round(stage.score) + '%'));
+      var stageBand = bandFor(stage.score, bands);
+      if (stageBand) {
+        var badge = element('em', 'ac-result-band', stageBand.label || '');
+        badge.style.color = stageBand.color || 'var(--ac-accent)';
+        card.appendChild(badge);
+      }
       var meter = element('div', 'ac-result-meter');
       var fill = element('div', ''); fill.style.width = stage.score + '%'; meter.appendChild(fill); card.appendChild(meter);
       scores.appendChild(card);
@@ -224,7 +292,7 @@
     restart.type = 'button'; restart.addEventListener('click', function () { self.responses = {}; self.index = 0; self.renderIntro(); });
     shell.appendChild(restart);
     this.root.appendChild(shell);
-    this.root.dispatchEvent(new CustomEvent('assesscraft:complete', { detail: { assessment: this.payload, result: result, responses: this.responses } }));
+    this.root.dispatchEvent(new CustomEvent('assesscraft:complete', { detail: { assessment: this.payload, result: result, profile: profile, overallBand: overallBand, responses: this.responses } }));
   };
 
   document.querySelectorAll('.assesscraft-app').forEach(function (root) {
