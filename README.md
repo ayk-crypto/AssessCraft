@@ -4,7 +4,7 @@
 
 AssessCraft is a WordPress assessment and report builder for consultants and professional-service businesses. It is designed to turn visitor responses into structured scores, personalized reports, and opt-in qualified leads.
 
-> **Current status:** Foundation release. The repository contains the plugin architecture and portable assessment schema; the visual builder and complete assessment runner are the next development milestones.
+> **Current status:** Feature-complete alpha. The core assessment journey, templates, portability, Gutenberg block, Elementor widget, and automated packaging are implemented; full WordPress installation testing and release hardening remain.
 
 ## Product direction
 
@@ -31,11 +31,25 @@ AssessCraft will provide:
 4. Open **AssessCraft** in WordPress administration.
 5. Create an assessment and use its generated shortcode.
 
-## Current foundation
+## Current capabilities
 
 - Private `ac_assessment` post type
 - Versioned `_assesscraft_config` data model
 - Secure administration shell
+- Visual Overview and Builder tabs
+- Configurable stages, questions, answer choices, weights, and reverse scoring
+- Drag-based stage and question ordering
+- Responsive visitor flow with progress, validation, and navigation
+- Preliminary weighted stage and overall score summaries
+- Configurable classifications and score interpretations
+- Conditional profiles with personalized narratives and recommendations
+- Configurable result-report sections and consultation CTA
+- Consent-based lead form with secure assessment-summary email delivery
+- Extensible template registry with a generic Sustainable Growth starter
+- Versioned JSON import and export
+- Native dynamic Gutenberg block
+- Conditional Elementor widget
+- Automated clean installable-ZIP packaging
 - Shortcode renderer: `[assesscraft id="123"]`
 - Frontend mounting boundary
 - Privacy-first storage defaults
@@ -62,4 +76,3 @@ Development work should use focused branches and draft pull requests. Do not com
 ## License
 
 AssessCraft is licensed under the GNU General Public License v2.0 or later. See [LICENSE](LICENSE).
-

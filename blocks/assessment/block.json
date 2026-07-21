@@ -1,0 +1,23 @@
+{
+  "apiVersion": 3,
+  "name": "assesscraft/assessment",
+  "version": "0.8.4",
+  "title": "AssessCraft Assessment",
+  "category": "widgets",
+  "icon": "chart-bar",
+  "description": "Display an interactive AssessCraft assessment.",
+  "keywords": ["assessment", "score", "report"],
+  "textdomain": "assesscraft",
+  "attributes": {
+    "assessmentId": {
+      "type": "integer",
+      "default": 0
+    }
+  },
+  "supports": {
+    "html": false,
+    "align": ["wide", "full"]
+  },
+  "editorScript": "file:./editor.js",
+  "editorStyle": "file:./editor.css"
+}

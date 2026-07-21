@@ -10,7 +10,7 @@ final class AssessCraft_Shortcode {
 		$atts = shortcode_atts( array( 'id' => 0 ), $atts, 'assesscraft' );
 		$id   = absint( $atts['id'] );
 
-		if ( ! $id || AssessCraft_Post_Type::TYPE !== get_post_type( $id ) ) {
+		if ( ! $id || AssessCraft_Post_Type::TYPE !== get_post_type( $id ) || ( 'publish' !== get_post_status( $id ) && ! current_user_can( 'edit_post', $id ) ) ) {
 			return current_user_can( 'edit_posts' )
 				? '<p class="assesscraft-error">' . esc_html__( 'AssessCraft: select a valid assessment.', 'assesscraft' ) . '</p>'
 				: '';
@@ -22,7 +22,14 @@ final class AssessCraft_Shortcode {
 		wp_enqueue_style( 'assesscraft-frontend', ASSESSCRAFT_URL . 'public/assets/frontend.css', array(), ASSESSCRAFT_VERSION );
 		wp_enqueue_script( 'assesscraft-frontend', ASSESSCRAFT_URL . 'public/assets/frontend.js', array(), ASSESSCRAFT_VERSION, true );
 
-		$payload = wp_json_encode( array( 'id' => $id, 'title' => get_the_title( $id ), 'config' => $config ) );
+		$payload = wp_json_encode(
+			array(
+				'id'            => $id,
+				'title'         => get_the_title( $id ),
+				'config'        => $config,
+				'lead_endpoint' => esc_url_raw( rest_url( 'assesscraft/v1/lead' ) ),
+			)
+		);
 
 		return sprintf(
 			'<div class="assesscraft-app" data-assessment="%s"><noscript>%s</noscript></div>',
@@ -31,4 +38,3 @@ final class AssessCraft_Shortcode {
 		);
 	}
 }
-

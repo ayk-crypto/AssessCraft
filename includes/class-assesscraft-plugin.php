@@ -11,7 +11,11 @@ final class AssessCraft_Plugin {
 	public function boot(): void {
 		( new AssessCraft_Post_Type() )->register();
 		( new AssessCraft_Admin() )->register();
+		( new AssessCraft_Templates_Admin() )->register();
 		( new AssessCraft_Shortcode() )->register();
+		( new AssessCraft_Lead_Endpoint() )->register();
+		( new AssessCraft_Block() )->register();
+		( new AssessCraft_Elementor() )->register();
 
 		do_action( 'assesscraft_loaded', $this );
 	}
@@ -25,4 +29,3 @@ final class AssessCraft_Plugin {
 		flush_rewrite_rules();
 	}
 }
-
