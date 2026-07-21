@@ -30,10 +30,15 @@ final class AssessCraft_Templates_Admin {
 			<p class="description"><?php esc_html_e( 'Start with a professionally structured assessment, or import a portable AssessCraft JSON file.', 'assesscraft' ); ?></p>
 			<div class="ac-template-grid">
 				<?php foreach ( AssessCraft_Template_Registry::all() as $slug => $template ) : ?>
+					<?php
+					$stage_count = count( $template['config']['stages'] ?? array() );
+					$question_count = array_sum( array_map( static fn( array $stage ): int => count( $stage['questions'] ?? array() ), $template['config']['stages'] ?? array() ) );
+					?>
 					<article class="ac-template-card">
 						<span><?php echo esc_html( $template['category'] ); ?></span>
 						<h2><?php echo esc_html( $template['name'] ); ?></h2>
 						<p><?php echo esc_html( $template['description'] ); ?></p>
+						<div class="ac-template-meta"><span><strong><?php echo absint( $stage_count ); ?></strong> <?php esc_html_e( 'stages', 'assesscraft' ); ?></span><span><strong><?php echo absint( $question_count ); ?></strong> <?php esc_html_e( 'questions', 'assesscraft' ); ?></span></div>
 						<a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_use_template&template=' . rawurlencode( $slug ) ), 'assesscraft_use_template' ) ); ?>"><?php esc_html_e( 'Use this template', 'assesscraft' ); ?></a>
 					</article>
 				<?php endforeach; ?>
