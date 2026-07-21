@@ -3,7 +3,7 @@ Contributors: assesscraft
 Tags: assessment, lead generation, reports, scoring, forms
 Requires at least: 6.5
 Requires PHP: 8.0
-Stable tag: 0.8.1
+Stable tag: 0.8.2
 License: GPLv2 or later
 
 Build scored, multi-stage assessments that generate personalized reports and qualified leads.
@@ -20,6 +20,10 @@ AssessCraft is a foundation release for a visual assessment builder designed for
 4. Create an assessment and embed it with the generated shortcode.
 
 == Changelog ==
+
+= 0.8.2 =
+* Redesigned answer choices as modern option cards with clearer scores and actions.
+* Redesigned score bands and added synchronized editable hexadecimal color codes.
 
 = 0.8.1 =
 * Redesigned the assessment editor as a dedicated commercial workspace.

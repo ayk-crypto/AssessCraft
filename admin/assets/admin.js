@@ -89,14 +89,23 @@
       var row = document.createElement('article');
       row.className = 'ac-band';
       row.innerHTML =
-        '<div class="ac-band-color"><input type="color" value="' + escapeHtml(band.color || '#6E7F6A') + '" aria-label="Band color"></div>' +
-        '<label class="ac-field"><span>Classification</span><input class="ac-band-label" value="' + escapeHtml(band.label || '') + '" placeholder="e.g. Strong"></label>' +
-        '<label class="ac-field"><span>Minimum</span><input class="ac-band-min" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(band.min == null ? 0 : band.min) + '"></label>' +
-        '<label class="ac-field"><span>Maximum</span><input class="ac-band-max" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(band.max == null ? 100 : band.max) + '"></label>' +
-        '<label class="ac-field ac-band-interpretation"><span>Interpretation</span><textarea rows="2" placeholder="Explain what this classification means">' + escapeHtml(band.interpretation || '') + '</textarea></label>' +
-        '<button type="button" class="button-link-delete ac-delete-band">Delete</button>';
-      row.querySelector('input[type="color"]').addEventListener('input', function (event) { band.color = event.target.value; sync(); });
-      row.querySelector('.ac-band-label').addEventListener('input', function (event) { band.label = event.target.value; sync(); });
+        '<header class="ac-band-header"><div><span class="ac-band-index">Band ' + (bandIndex + 1) + '</span><strong>' + escapeHtml(band.label || 'Untitled classification') + '</strong></div><button type="button" class="ac-icon-delete ac-delete-band" aria-label="Delete score band"><span class="dashicons dashicons-trash"></span></button></header>' +
+        '<div class="ac-band-body">' +
+          '<div class="ac-band-color"><span>Band color</span><div><input type="color" value="' + escapeHtml(band.color || '#6E7F6A') + '" aria-label="Choose band color"><input class="ac-band-color-code" value="' + escapeHtml((band.color || '#6E7F6A').toUpperCase()) + '" maxlength="7" spellcheck="false" aria-label="Hex color code"></div></div>' +
+          '<label class="ac-field ac-band-name"><span>Classification</span><input class="ac-band-label" value="' + escapeHtml(band.label || '') + '" placeholder="e.g. Strong"></label>' +
+          '<div class="ac-band-range"><span>Score range</span><div><label><small>From</small><input class="ac-band-min" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(band.min == null ? 0 : band.min) + '"></label><span>—</span><label><small>To</small><input class="ac-band-max" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(band.max == null ? 100 : band.max) + '"></label></div></div>' +
+          '<label class="ac-field ac-band-interpretation"><span>Interpretation shown in report</span><textarea rows="3" placeholder="Explain what this classification means and what the respondent should understand.">' + escapeHtml(band.interpretation || '') + '</textarea></label>' +
+        '</div>';
+      var picker = row.querySelector('input[type="color"]');
+      var colorCode = row.querySelector('.ac-band-color-code');
+      picker.addEventListener('input', function (event) { band.color = event.target.value.toUpperCase(); colorCode.value = band.color; sync(); });
+      colorCode.addEventListener('input', function (event) {
+        var value = event.target.value.trim().toUpperCase();
+        if (/^#[0-9A-F]{6}$/.test(value)) { band.color = value; picker.value = value; event.target.classList.remove('is-invalid'); sync(); }
+        else { event.target.classList.add('is-invalid'); }
+      });
+      colorCode.addEventListener('blur', function () { colorCode.value = (band.color || '#6E7F6A').toUpperCase(); colorCode.classList.remove('is-invalid'); });
+      row.querySelector('.ac-band-label').addEventListener('input', function (event) { band.label = event.target.value; row.querySelector('.ac-band-header strong').textContent = band.label || 'Untitled classification'; sync(); });
       row.querySelector('.ac-band-min').addEventListener('input', function (event) { band.min = Number(event.target.value); sync(); });
       row.querySelector('.ac-band-max').addEventListener('input', function (event) { band.max = Number(event.target.value); sync(); });
       row.querySelector('textarea').addEventListener('input', function (event) { band.interpretation = event.target.value; sync(); });
@@ -247,7 +256,7 @@
   function renderAnswer(item, questionItem, answerIndex) {
     var el = document.createElement('div');
     el.className = 'ac-answer';
-    el.innerHTML = '<span class="dashicons dashicons-menu"></span><input class="ac-answer-label" value="' + escapeHtml(item.label || '') + '"><input class="ac-answer-score" type="number" step="0.1" value="' + escapeHtml(item.score == null ? 0 : item.score) + '"><button type="button" class="button-link-delete ac-delete-answer" aria-label="Delete answer">&times;</button>';
+    el.innerHTML = '<span class="ac-answer-grip dashicons dashicons-menu" aria-hidden="true"></span><div class="ac-answer-main"><span class="ac-answer-option-number">' + String(answerIndex + 1).padStart(2, '0') + '</span><input class="ac-answer-label" value="' + escapeHtml(item.label || '') + '" aria-label="Answer choice ' + (answerIndex + 1) + '"></div><label class="ac-answer-score-wrap"><span>Score</span><input class="ac-answer-score" type="number" step="0.1" value="' + escapeHtml(item.score == null ? 0 : item.score) + '"></label><button type="button" class="ac-icon-delete ac-delete-answer" aria-label="Delete answer"><span class="dashicons dashicons-trash"></span></button>';
     el.querySelector('.ac-answer-label').addEventListener('input', function (event) { item.label = event.target.value; sync(); });
     el.querySelector('.ac-answer-score').addEventListener('input', function (event) { item.score = Number(event.target.value) || 0; sync(); });
     el.querySelector('.ac-delete-answer').addEventListener('click', function () { questionItem.answers.splice(answerIndex, 1); render(); });
