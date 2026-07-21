@@ -3,7 +3,7 @@ Contributors: assesscraft
 Tags: assessment, lead generation, reports, scoring, forms
 Requires at least: 6.5
 Requires PHP: 8.0
-Stable tag: 0.9.0
+Stable tag: 0.10.3
 License: GPLv2 or later
 
 Build scored, multi-stage assessments that generate personalized reports and qualified leads.
@@ -20,6 +20,27 @@ AssessCraft is a foundation release for a visual assessment builder designed for
 4. Create an assessment and embed it with the generated shortcode.
 
 == Changelog ==
+
+= 0.10.3 =
+* Fixed assessment Publish and Update submissions being interrupted by invalid nested form markup.
+* Fixed lead-form settings, including the enable checkbox, not persisting after an assessment update.
+* Preserved the Save as reusable template workflow through an isolated submission that does not interfere with WordPress publishing.
+
+= 0.10.2 =
+* Added instant template search across names, descriptions, categories, and sources.
+* Added category and source filters with clear empty and reset states.
+* Added nine-per-page template pagination for larger commercial template libraries.
+* Improved the responsive template catalog layout for desktop, tablet, and mobile.
+
+= 0.10.1 =
+* Replaced separate template and assessment import boxes with one auto-detecting JSON importer.
+* Clarified that importing is optional and intended for site transfers and future template packs.
+
+= 0.10.0 =
+* Added detailed template previews before assessment creation.
+* Added assessment duplication from editor and assessment-list actions.
+* Added save-as-template with update-safe custom JSON storage in WordPress uploads.
+* Added separate reusable template-package import and template source/version metadata.
 
 = 0.9.0 =
 * Added a complete Business Readiness Assessment template with five stages and fifteen questions.

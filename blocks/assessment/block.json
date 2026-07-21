@@ -1,7 +1,7 @@
 {
   "apiVersion": 3,
   "name": "assesscraft/assessment",
-  "version": "0.9.0",
+  "version": "0.10.3",
   "title": "AssessCraft Assessment",
   "category": "widgets",
   "icon": "chart-bar",
