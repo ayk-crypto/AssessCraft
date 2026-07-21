@@ -77,6 +77,9 @@
     emptyState.hidden = state.stages.length > 0;
     renderBands();
     renderProfiles();
+    var questionCount = state.stages.reduce(function (total, item) { return total + (item.questions || []).length; }, 0);
+    var statusValues = { stages: state.stages.length, questions: questionCount, profiles: state.profiles.length };
+    Object.keys(statusValues).forEach(function (key) { var node = root.querySelector('[data-status="' + key + '"]'); if (node) node.textContent = statusValues[key]; });
     sync();
   }
 
@@ -86,14 +89,22 @@
       var row = document.createElement('article');
       row.className = 'ac-band';
       row.innerHTML =
-        '<div class="ac-band-color"><input type="color" value="' + escapeHtml(band.color || '#6E7F6A') + '" aria-label="Band color"></div>' +
-        '<label class="ac-field"><span>Classification</span><input class="ac-band-label" value="' + escapeHtml(band.label || '') + '" placeholder="e.g. Strong"></label>' +
-        '<label class="ac-field"><span>Minimum</span><input class="ac-band-min" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(band.min == null ? 0 : band.min) + '"></label>' +
-        '<label class="ac-field"><span>Maximum</span><input class="ac-band-max" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(band.max == null ? 100 : band.max) + '"></label>' +
-        '<label class="ac-field ac-band-interpretation"><span>Interpretation</span><textarea rows="2" placeholder="Explain what this classification means">' + escapeHtml(band.interpretation || '') + '</textarea></label>' +
-        '<button type="button" class="button-link-delete ac-delete-band">Delete</button>';
-      row.querySelector('input[type="color"]').addEventListener('input', function (event) { band.color = event.target.value; sync(); });
-      row.querySelector('.ac-band-label').addEventListener('input', function (event) { band.label = event.target.value; sync(); });
+        '<header class="ac-band-header"><div><span class="ac-band-index">Band ' + (bandIndex + 1) + '</span><strong>' + escapeHtml(band.label || 'Untitled classification') + '</strong></div><button type="button" class="ac-icon-delete ac-delete-band" aria-label="Delete score band"><span class="dashicons dashicons-trash"></span></button></header>' +
+        '<div class="ac-band-body">' +
+          '<div class="ac-band-color"><span>Band color</span><div><i class="ac-band-swatch" style="background:' + escapeHtml(band.color || '#6E7F6A') + '" aria-hidden="true"></i><input class="ac-band-color-code" value="' + escapeHtml((band.color || '#6E7F6A').toUpperCase()) + '" maxlength="7" spellcheck="false" aria-label="Hex color code"></div></div>' +
+          '<label class="ac-field ac-band-name"><span>Classification</span><input class="ac-band-label" value="' + escapeHtml(band.label || '') + '" placeholder="e.g. Strong"></label>' +
+          '<div class="ac-band-range"><span>Score range</span><div><label><span class="screen-reader-text">Minimum score</span><input class="ac-band-min" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(band.min == null ? 0 : band.min) + '" aria-label="Minimum score"></label><span class="ac-range-separator">to</span><label><span class="screen-reader-text">Maximum score</span><input class="ac-band-max" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(band.max == null ? 100 : band.max) + '" aria-label="Maximum score"></label></div></div>' +
+          '<label class="ac-field ac-band-interpretation"><span>Interpretation shown in report</span><textarea rows="3" placeholder="Explain what this classification means and what the respondent should understand.">' + escapeHtml(band.interpretation || '') + '</textarea></label>' +
+        '</div>';
+      var swatch = row.querySelector('.ac-band-swatch');
+      var colorCode = row.querySelector('.ac-band-color-code');
+      colorCode.addEventListener('input', function (event) {
+        var value = event.target.value.trim().toUpperCase();
+        if (/^#[0-9A-F]{6}$/.test(value)) { band.color = value; swatch.style.background = value; event.target.classList.remove('is-invalid'); sync(); }
+        else { event.target.classList.add('is-invalid'); }
+      });
+      colorCode.addEventListener('blur', function () { colorCode.value = (band.color || '#6E7F6A').toUpperCase(); colorCode.classList.remove('is-invalid'); });
+      row.querySelector('.ac-band-label').addEventListener('input', function (event) { band.label = event.target.value; row.querySelector('.ac-band-header strong').textContent = band.label || 'Untitled classification'; sync(); });
       row.querySelector('.ac-band-min').addEventListener('input', function (event) { band.min = Number(event.target.value); sync(); });
       row.querySelector('.ac-band-max').addEventListener('input', function (event) { band.max = Number(event.target.value); sync(); });
       row.querySelector('textarea').addEventListener('input', function (event) { band.interpretation = event.target.value; sync(); });
@@ -244,7 +255,7 @@
   function renderAnswer(item, questionItem, answerIndex) {
     var el = document.createElement('div');
     el.className = 'ac-answer';
-    el.innerHTML = '<span class="dashicons dashicons-menu"></span><input class="ac-answer-label" value="' + escapeHtml(item.label || '') + '"><input class="ac-answer-score" type="number" step="0.1" value="' + escapeHtml(item.score == null ? 0 : item.score) + '"><button type="button" class="button-link-delete ac-delete-answer" aria-label="Delete answer">&times;</button>';
+    el.innerHTML = '<span class="ac-answer-grip dashicons dashicons-menu" aria-hidden="true"></span><div class="ac-answer-main"><span class="ac-answer-option-number">' + String(answerIndex + 1).padStart(2, '0') + '</span><input class="ac-answer-label" value="' + escapeHtml(item.label || '') + '" aria-label="Answer choice ' + (answerIndex + 1) + '"></div><label class="ac-answer-score-wrap"><span>Score</span><input class="ac-answer-score" type="number" step="0.1" value="' + escapeHtml(item.score == null ? 0 : item.score) + '"></label><button type="button" class="ac-icon-delete ac-delete-answer" aria-label="Delete answer"><span class="dashicons dashicons-trash"></span></button>';
     el.querySelector('.ac-answer-label').addEventListener('input', function (event) { item.label = event.target.value; sync(); });
     el.querySelector('.ac-answer-score').addEventListener('input', function (event) { item.score = Number(event.target.value) || 0; sync(); });
     el.querySelector('.ac-delete-answer').addEventListener('click', function () { questionItem.answers.splice(answerIndex, 1); render(); });
@@ -277,16 +288,54 @@
     });
   }
 
+  function activateTab(tab) {
+    if (!tab) return;
+    root.querySelectorAll('.ac-tab').forEach(function (item) { item.classList.remove('is-active'); });
+    root.querySelectorAll('.ac-panel').forEach(function (item) { item.classList.remove('is-active'); });
+    tab.classList.add('is-active');
+    root.querySelector('[data-panel="' + tab.dataset.tab + '"]').classList.add('is-active');
+    try { window.sessionStorage.setItem('assesscraft-active-tab', tab.dataset.tab); } catch (error) {}
+  }
   root.querySelectorAll('.ac-tab').forEach(function (tab) {
     tab.addEventListener('click', function () {
-      root.querySelectorAll('.ac-tab').forEach(function (item) { item.classList.remove('is-active'); });
-      root.querySelectorAll('.ac-panel').forEach(function (item) { item.classList.remove('is-active'); });
-      tab.classList.add('is-active');
-      root.querySelector('[data-panel="' + tab.dataset.tab + '"]').classList.add('is-active');
+      activateTab(tab);
     });
   });
+  try { var savedTab = window.sessionStorage.getItem('assesscraft-active-tab'); if (savedTab) activateTab(root.querySelector('[data-tab="' + savedTab + '"]')); } catch (error) {}
   root.querySelectorAll('.ac-add-stage').forEach(function (button) { button.addEventListener('click', function () { state.stages.push(stage()); render(); }); });
   document.getElementById('ac-add-band').addEventListener('click', function () { state.scoring.bands.push({ id: id('band'), min: 0, max: 100, label: 'New classification', color: '#6E7F6A', interpretation: '' }); render(); });
   root.querySelectorAll('.ac-add-profile, #ac-add-profile').forEach(function (button) { button.addEventListener('click', function () { state.profiles.push({ id: id('profile'), title: '', description: '', recommendation: '', match: 'all', priority: state.profiles.length + 1, conditions: [{ metric: 'overall', operator: 'gte', value: 70, value2: 100 }] }); render(); }); });
+
+  var designPreview = document.getElementById('ac-design-preview');
+  function updateDesignPreview() {
+    if (!designPreview) return;
+    var values = {};
+    root.querySelectorAll('[data-design]').forEach(function (input) { values[input.dataset.design] = input.value; });
+    var article = designPreview.querySelector('article');
+    article.style.background = values.background;
+    article.style.color = values.text;
+    article.style.borderRadius = values.radius + 'px';
+    article.style.fontFamily = values.font === 'serif' ? 'Georgia, "Times New Roman", serif' : '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    designPreview.style.maxWidth = Math.min(720, Number(values.width) || 760) + 'px';
+    article.querySelector('small').style.color = values.accent;
+    article.querySelector('p').style.color = values.muted;
+    article.querySelector('div').style.background = values.surface;
+    article.querySelector('em').style.color = values.accent;
+    article.querySelector('button').style.background = values.primary;
+    article.querySelector('button').style.color = values.button_text;
+    article.querySelector('button').style.borderRadius = values.radius + 'px';
+    root.querySelectorAll('.ac-color-field').forEach(function (field) {
+      var input = field.querySelector('.ac-design-color-code');
+      if (!input) return;
+      var value = input.value.trim().toUpperCase();
+      var valid = /^#[0-9A-F]{6}$/.test(value);
+      input.classList.toggle('is-invalid', !valid);
+      if (valid) field.querySelector('.ac-color-swatch').style.background = value;
+    });
+    root.querySelectorAll('[data-output]').forEach(function (output) { output.textContent = values[output.dataset.output] + 'px'; });
+  }
+  root.querySelectorAll('[data-design]').forEach(function (input) { input.addEventListener('input', updateDesignPreview); input.addEventListener('change', updateDesignPreview); });
+  root.querySelectorAll('.ac-design-color-code').forEach(function (input) { input.addEventListener('blur', function () { if (!/^#[0-9A-F]{6}$/.test(input.value.trim().toUpperCase())) { input.value = input.defaultValue.toUpperCase(); updateDesignPreview(); } }); });
+  updateDesignPreview();
   render();
 }());

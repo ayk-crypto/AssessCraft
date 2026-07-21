@@ -58,6 +58,13 @@ final class AssessCraft_Admin {
 		wp_nonce_field( self::NONCE_ACTION, 'assesscraft_nonce' );
 		?>
 		<div class="ac-admin" id="assesscraft-admin">
+			<header class="ac-workspace-header">
+				<div class="ac-workspace-brand"><span class="dashicons dashicons-chart-bar"></span><div><strong><?php esc_html_e( 'AssessCraft', 'assesscraft' ); ?></strong><small><?php esc_html_e( 'Assessment workspace', 'assesscraft' ); ?></small></div></div>
+				<div class="ac-workspace-actions">
+					<span class="ac-save-hint"><span class="dashicons dashicons-saved"></span><?php esc_html_e( 'Changes save with WordPress Update', 'assesscraft' ); ?></span>
+					<span class="ac-status-pill <?php echo 'publish' === $post->post_status ? 'is-published' : ''; ?>"><?php echo 'publish' === $post->post_status ? esc_html__( 'Published', 'assesscraft' ) : esc_html__( 'Draft', 'assesscraft' ); ?></span>
+				</div>
+			</header>
 			<nav class="ac-tabs" aria-label="<?php esc_attr_e( 'Assessment settings', 'assesscraft' ); ?>">
 				<?php
 				$tabs = array(
@@ -70,11 +77,18 @@ final class AssessCraft_Admin {
 					'design'    => __( 'Design', 'assesscraft' ),
 					'publish'   => __( 'Publish', 'assesscraft' ),
 				);
+				$icons = array( 'overview' => 'welcome-write-blog', 'builder' => 'editor-ol', 'scoring' => 'chart-line', 'profiles' => 'groups', 'report' => 'media-document', 'lead-form' => 'email-alt', 'design' => 'art', 'publish' => 'share' );
 				foreach ( $tabs as $key => $label ) {
-					printf( '<button type="button" class="ac-tab%s" data-tab="%s">%s</button>', 'overview' === $key ? ' is-active' : '', esc_attr( $key ), esc_html( $label ) );
+					printf( '<button type="button" class="ac-tab%s" data-tab="%s"><span class="dashicons dashicons-%s"></span><span>%s</span></button>', 'overview' === $key ? ' is-active' : '', esc_attr( $key ), esc_attr( $icons[ $key ] ), esc_html( $label ) );
 				}
 				?>
 			</nav>
+			<div class="ac-builder-status" aria-label="<?php esc_attr_e( 'Assessment build status', 'assesscraft' ); ?>">
+				<span><strong data-status="stages">0</strong><?php esc_html_e( 'Stages', 'assesscraft' ); ?></span>
+				<span><strong data-status="questions">0</strong><?php esc_html_e( 'Questions', 'assesscraft' ); ?></span>
+				<span><strong data-status="profiles">0</strong><?php esc_html_e( 'Profiles', 'assesscraft' ); ?></span>
+				<span class="ac-status-guidance"><span class="dashicons dashicons-info-outline"></span><?php esc_html_e( 'Use the tabs in order, then publish and embed the assessment.', 'assesscraft' ); ?></span>
+			</div>
 
 			<section class="ac-panel is-active" data-panel="overview">
 				<div class="ac-panel-heading">
@@ -166,11 +180,23 @@ final class AssessCraft_Admin {
 				<div class="ac-privacy-note"><span class="dashicons dashicons-lock"></span><p><strong><?php esc_html_e( 'Privacy-first default', 'assesscraft' ); ?></strong><br><?php esc_html_e( 'Completing an assessment never sends or stores a visitor’s result. Transmission occurs only after explicit consent and form submission.', 'assesscraft' ); ?></p></div>
 			</section>
 
-			<?php foreach ( array( 'design' ) as $future_tab ) : ?>
-				<section class="ac-panel" data-panel="<?php echo esc_attr( $future_tab ); ?>">
-					<div class="ac-coming-soon"><span class="dashicons dashicons-admin-tools"></span><h2><?php echo esc_html( $tabs[ $future_tab ] ); ?></h2><p><?php esc_html_e( 'This workspace is part of the next AssessCraft milestone.', 'assesscraft' ); ?></p></div>
-				</section>
-			<?php endforeach; ?>
+			<section class="ac-panel" data-panel="design">
+				<div class="ac-panel-heading"><div><span class="ac-eyebrow"><?php esc_html_e( 'Brand styling', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Design', 'assesscraft' ); ?></h2></div><p><?php esc_html_e( 'Match the assessment to the website’s visual identity.', 'assesscraft' ); ?></p></div>
+				<div class="ac-design-layout">
+					<div class="ac-design-controls">
+						<?php
+						$colors = array( 'primary' => __( 'Primary / dark', 'assesscraft' ), 'accent' => __( 'Accent', 'assesscraft' ), 'background' => __( 'Page background', 'assesscraft' ), 'surface' => __( 'Card surface', 'assesscraft' ), 'text' => __( 'Main text', 'assesscraft' ), 'muted' => __( 'Secondary text', 'assesscraft' ), 'button_text' => __( 'Button text', 'assesscraft' ) );
+						foreach ( $colors as $key => $label ) {
+							printf( '<label class="ac-color-field"><span>%s</span><i class="ac-color-swatch" style="background:%s" aria-hidden="true"></i><input class="ac-design-color-code" name="assesscraft_design_%s" value="%s" data-design="%s" maxlength="7" spellcheck="false" aria-label="%s"></label>', esc_html( $label ), esc_attr( $config['design'][ $key ] ), esc_attr( $key ), esc_attr( strtoupper( $config['design'][ $key ] ) ), esc_attr( $key ), esc_attr( sprintf( __( '%s hexadecimal color', 'assesscraft' ), $label ) ) );
+						}
+						?>
+						<label class="ac-field"><span><?php esc_html_e( 'Typography', 'assesscraft' ); ?></span><select name="assesscraft_design_font" data-design="font"><option value="system" <?php selected( $config['design']['font'], 'system' ); ?>><?php esc_html_e( 'Modern system font', 'assesscraft' ); ?></option><option value="serif" <?php selected( $config['design']['font'], 'serif' ); ?>><?php esc_html_e( 'Editorial serif', 'assesscraft' ); ?></option></select></label>
+						<label class="ac-field"><span><?php esc_html_e( 'Corner radius', 'assesscraft' ); ?>: <output data-output="radius"><?php echo absint( $config['design']['radius'] ); ?>px</output></span><input type="range" min="0" max="24" name="assesscraft_design_radius" value="<?php echo absint( $config['design']['radius'] ); ?>" data-design="radius"></label>
+						<label class="ac-field"><span><?php esc_html_e( 'Maximum width', 'assesscraft' ); ?>: <output data-output="width"><?php echo absint( $config['design']['width'] ); ?>px</output></span><input type="range" min="520" max="1200" step="20" name="assesscraft_design_width" value="<?php echo absint( $config['design']['width'] ); ?>" data-design="width"></label>
+					</div>
+					<div class="ac-design-preview" id="ac-design-preview"><span><?php esc_html_e( 'Live preview', 'assesscraft' ); ?></span><article><small><?php esc_html_e( 'ASSESSMENT COMPLETE', 'assesscraft' ); ?></small><h3><?php esc_html_e( 'Your assessment report', 'assesscraft' ); ?></h3><p><?php esc_html_e( 'Preview how headings, supporting text, cards, and actions work together.', 'assesscraft' ); ?></p><div><strong>73%</strong><em><?php esc_html_e( 'Established', 'assesscraft' ); ?></em></div><button type="button"><?php esc_html_e( 'Primary action', 'assesscraft' ); ?></button></article></div>
+				</div>
+			</section>
 
 			<section class="ac-panel" data-panel="publish">
 				<div class="ac-panel-heading"><div><span class="ac-eyebrow"><?php esc_html_e( 'Place your assessment', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Publish', 'assesscraft' ); ?></h2></div><p><?php esc_html_e( 'Use the same assessment anywhere in WordPress.', 'assesscraft' ); ?></p></div>
@@ -225,6 +251,14 @@ final class AssessCraft_Admin {
 		$config['lead_form']['subject']         = $this->posted_text( 'assesscraft_lead_subject' );
 		$config['lead_form']['consent_label']   = $this->posted_textarea( 'assesscraft_consent_label' );
 		$config['lead_form']['success_message'] = $this->posted_textarea( 'assesscraft_success_message' );
+		$config['design'] = AssessCraft_Schema::sanitize_design( array(
+			'primary' => $this->posted_text( 'assesscraft_design_primary' ), 'accent' => $this->posted_text( 'assesscraft_design_accent' ),
+			'background' => $this->posted_text( 'assesscraft_design_background' ), 'surface' => $this->posted_text( 'assesscraft_design_surface' ),
+			'text' => $this->posted_text( 'assesscraft_design_text' ), 'muted' => $this->posted_text( 'assesscraft_design_muted' ),
+			'button_text' => $this->posted_text( 'assesscraft_design_button_text' ), 'font' => $this->posted_text( 'assesscraft_design_font' ),
+			'radius' => isset( $_POST['assesscraft_design_radius'] ) ? absint( $_POST['assesscraft_design_radius'] ) : 2,
+			'width' => isset( $_POST['assesscraft_design_width'] ) ? absint( $_POST['assesscraft_design_width'] ) : 760,
+		) );
 
 		if ( isset( $_POST['assesscraft_stages_json'] ) ) {
 			$stages = json_decode( wp_unslash( $_POST['assesscraft_stages_json'] ), true );

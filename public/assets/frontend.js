@@ -45,7 +45,7 @@
         return answer ? normalizedScore(question, answer) : null;
       }).filter(function (score) { return score !== null; });
       var score = scored.length ? scored.reduce(function (sum, value) { return sum + value; }, 0) / scored.length : 0;
-      return { id: stage.id, name: stage.name || 'Untitled stage', score: score, weight: Math.max(0, Number(stage.weight) || 0) };
+      return { id: stage.id, name: stage.name || 'Untitled stage', description: stage.description || '', score: score, weight: Math.max(0, Number(stage.weight) || 0) };
     });
     var weightTotal = stageResults.reduce(function (sum, item) { return sum + item.weight; }, 0);
     var overall = weightTotal
@@ -92,6 +92,32 @@
     }) || null;
   }
 
+  function generatedProfile(result) {
+    var ordered = result.stages.slice().sort(function (a, b) { return b.score - a.score; });
+    var strongest = ordered[0];
+    var weakest = ordered[ordered.length - 1];
+    if (!strongest || !weakest) return null;
+    if (strongest.score - weakest.score >= 15) {
+      return {
+        title: strongest.name + ' Ahead of ' + weakest.name,
+        description: 'Your strongest area is developing ahead of your lowest-scoring area. This gap may affect how consistently the organization can turn current strengths into sustainable results.',
+        recommendation: 'Protect what is working in ' + strongest.name + ' while prioritizing practical improvements in ' + weakest.name + '.'
+      };
+    }
+    return {
+      title: 'Balanced Development',
+      description: 'The assessed areas are developing at a broadly similar pace, without a pronounced gap between the strongest and weakest dimensions.',
+      recommendation: 'Focus on the lowest-scoring dimension while continuing to monitor progress across the complete operating system.'
+    };
+  }
+
+  function responseSignals(items, responses) {
+    return items.map(function (item) {
+      var answer = responses[item.question.id];
+      return answer ? { prompt: item.question.prompt, stage: item.stage.name, score: normalizedScore(item.question, answer) } : null;
+    }).filter(Boolean).sort(function (a, b) { return a.score - b.score; });
+  }
+
   function Runner(root, payload) {
     this.root = root;
     this.payload = payload;
@@ -110,6 +136,13 @@
     if (design.primary) this.root.style.setProperty('--ac-primary', design.primary);
     if (design.accent) this.root.style.setProperty('--ac-accent', design.accent);
     if (design.background) this.root.style.setProperty('--ac-bg', design.background);
+    if (design.surface) this.root.style.setProperty('--ac-surface', design.surface);
+    if (design.text) this.root.style.setProperty('--ac-text', design.text);
+    if (design.muted) this.root.style.setProperty('--ac-muted', design.muted);
+    if (design.button_text) this.root.style.setProperty('--ac-button-text', design.button_text);
+    this.root.style.setProperty('--ac-radius', Math.max(0, Number(design.radius) || 0) + 'px');
+    this.root.style.setProperty('--ac-width', Math.max(520, Number(design.width) || 760) + 'px');
+    this.root.style.setProperty('--ac-font', design.font === 'serif' ? 'Georgia, "Times New Roman", serif' : '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
   };
 
   Runner.prototype.clear = function () {
@@ -241,7 +274,7 @@
     var result = calculate(this.stages, this.responses);
     var bands = (this.config.scoring || {}).bands || [];
     var overallBand = bandFor(result.overall, bands);
-    var profile = resolveProfile(this.config.profiles || [], result);
+    var profile = resolveProfile(this.config.profiles || [], result) || generatedProfile(result);
     var reportConfig = this.config.report || {};
     var sections = reportConfig.sections || [];
     var has = function (section) { return sections.indexOf(section) !== -1; };
@@ -255,12 +288,6 @@
       profileCard.appendChild(element('span', '', 'Your result profile'));
       profileCard.appendChild(element('h3', '', profile.title || 'Assessment profile'));
       if (profile.description) profileCard.appendChild(element('p', '', profile.description));
-      if (profile.recommendation && has('recommendation')) {
-        var recommendation = element('div', 'ac-profile-recommendation');
-        recommendation.appendChild(element('strong', '', 'Recommended next step'));
-        recommendation.appendChild(element('p', '', profile.recommendation));
-        profileCard.appendChild(recommendation);
-      }
       shell.appendChild(profileCard);
     }
     if (has('overall')) {
@@ -294,6 +321,50 @@
         scores.appendChild(card);
       });
       shell.appendChild(scores);
+    }
+    if (has('interpretations')) {
+      var detail = element('section', 'ac-report-section');
+      detail.appendChild(element('div', 'ac-front-eyebrow', 'Detailed interpretation'));
+      result.stages.forEach(function (stage) {
+        var stageBand = bandFor(stage.score, bands);
+        var row = element('article', 'ac-interpretation-card');
+        var copy = stageBand && stageBand.interpretation ? stageBand.interpretation : (stage.description || 'Review this dimension in the context of the organization’s priorities and operating environment.');
+        row.appendChild(element('h3', '', stage.name));
+        row.appendChild(element('span', '', Math.round(stage.score) + '% · ' + (stageBand ? stageBand.label : 'Unclassified')));
+        row.appendChild(element('p', '', copy));
+        detail.appendChild(row);
+      });
+      shell.appendChild(detail);
+      var signals = responseSignals(this.items, this.responses);
+      if (signals.length) {
+        var signalSection = element('section', 'ac-report-section ac-signal-section');
+        signalSection.appendChild(element('div', 'ac-front-eyebrow', 'Response signals'));
+        signals.slice(0, Math.min(3, signals.length)).forEach(function (signal) {
+          var signalRow = element('article', 'ac-signal-item');
+          signalRow.appendChild(element('span', '', signal.stage));
+          signalRow.appendChild(element('p', '', signal.prompt));
+          signalSection.appendChild(signalRow);
+        });
+        shell.appendChild(signalSection);
+      }
+    }
+    if (has('recommendation')) {
+      var orderedStages = result.stages.slice().sort(function (a, b) { return a.score - b.score; });
+      var attention = element('section', 'ac-report-section ac-attention-section');
+      attention.appendChild(element('div', 'ac-front-eyebrow', 'Areas requiring attention'));
+      orderedStages.slice(0, Math.min(2, orderedStages.length)).forEach(function (stage) {
+        var item = element('article', 'ac-attention-item');
+        item.appendChild(element('strong', '', stage.name));
+        item.appendChild(element('p', '', stage.description || 'This is one of the lower-scoring dimensions and may benefit from focused review.'));
+        attention.appendChild(item);
+      });
+      shell.appendChild(attention);
+      if (profile && profile.recommendation) {
+        var nextStep = element('section', 'ac-next-step');
+        nextStep.appendChild(element('div', 'ac-front-eyebrow', 'Recommended next step'));
+        nextStep.appendChild(element('p', '', profile.recommendation));
+        shell.appendChild(nextStep);
+      }
     }
     if (has('cta') && (this.config.lead_form || {}).enabled) {
       var cta = element('div', 'ac-report-cta');
