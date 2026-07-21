@@ -10,6 +10,7 @@ final class AssessCraft_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_filter( 'manage_' . AssessCraft_Post_Type::TYPE . '_posts_columns', array( $this, 'columns' ) );
 		add_action( 'manage_' . AssessCraft_Post_Type::TYPE . '_posts_custom_column', array( $this, 'column_content' ), 10, 2 );
+		add_filter( 'post_row_actions', array( $this, 'row_actions' ), 10, 2 );
 	}
 
 	public function add_meta_boxes(): void {
@@ -20,6 +21,7 @@ final class AssessCraft_Admin {
 	public function enqueue_assets( string $hook ): void {
 		if ( 'ac_assessment_page_assesscraft-templates' === $hook ) {
 			wp_enqueue_style( 'assesscraft-admin', ASSESSCRAFT_URL . 'admin/assets/admin.css', array(), ASSESSCRAFT_VERSION );
+			wp_enqueue_script( 'assesscraft-templates', ASSESSCRAFT_URL . 'admin/assets/templates.js', array(), ASSESSCRAFT_VERSION, true );
 			return;
 		}
 		if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
@@ -221,6 +223,32 @@ final class AssessCraft_Admin {
 		echo '<p class="description">' . esc_html__( 'Elementor and Gutenberg widgets will use this same assessment ID.', 'assesscraft' ) . '</p>';
 		$export_url = wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_export&assessment_id=' . absint( $post->ID ) ), 'assesscraft_export' );
 		echo '<p><a class="button button-secondary" href="' . esc_url( $export_url ) . '">' . esc_html__( 'Export JSON', 'assesscraft' ) . '</a></p>';
+		$duplicate_url = wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_duplicate&assessment_id=' . absint( $post->ID ) ), 'assesscraft_duplicate' );
+		echo '<p><a class="button button-secondary" href="' . esc_url( $duplicate_url ) . '">' . esc_html__( 'Duplicate Assessment', 'assesscraft' ) . '</a></p>';
+		?>
+		<details class="ac-save-template-box">
+			<summary><?php esc_html_e( 'Save as reusable template', 'assesscraft' ); ?></summary>
+			<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
+				<input type="hidden" name="action" value="assesscraft_save_template">
+				<input type="hidden" name="assessment_id" value="<?php echo absint( $post->ID ); ?>">
+				<?php wp_nonce_field( 'assesscraft_save_template' ); ?>
+				<label><span><?php esc_html_e( 'Template name', 'assesscraft' ); ?></span><input name="template_name" value="<?php echo esc_attr( get_the_title( $post ) ); ?>" required></label>
+				<label><span><?php esc_html_e( 'Category', 'assesscraft' ); ?></span><input name="template_category" value="<?php esc_attr_e( 'Custom', 'assesscraft' ); ?>"></label>
+				<label><span><?php esc_html_e( 'Version', 'assesscraft' ); ?></span><input name="template_version" value="1.0.0"></label>
+				<label><span><?php esc_html_e( 'Description', 'assesscraft' ); ?></span><textarea name="template_description" rows="3"></textarea></label>
+				<p class="description"><?php esc_html_e( 'Save or update the assessment first so the template includes your latest changes.', 'assesscraft' ); ?></p>
+				<button class="button button-primary" type="submit"><?php esc_html_e( 'Save Template', 'assesscraft' ); ?></button>
+			</form>
+		</details>
+		<?php
+	}
+
+	public function row_actions( array $actions, WP_Post $post ): array {
+		if ( AssessCraft_Post_Type::TYPE !== $post->post_type || ! current_user_can( 'edit_post', $post->ID ) ) {
+			return $actions;
+		}
+		$actions['assesscraft_duplicate'] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_duplicate&assessment_id=' . absint( $post->ID ) ), 'assesscraft_duplicate' ) ) . '">' . esc_html__( 'Duplicate', 'assesscraft' ) . '</a>';
+		return $actions;
 	}
 
 	public function save( int $post_id ): void {

@@ -14,3 +14,5 @@ Each file contains:
 Questions may provide canonical `answers` directly or reference a reusable scale with `"scale": "agreement"`. The registry expands scale references, validates the file size and markers, sanitizes all metadata, and passes the hydrated configuration through `AssessCraft_Schema` before it reaches WordPress.
 
 Assessment exports remain fully expanded portable JSON documents. Template packages are source content; exports are site-created assessment instances.
+
+Custom templates created or imported in WordPress are stored in `wp-content/uploads/assesscraft/templates`. This keeps reusable content separate from plugin files and preserves it across plugin updates.
