@@ -47,6 +47,13 @@ final class AssessCraft_Schema {
 				'primary'    => '#1B2430',
 				'accent'     => '#B08D2B',
 				'background' => '#F6F4EE',
+				'surface'     => '#FFFFFF',
+				'text'        => '#1B2430',
+				'muted'       => '#596475',
+				'button_text' => '#FFFFFF',
+				'font'        => 'system',
+				'radius'      => 2,
+				'width'       => 760,
 			),
 		);
 	}
@@ -60,7 +67,21 @@ final class AssessCraft_Schema {
 		$merged['stages'] = self::sanitize_stages( is_array( $value['stages'] ?? null ) ? $value['stages'] : array() );
 		$merged['scoring']['bands'] = self::sanitize_bands( is_array( $value['scoring']['bands'] ?? null ) ? $value['scoring']['bands'] : self::defaults()['scoring']['bands'] );
 		$merged['profiles'] = self::sanitize_profiles( is_array( $value['profiles'] ?? null ) ? $value['profiles'] : array() );
+		$merged['design'] = self::sanitize_design( is_array( $value['design'] ?? null ) ? $value['design'] : array() );
 		return self::sanitize_recursive( $merged );
+	}
+
+	public static function sanitize_design( array $design ): array {
+		$defaults = self::defaults()['design'];
+		$colors = array( 'primary', 'accent', 'background', 'surface', 'text', 'muted', 'button_text' );
+		foreach ( $colors as $key ) {
+			$color = sanitize_hex_color( $design[ $key ] ?? $defaults[ $key ] );
+			$defaults[ $key ] = $color ?: $defaults[ $key ];
+		}
+		$defaults['font'] = in_array( $design['font'] ?? '', array( 'system', 'serif' ), true ) ? $design['font'] : 'system';
+		$defaults['radius'] = max( 0, min( 24, (int) ( $design['radius'] ?? $defaults['radius'] ) ) );
+		$defaults['width'] = max( 520, min( 1200, (int) ( $design['width'] ?? $defaults['width'] ) ) );
+		return $defaults;
 	}
 
 	public static function sanitize_bands( array $bands ): array {

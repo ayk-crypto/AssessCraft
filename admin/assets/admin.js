@@ -77,6 +77,9 @@
     emptyState.hidden = state.stages.length > 0;
     renderBands();
     renderProfiles();
+    var questionCount = state.stages.reduce(function (total, item) { return total + (item.questions || []).length; }, 0);
+    var statusValues = { stages: state.stages.length, questions: questionCount, profiles: state.profiles.length };
+    Object.keys(statusValues).forEach(function (key) { var node = root.querySelector('[data-status="' + key + '"]'); if (node) node.textContent = statusValues[key]; });
     sync();
   }
 
@@ -277,16 +280,46 @@
     });
   }
 
+  function activateTab(tab) {
+    if (!tab) return;
+    root.querySelectorAll('.ac-tab').forEach(function (item) { item.classList.remove('is-active'); });
+    root.querySelectorAll('.ac-panel').forEach(function (item) { item.classList.remove('is-active'); });
+    tab.classList.add('is-active');
+    root.querySelector('[data-panel="' + tab.dataset.tab + '"]').classList.add('is-active');
+    try { window.sessionStorage.setItem('assesscraft-active-tab', tab.dataset.tab); } catch (error) {}
+  }
   root.querySelectorAll('.ac-tab').forEach(function (tab) {
     tab.addEventListener('click', function () {
-      root.querySelectorAll('.ac-tab').forEach(function (item) { item.classList.remove('is-active'); });
-      root.querySelectorAll('.ac-panel').forEach(function (item) { item.classList.remove('is-active'); });
-      tab.classList.add('is-active');
-      root.querySelector('[data-panel="' + tab.dataset.tab + '"]').classList.add('is-active');
+      activateTab(tab);
     });
   });
+  try { var savedTab = window.sessionStorage.getItem('assesscraft-active-tab'); if (savedTab) activateTab(root.querySelector('[data-tab="' + savedTab + '"]')); } catch (error) {}
   root.querySelectorAll('.ac-add-stage').forEach(function (button) { button.addEventListener('click', function () { state.stages.push(stage()); render(); }); });
   document.getElementById('ac-add-band').addEventListener('click', function () { state.scoring.bands.push({ id: id('band'), min: 0, max: 100, label: 'New classification', color: '#6E7F6A', interpretation: '' }); render(); });
   root.querySelectorAll('.ac-add-profile, #ac-add-profile').forEach(function (button) { button.addEventListener('click', function () { state.profiles.push({ id: id('profile'), title: '', description: '', recommendation: '', match: 'all', priority: state.profiles.length + 1, conditions: [{ metric: 'overall', operator: 'gte', value: 70, value2: 100 }] }); render(); }); });
+
+  var designPreview = document.getElementById('ac-design-preview');
+  function updateDesignPreview() {
+    if (!designPreview) return;
+    var values = {};
+    root.querySelectorAll('[data-design]').forEach(function (input) { values[input.dataset.design] = input.value; });
+    var article = designPreview.querySelector('article');
+    article.style.background = values.background;
+    article.style.color = values.text;
+    article.style.borderRadius = values.radius + 'px';
+    article.style.fontFamily = values.font === 'serif' ? 'Georgia, "Times New Roman", serif' : '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    designPreview.style.maxWidth = Math.min(720, Number(values.width) || 760) + 'px';
+    article.querySelector('small').style.color = values.accent;
+    article.querySelector('p').style.color = values.muted;
+    article.querySelector('div').style.background = values.surface;
+    article.querySelector('em').style.color = values.accent;
+    article.querySelector('button').style.background = values.primary;
+    article.querySelector('button').style.color = values.button_text;
+    article.querySelector('button').style.borderRadius = values.radius + 'px';
+    root.querySelectorAll('.ac-color-field').forEach(function (field) { field.querySelector('code').textContent = field.querySelector('input').value.toUpperCase(); });
+    root.querySelectorAll('[data-output]').forEach(function (output) { output.textContent = values[output.dataset.output] + 'px'; });
+  }
+  root.querySelectorAll('[data-design]').forEach(function (input) { input.addEventListener('input', updateDesignPreview); input.addEventListener('change', updateDesignPreview); });
+  updateDesignPreview();
   render();
 }());
