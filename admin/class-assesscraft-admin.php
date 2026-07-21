@@ -18,6 +18,10 @@ final class AssessCraft_Admin {
 	}
 
 	public function enqueue_assets( string $hook ): void {
+		if ( 'ac_assessment_page_assesscraft-templates' === $hook ) {
+			wp_enqueue_style( 'assesscraft-admin', ASSESSCRAFT_URL . 'admin/assets/admin.css', array(), ASSESSCRAFT_VERSION );
+			return;
+		}
 		if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
 			return;
 		}
@@ -179,6 +183,8 @@ final class AssessCraft_Admin {
 		echo '<p>' . esc_html__( 'Place this assessment on any page:', 'assesscraft' ) . '</p>';
 		echo '<p><code>[assesscraft id=&quot;' . absint( $post->ID ) . '&quot;]</code></p>';
 		echo '<p class="description">' . esc_html__( 'Elementor and Gutenberg widgets will use this same assessment ID.', 'assesscraft' ) . '</p>';
+		$export_url = wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_export&assessment_id=' . absint( $post->ID ) ), 'assesscraft_export' );
+		echo '<p><a class="button button-secondary" href="' . esc_url( $export_url ) . '">' . esc_html__( 'Export JSON', 'assesscraft' ) . '</a></p>';
 	}
 
 	public function save( int $post_id ): void {

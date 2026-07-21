@@ -11,6 +11,7 @@ final class AssessCraft_Plugin {
 	public function boot(): void {
 		( new AssessCraft_Post_Type() )->register();
 		( new AssessCraft_Admin() )->register();
+		( new AssessCraft_Templates_Admin() )->register();
 		( new AssessCraft_Shortcode() )->register();
 		( new AssessCraft_Lead_Endpoint() )->register();
 
