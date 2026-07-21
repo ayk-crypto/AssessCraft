@@ -91,17 +91,16 @@
       row.innerHTML =
         '<header class="ac-band-header"><div><span class="ac-band-index">Band ' + (bandIndex + 1) + '</span><strong>' + escapeHtml(band.label || 'Untitled classification') + '</strong></div><button type="button" class="ac-icon-delete ac-delete-band" aria-label="Delete score band"><span class="dashicons dashicons-trash"></span></button></header>' +
         '<div class="ac-band-body">' +
-          '<div class="ac-band-color"><span>Band color</span><div><input type="color" value="' + escapeHtml(band.color || '#6E7F6A') + '" aria-label="Choose band color"><input class="ac-band-color-code" value="' + escapeHtml((band.color || '#6E7F6A').toUpperCase()) + '" maxlength="7" spellcheck="false" aria-label="Hex color code"></div></div>' +
+          '<div class="ac-band-color"><span>Band color</span><div><i class="ac-band-swatch" style="background:' + escapeHtml(band.color || '#6E7F6A') + '" aria-hidden="true"></i><input class="ac-band-color-code" value="' + escapeHtml((band.color || '#6E7F6A').toUpperCase()) + '" maxlength="7" spellcheck="false" aria-label="Hex color code"></div></div>' +
           '<label class="ac-field ac-band-name"><span>Classification</span><input class="ac-band-label" value="' + escapeHtml(band.label || '') + '" placeholder="e.g. Strong"></label>' +
           '<div class="ac-band-range"><span>Score range</span><div><label><small>From</small><input class="ac-band-min" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(band.min == null ? 0 : band.min) + '"></label><span>—</span><label><small>To</small><input class="ac-band-max" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(band.max == null ? 100 : band.max) + '"></label></div></div>' +
           '<label class="ac-field ac-band-interpretation"><span>Interpretation shown in report</span><textarea rows="3" placeholder="Explain what this classification means and what the respondent should understand.">' + escapeHtml(band.interpretation || '') + '</textarea></label>' +
         '</div>';
-      var picker = row.querySelector('input[type="color"]');
+      var swatch = row.querySelector('.ac-band-swatch');
       var colorCode = row.querySelector('.ac-band-color-code');
-      picker.addEventListener('input', function (event) { band.color = event.target.value.toUpperCase(); colorCode.value = band.color; sync(); });
       colorCode.addEventListener('input', function (event) {
         var value = event.target.value.trim().toUpperCase();
-        if (/^#[0-9A-F]{6}$/.test(value)) { band.color = value; picker.value = value; event.target.classList.remove('is-invalid'); sync(); }
+        if (/^#[0-9A-F]{6}$/.test(value)) { band.color = value; swatch.style.background = value; event.target.classList.remove('is-invalid'); sync(); }
         else { event.target.classList.add('is-invalid'); }
       });
       colorCode.addEventListener('blur', function () { colorCode.value = (band.color || '#6E7F6A').toUpperCase(); colorCode.classList.remove('is-invalid'); });
@@ -325,10 +324,18 @@
     article.querySelector('button').style.background = values.primary;
     article.querySelector('button').style.color = values.button_text;
     article.querySelector('button').style.borderRadius = values.radius + 'px';
-    root.querySelectorAll('.ac-color-field').forEach(function (field) { field.querySelector('code').textContent = field.querySelector('input').value.toUpperCase(); });
+    root.querySelectorAll('.ac-color-field').forEach(function (field) {
+      var input = field.querySelector('.ac-design-color-code');
+      if (!input) return;
+      var value = input.value.trim().toUpperCase();
+      var valid = /^#[0-9A-F]{6}$/.test(value);
+      input.classList.toggle('is-invalid', !valid);
+      if (valid) field.querySelector('.ac-color-swatch').style.background = value;
+    });
     root.querySelectorAll('[data-output]').forEach(function (output) { output.textContent = values[output.dataset.output] + 'px'; });
   }
   root.querySelectorAll('[data-design]').forEach(function (input) { input.addEventListener('input', updateDesignPreview); input.addEventListener('change', updateDesignPreview); });
+  root.querySelectorAll('.ac-design-color-code').forEach(function (input) { input.addEventListener('blur', function () { if (!/^#[0-9A-F]{6}$/.test(input.value.trim().toUpperCase())) { input.value = input.defaultValue.toUpperCase(); updateDesignPreview(); } }); });
   updateDesignPreview();
   render();
 }());

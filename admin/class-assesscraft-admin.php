@@ -187,7 +187,7 @@ final class AssessCraft_Admin {
 						<?php
 						$colors = array( 'primary' => __( 'Primary / dark', 'assesscraft' ), 'accent' => __( 'Accent', 'assesscraft' ), 'background' => __( 'Page background', 'assesscraft' ), 'surface' => __( 'Card surface', 'assesscraft' ), 'text' => __( 'Main text', 'assesscraft' ), 'muted' => __( 'Secondary text', 'assesscraft' ), 'button_text' => __( 'Button text', 'assesscraft' ) );
 						foreach ( $colors as $key => $label ) {
-							printf( '<label class="ac-color-field"><span>%s</span><input type="color" name="assesscraft_design_%s" value="%s" data-design="%s"><code>%s</code></label>', esc_html( $label ), esc_attr( $key ), esc_attr( $config['design'][ $key ] ), esc_attr( $key ), esc_html( strtoupper( $config['design'][ $key ] ) ) );
+							printf( '<label class="ac-color-field"><span>%s</span><i class="ac-color-swatch" style="background:%s" aria-hidden="true"></i><input class="ac-design-color-code" name="assesscraft_design_%s" value="%s" data-design="%s" maxlength="7" spellcheck="false" aria-label="%s"></label>', esc_html( $label ), esc_attr( $config['design'][ $key ] ), esc_attr( $key ), esc_attr( strtoupper( $config['design'][ $key ] ) ), esc_attr( $key ), esc_attr( sprintf( __( '%s hexadecimal color', 'assesscraft' ), $label ) ) );
 						}
 						?>
 						<label class="ac-field"><span><?php esc_html_e( 'Typography', 'assesscraft' ); ?></span><select name="assesscraft_design_font" data-design="font"><option value="system" <?php selected( $config['design']['font'], 'system' ); ?>><?php esc_html_e( 'Modern system font', 'assesscraft' ); ?></option><option value="serif" <?php selected( $config['design']['font'], 'serif' ); ?>><?php esc_html_e( 'Editorial serif', 'assesscraft' ); ?></option></select></label>
