@@ -228,17 +228,14 @@ final class AssessCraft_Admin {
 		?>
 		<details class="ac-save-template-box">
 			<summary><?php esc_html_e( 'Save as reusable template', 'assesscraft' ); ?></summary>
-			<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
-				<input type="hidden" name="action" value="assesscraft_save_template">
-				<input type="hidden" name="assessment_id" value="<?php echo absint( $post->ID ); ?>">
-				<?php wp_nonce_field( 'assesscraft_save_template' ); ?>
-				<label><span><?php esc_html_e( 'Template name', 'assesscraft' ); ?></span><input name="template_name" value="<?php echo esc_attr( get_the_title( $post ) ); ?>" required></label>
-				<label><span><?php esc_html_e( 'Category', 'assesscraft' ); ?></span><input name="template_category" value="<?php esc_attr_e( 'Custom', 'assesscraft' ); ?>"></label>
-				<label><span><?php esc_html_e( 'Version', 'assesscraft' ); ?></span><input name="template_version" value="1.0.0"></label>
-				<label><span><?php esc_html_e( 'Description', 'assesscraft' ); ?></span><textarea name="template_description" rows="3"></textarea></label>
+			<div class="ac-save-template-form" data-save-template data-action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" data-assessment="<?php echo absint( $post->ID ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'assesscraft_save_template' ) ); ?>">
+				<label><span><?php esc_html_e( 'Template name', 'assesscraft' ); ?></span><input data-template-field="name" value="<?php echo esc_attr( get_the_title( $post ) ); ?>"></label>
+				<label><span><?php esc_html_e( 'Category', 'assesscraft' ); ?></span><input data-template-field="category" value="<?php esc_attr_e( 'Custom', 'assesscraft' ); ?>"></label>
+				<label><span><?php esc_html_e( 'Version', 'assesscraft' ); ?></span><input data-template-field="version" value="1.0.0"></label>
+				<label><span><?php esc_html_e( 'Description', 'assesscraft' ); ?></span><textarea data-template-field="description" rows="3"></textarea></label>
 				<p class="description"><?php esc_html_e( 'Save or update the assessment first so the template includes your latest changes.', 'assesscraft' ); ?></p>
-				<button class="button button-primary" type="submit"><?php esc_html_e( 'Save Template', 'assesscraft' ); ?></button>
-			</form>
+				<button class="button button-primary ac-save-template-submit" type="button"><?php esc_html_e( 'Save Template', 'assesscraft' ); ?></button>
+			</div>
 		</details>
 		<?php
 	}
