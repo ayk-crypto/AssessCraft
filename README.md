@@ -4,7 +4,7 @@
 
 AssessCraft is a WordPress assessment and report builder for consultants and professional-service businesses. It is designed to turn visitor responses into structured scores, personalized reports, and opt-in qualified leads.
 
-> **Current status:** Early development. The Overview and visual structure builder are implemented; scoring, profiles, reports, and the complete frontend runner remain in development.
+> **Current status:** Early development. The visual structure builder and frontend assessment runner are implemented; configurable scoring bands, profiles, reports, and lead workflows remain in development.
 
 ## Product direction
 
@@ -39,6 +39,8 @@ AssessCraft will provide:
 - Visual Overview and Builder tabs
 - Configurable stages, questions, answer choices, weights, and reverse scoring
 - Drag-based stage and question ordering
+- Responsive visitor flow with progress, validation, and navigation
+- Preliminary weighted stage and overall score summaries
 - Shortcode renderer: `[assesscraft id="123"]`
 - Frontend mounting boundary
 - Privacy-first storage defaults
