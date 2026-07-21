@@ -25,6 +25,7 @@ AssessCraft is a foundation release for a visual assessment builder designed for
 * Added a complete Business Readiness Assessment template with five stages and fifteen questions.
 * Added business-readiness outcome profiles, report interpretations, recommendations, and a distinct default theme.
 * Added stage and question counts to template cards.
+* Moved bundled assessment content into validated, versioned JSON template packages with reusable answer scales.
 
 = 0.8.4 =
 * Fixed truncated hexadecimal fields in score-band cards.
