@@ -12,6 +12,7 @@ final class AssessCraft_Plugin {
 		( new AssessCraft_Post_Type() )->register();
 		( new AssessCraft_Admin() )->register();
 		( new AssessCraft_Shortcode() )->register();
+		( new AssessCraft_Lead_Endpoint() )->register();
 
 		do_action( 'assesscraft_loaded', $this );
 	}
@@ -25,4 +26,3 @@ final class AssessCraft_Plugin {
 		flush_rewrite_rules();
 	}
 }
-

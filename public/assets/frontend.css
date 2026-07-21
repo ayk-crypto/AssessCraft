@@ -59,6 +59,23 @@
 .ac-result-band { display: block; margin: -8px 0 12px; font-size: 12px; font-style: normal; font-weight: 700; }
 .ac-result-meter { height: 4px; overflow: hidden; background: #e8e5dc; }
 .ac-result-meter div { height: 100%; background: var(--ac-accent); }
+.ac-report-cta { margin: 24px 0; padding: 27px; background: var(--ac-primary); color: #fff; }
+.ac-report-cta h3 { margin: 0 0 8px; color: #fff; font-size: 23px; }
+.ac-report-cta > p { margin: 0 0 18px; color: #d9dde3; }
+.ac-report-cta > small { display: block; margin-top: 11px; color: #b8c0cc; }
+.ac-report-cta > .ac-front-button { border-color: var(--ac-accent) !important; background: var(--ac-accent) !important; color: var(--ac-primary) !important; }
+.ac-lead-form { margin-top: 22px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.18); }
+.ac-lead-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+.ac-lead-grid label { display: grid; gap: 5px; }
+.ac-lead-grid label > span { color: #d9dde3; font-size: 12px; font-weight: 650; }
+.ac-lead-grid input, .ac-lead-grid textarea { width: 100%; padding: 10px 11px; border: 1px solid #707b8b; border-radius: 2px; background: #fff; color: #1b2430; font: inherit; }
+.ac-lead-wide { grid-column: 1 / -1; }
+.ac-honeypot { position: absolute !important; left: -10000px !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
+.ac-lead-consent { display: flex; gap: 9px; align-items: flex-start; margin: 15px 0; color: #d9dde3; font-size: 12px; }
+.ac-lead-consent input { margin-top: 2px; }
+.ac-lead-status { min-height: 18px; margin: 0 0 9px; font-size: 13px; }
+.ac-lead-status.is-error { color: #ffd2ca; }
+.ac-lead-success { padding: 15px; border-left: 3px solid #a9c6a3; background: rgba(255,255,255,.1); color: #fff; }
 .assesscraft-error { padding: 12px; border-left: 3px solid #a9583f; background: #ebd9cf; }
 
 @media (max-width: 640px) {
@@ -67,6 +84,8 @@
   .ac-stage-preview-card { min-height: 0; }
   .ac-front-question-card { padding: 25px 18px; }
   .ac-front-nav .ac-front-button { flex: 1; padding-inline: 14px; }
+  .ac-lead-grid { grid-template-columns: 1fr; }
+  .ac-lead-wide { grid-column: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
