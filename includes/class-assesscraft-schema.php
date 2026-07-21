@@ -11,6 +11,7 @@ final class AssessCraft_Schema {
 				'heading'     => '',
 				'description' => '',
 				'start_label' => __( 'Begin Assessment', 'assesscraft' ),
+				'estimated_time' => '',
 				'disclaimer'  => '',
 			),
 			'stages'   => array(),
@@ -41,6 +42,47 @@ final class AssessCraft_Schema {
 		}
 
 		return self::sanitize_recursive( array_replace_recursive( self::defaults(), $value ) );
+	}
+
+	public static function sanitize_stages( array $stages ): array {
+		$clean = array();
+		foreach ( $stages as $stage ) {
+			if ( ! is_array( $stage ) ) {
+				continue;
+			}
+			$questions = array();
+			foreach ( $stage['questions'] ?? array() as $question ) {
+				if ( ! is_array( $question ) ) {
+					continue;
+				}
+				$answers = array();
+				foreach ( $question['answers'] ?? array() as $answer ) {
+					if ( is_array( $answer ) ) {
+						$answers[] = array(
+							'id'    => sanitize_key( $answer['id'] ?? '' ),
+							'label' => sanitize_text_field( $answer['label'] ?? '' ),
+							'score' => is_numeric( $answer['score'] ?? null ) ? (float) $answer['score'] : 0,
+						);
+					}
+				}
+				$questions[] = array(
+					'id'       => sanitize_key( $question['id'] ?? '' ),
+					'type'     => in_array( $question['type'] ?? '', array( 'scale', 'choice', 'yes_no', 'numeric' ), true ) ? $question['type'] : 'scale',
+					'prompt'   => sanitize_textarea_field( $question['prompt'] ?? '' ),
+					'required' => ! empty( $question['required'] ),
+					'reverse'  => ! empty( $question['reverse'] ),
+					'answers'  => $answers,
+				);
+			}
+			$clean[] = array(
+				'id'          => sanitize_key( $stage['id'] ?? '' ),
+				'name'        => sanitize_text_field( $stage['name'] ?? '' ),
+				'description' => sanitize_textarea_field( $stage['description'] ?? '' ),
+				'weight'      => max( 0, (float) ( $stage['weight'] ?? 1 ) ),
+				'questions'   => $questions,
+			);
+		}
+		return $clean;
 	}
 
 	private static function sanitize_recursive( array $data ): array {

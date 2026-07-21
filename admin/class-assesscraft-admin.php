@@ -2,55 +2,152 @@
 defined( 'ABSPATH' ) || exit;
 
 final class AssessCraft_Admin {
+	private const NONCE_ACTION = 'assesscraft_save';
+
 	public function register(): void {
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
 		add_action( 'save_post_' . AssessCraft_Post_Type::TYPE, array( $this, 'save' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_filter( 'manage_' . AssessCraft_Post_Type::TYPE . '_posts_columns', array( $this, 'columns' ) );
 		add_action( 'manage_' . AssessCraft_Post_Type::TYPE . '_posts_custom_column', array( $this, 'column_content' ), 10, 2 );
 	}
 
 	public function add_meta_boxes(): void {
-		add_meta_box( 'assesscraft-builder', __( 'Assessment Configuration', 'assesscraft' ), array( $this, 'render_builder' ), AssessCraft_Post_Type::TYPE, 'normal', 'high' );
-		add_meta_box( 'assesscraft-publish', __( 'Publish', 'assesscraft' ), array( $this, 'render_publish' ), AssessCraft_Post_Type::TYPE, 'side' );
+		add_meta_box( 'assesscraft-builder', __( 'Assessment Builder', 'assesscraft' ), array( $this, 'render_builder' ), AssessCraft_Post_Type::TYPE, 'normal', 'high' );
+		add_meta_box( 'assesscraft-embed', __( 'Embed Assessment', 'assesscraft' ), array( $this, 'render_publish' ), AssessCraft_Post_Type::TYPE, 'side' );
+	}
+
+	public function enqueue_assets( string $hook ): void {
+		if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+		if ( ! $screen || AssessCraft_Post_Type::TYPE !== $screen->post_type ) {
+			return;
+		}
+
+		wp_enqueue_style( 'assesscraft-admin', ASSESSCRAFT_URL . 'admin/assets/admin.css', array(), ASSESSCRAFT_VERSION );
+		wp_enqueue_script( 'assesscraft-admin', ASSESSCRAFT_URL . 'admin/assets/admin.js', array(), ASSESSCRAFT_VERSION, true );
+		wp_localize_script(
+			'assesscraft-admin',
+			'assessCraftAdmin',
+			array(
+				'questionTypes' => array(
+					'scale'   => __( 'Agreement scale', 'assesscraft' ),
+					'choice'  => __( 'Multiple choice', 'assesscraft' ),
+					'yes_no'  => __( 'Yes / No', 'assesscraft' ),
+					'numeric' => __( 'Numeric rating', 'assesscraft' ),
+				),
+				'i18n' => array(
+					'untitledStage'    => __( 'Untitled stage', 'assesscraft' ),
+					'untitledQuestion' => __( 'Untitled question', 'assesscraft' ),
+					'confirmDelete'    => __( 'Delete this item? This cannot be undone after saving.', 'assesscraft' ),
+				),
+			)
+		);
 	}
 
 	public function render_builder( WP_Post $post ): void {
 		$config = get_post_meta( $post->ID, '_assesscraft_config', true );
 		$config = AssessCraft_Schema::sanitize( is_array( $config ) ? $config : array() );
-		wp_nonce_field( 'assesscraft_save', 'assesscraft_nonce' );
+		wp_nonce_field( self::NONCE_ACTION, 'assesscraft_nonce' );
 		?>
-		<div class="assesscraft-admin-shell">
-			<p><strong><?php esc_html_e( 'Builder foundation installed.', 'assesscraft' ); ?></strong></p>
-			<p><?php esc_html_e( 'The visual Overview, Builder, Scoring, Profiles, Report, Lead Form, Design, and Publish tabs will be mounted here.', 'assesscraft' ); ?></p>
-			<label for="assesscraft-heading"><strong><?php esc_html_e( 'Frontend heading', 'assesscraft' ); ?></strong></label>
-			<input class="widefat" id="assesscraft-heading" name="assesscraft_heading" value="<?php echo esc_attr( $config['overview']['heading'] ); ?>">
-			<p><label for="assesscraft-description"><strong><?php esc_html_e( 'Introduction', 'assesscraft' ); ?></strong></label></p>
-			<textarea class="widefat" rows="5" id="assesscraft-description" name="assesscraft_description"><?php echo esc_textarea( $config['overview']['description'] ); ?></textarea>
+		<div class="ac-admin" id="assesscraft-admin">
+			<nav class="ac-tabs" aria-label="<?php esc_attr_e( 'Assessment settings', 'assesscraft' ); ?>">
+				<?php
+				$tabs = array(
+					'overview'  => __( 'Overview', 'assesscraft' ),
+					'builder'   => __( 'Builder', 'assesscraft' ),
+					'scoring'   => __( 'Scoring', 'assesscraft' ),
+					'profiles'  => __( 'Profiles', 'assesscraft' ),
+					'report'    => __( 'Report', 'assesscraft' ),
+					'lead-form' => __( 'Lead Form', 'assesscraft' ),
+					'design'    => __( 'Design', 'assesscraft' ),
+					'publish'   => __( 'Publish', 'assesscraft' ),
+				);
+				foreach ( $tabs as $key => $label ) {
+					printf( '<button type="button" class="ac-tab%s" data-tab="%s">%s</button>', 'overview' === $key ? ' is-active' : '', esc_attr( $key ), esc_html( $label ) );
+				}
+				?>
+			</nav>
+
+			<section class="ac-panel is-active" data-panel="overview">
+				<div class="ac-panel-heading">
+					<div><span class="ac-eyebrow"><?php esc_html_e( 'Assessment setup', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Overview', 'assesscraft' ); ?></h2></div>
+					<p><?php esc_html_e( 'Configure what visitors see before they begin.', 'assesscraft' ); ?></p>
+				</div>
+				<div class="ac-form-grid">
+					<label class="ac-field ac-field-wide"><span><?php esc_html_e( 'Frontend heading', 'assesscraft' ); ?></span><input name="assesscraft_heading" value="<?php echo esc_attr( $config['overview']['heading'] ); ?>" placeholder="<?php esc_attr_e( 'e.g. Business Readiness Assessment', 'assesscraft' ); ?>"></label>
+					<label class="ac-field ac-field-wide"><span><?php esc_html_e( 'Introduction', 'assesscraft' ); ?></span><textarea rows="4" name="assesscraft_description" placeholder="<?php esc_attr_e( 'Explain what this assessment measures and why it is useful.', 'assesscraft' ); ?>"><?php echo esc_textarea( $config['overview']['description'] ); ?></textarea></label>
+					<label class="ac-field"><span><?php esc_html_e( 'Start button label', 'assesscraft' ); ?></span><input name="assesscraft_start_label" value="<?php echo esc_attr( $config['overview']['start_label'] ); ?>"></label>
+					<label class="ac-field"><span><?php esc_html_e( 'Estimated time', 'assesscraft' ); ?></span><input name="assesscraft_estimated_time" value="<?php echo esc_attr( $config['overview']['estimated_time'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'e.g. 4 minutes', 'assesscraft' ); ?>"></label>
+					<label class="ac-field ac-field-wide"><span><?php esc_html_e( 'Disclaimer', 'assesscraft' ); ?></span><textarea rows="3" name="assesscraft_disclaimer"><?php echo esc_textarea( $config['overview']['disclaimer'] ); ?></textarea></label>
+				</div>
+			</section>
+
+			<section class="ac-panel" data-panel="builder">
+				<div class="ac-panel-heading ac-builder-heading">
+					<div><span class="ac-eyebrow"><?php esc_html_e( 'Assessment structure', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Stages and questions', 'assesscraft' ); ?></h2></div>
+					<button type="button" class="button button-primary ac-add-stage" id="ac-add-stage"><?php esc_html_e( 'Add stage', 'assesscraft' ); ?></button>
+				</div>
+				<p class="ac-help"><?php esc_html_e( 'Use stages to group related questions, such as Growth, Capacity, or Leadership. Drag stages and questions using their handles.', 'assesscraft' ); ?></p>
+				<div id="ac-stage-list" class="ac-stage-list"></div>
+				<div id="ac-empty-builder" class="ac-empty-state">
+					<div class="dashicons dashicons-editor-ol"></div>
+					<h3><?php esc_html_e( 'Start with your first stage', 'assesscraft' ); ?></h3>
+					<p><?php esc_html_e( 'A stage contains one or more related assessment questions.', 'assesscraft' ); ?></p>
+					<button type="button" class="button button-primary ac-add-stage"><?php esc_html_e( 'Add first stage', 'assesscraft' ); ?></button>
+				</div>
+			</section>
+
+			<?php foreach ( array( 'scoring', 'profiles', 'report', 'lead-form', 'design', 'publish' ) as $future_tab ) : ?>
+				<section class="ac-panel" data-panel="<?php echo esc_attr( $future_tab ); ?>">
+					<div class="ac-coming-soon"><span class="dashicons dashicons-admin-tools"></span><h2><?php echo esc_html( $tabs[ $future_tab ] ); ?></h2><p><?php esc_html_e( 'This workspace is part of the next AssessCraft milestone.', 'assesscraft' ); ?></p></div>
+				</section>
+			<?php endforeach; ?>
+
+			<input type="hidden" id="assesscraft-stages-json" name="assesscraft_stages_json" value="<?php echo esc_attr( wp_json_encode( $config['stages'] ) ); ?>">
 		</div>
 		<?php
 	}
 
 	public function render_publish( WP_Post $post ): void {
-		echo '<p>' . esc_html__( 'Place this assessment using:', 'assesscraft' ) . '</p>';
-		echo '<code>[assesscraft id=&quot;' . absint( $post->ID ) . '&quot;]</code>';
+		echo '<p>' . esc_html__( 'Place this assessment on any page:', 'assesscraft' ) . '</p>';
+		echo '<p><code>[assesscraft id=&quot;' . absint( $post->ID ) . '&quot;]</code></p>';
+		echo '<p class="description">' . esc_html__( 'Elementor and Gutenberg widgets will use this same assessment ID.', 'assesscraft' ) . '</p>';
 	}
 
 	public function save( int $post_id ): void {
-		if ( ! isset( $_POST['assesscraft_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['assesscraft_nonce'] ) ), 'assesscraft_save' ) ) {
+		if ( ! isset( $_POST['assesscraft_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['assesscraft_nonce'] ) ), self::NONCE_ACTION ) ) {
 			return;
 		}
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-			return;
-		}
-		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
 		}
 
 		$config = get_post_meta( $post_id, '_assesscraft_config', true );
 		$config = AssessCraft_Schema::sanitize( is_array( $config ) ? $config : array() );
-		$config['overview']['heading'] = isset( $_POST['assesscraft_heading'] ) ? sanitize_text_field( wp_unslash( $_POST['assesscraft_heading'] ) ) : '';
-		$config['overview']['description'] = isset( $_POST['assesscraft_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['assesscraft_description'] ) ) : '';
-		update_post_meta( $post_id, '_assesscraft_config', $config );
+		$config['overview']['heading']        = $this->posted_text( 'assesscraft_heading' );
+		$config['overview']['description']    = $this->posted_textarea( 'assesscraft_description' );
+		$config['overview']['start_label']    = $this->posted_text( 'assesscraft_start_label' );
+		$config['overview']['estimated_time'] = $this->posted_text( 'assesscraft_estimated_time' );
+		$config['overview']['disclaimer']     = $this->posted_textarea( 'assesscraft_disclaimer' );
+
+		if ( isset( $_POST['assesscraft_stages_json'] ) ) {
+			$stages = json_decode( wp_unslash( $_POST['assesscraft_stages_json'] ), true );
+			$config['stages'] = is_array( $stages ) ? AssessCraft_Schema::sanitize_stages( $stages ) : array();
+		}
+
+		update_post_meta( $post_id, '_assesscraft_config', AssessCraft_Schema::sanitize( $config ) );
+	}
+
+	private function posted_text( string $key ): string {
+		return isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : '';
+	}
+
+	private function posted_textarea( string $key ): string {
+		return isset( $_POST[ $key ] ) ? sanitize_textarea_field( wp_unslash( $_POST[ $key ] ) ) : '';
 	}
 
 	public function columns( array $columns ): array {
