@@ -28,24 +28,55 @@ final class AssessCraft_Templates_Admin {
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			wp_die( esc_html__( 'You do not have permission to access templates.', 'assesscraft' ) );
 		}
+		$templates  = AssessCraft_Template_Registry::all();
+		$categories = array_values( array_unique( array_filter( array_map( static fn( array $template ): string => (string) ( $template['category'] ?? '' ), $templates ) ) ) );
+		$sources    = array_values( array_unique( array_map( static fn( array $template ): string => (string) ( $template['source'] ?? __( 'Bundled', 'assesscraft' ) ), $templates ) ) );
+		sort( $categories, SORT_NATURAL | SORT_FLAG_CASE );
+		sort( $sources, SORT_NATURAL | SORT_FLAG_CASE );
 		?>
 		<div class="wrap ac-template-page">
 			<h1><?php esc_html_e( 'AssessCraft Templates', 'assesscraft' ); ?></h1>
 			<?php $this->render_notice(); ?>
 			<p class="description"><?php esc_html_e( 'Start with a professionally structured assessment, or import a portable AssessCraft JSON file.', 'assesscraft' ); ?></p>
-			<div class="ac-template-grid">
-				<?php foreach ( AssessCraft_Template_Registry::all() as $slug => $template ) : ?>
+			<section class="ac-template-catalog" aria-labelledby="ac-template-catalog-heading">
+				<div class="ac-template-catalog-header">
+					<div>
+						<h2 id="ac-template-catalog-heading"><?php esc_html_e( 'Template library', 'assesscraft' ); ?></h2>
+						<p><?php printf( esc_html( _n( '%d template available', '%d templates available', count( $templates ), 'assesscraft' ) ), count( $templates ) ); ?></p>
+					</div>
+					<div class="ac-template-result-count" id="ac-template-result-count" aria-live="polite"></div>
+				</div>
+				<div class="ac-template-toolbar" role="search">
+					<label class="ac-template-search">
+						<span class="screen-reader-text"><?php esc_html_e( 'Search templates', 'assesscraft' ); ?></span>
+						<span class="dashicons dashicons-search" aria-hidden="true"></span>
+						<input id="ac-template-search" type="search" placeholder="<?php esc_attr_e( 'Search templates by name, category, or purpose…', 'assesscraft' ); ?>" autocomplete="off">
+					</label>
+					<label>
+						<span class="screen-reader-text"><?php esc_html_e( 'Filter by category', 'assesscraft' ); ?></span>
+						<select id="ac-template-category"><option value=""><?php esc_html_e( 'All categories', 'assesscraft' ); ?></option><?php foreach ( $categories as $category ) : ?><option value="<?php echo esc_attr( strtolower( $category ) ); ?>"><?php echo esc_html( $category ); ?></option><?php endforeach; ?></select>
+					</label>
+					<label>
+						<span class="screen-reader-text"><?php esc_html_e( 'Filter by source', 'assesscraft' ); ?></span>
+						<select id="ac-template-source"><option value=""><?php esc_html_e( 'All sources', 'assesscraft' ); ?></option><?php foreach ( $sources as $source ) : ?><option value="<?php echo esc_attr( strtolower( $source ) ); ?>"><?php echo esc_html( ucfirst( $source ) ); ?></option><?php endforeach; ?></select>
+					</label>
+					<button class="button ac-template-reset" id="ac-template-reset" type="button"><?php esc_html_e( 'Reset', 'assesscraft' ); ?></button>
+				</div>
+				<div class="ac-template-grid" id="ac-template-grid" data-per-page="9">
+				<?php foreach ( $templates as $slug => $template ) : ?>
 					<?php
 					$stage_count = count( $template['config']['stages'] ?? array() );
 					$question_count = array_sum( array_map( static fn( array $stage ): int => count( $stage['questions'] ?? array() ), $template['config']['stages'] ?? array() ) );
+					$source = (string) ( $template['source'] ?? __( 'Bundled', 'assesscraft' ) );
+					$search_text = implode( ' ', array( $template['name'] ?? '', $template['description'] ?? '', $template['category'] ?? '', $source ) );
 					?>
-					<article class="ac-template-card">
+					<article class="ac-template-card" data-search="<?php echo esc_attr( strtolower( $search_text ) ); ?>" data-category="<?php echo esc_attr( strtolower( (string) ( $template['category'] ?? '' ) ) ); ?>" data-source="<?php echo esc_attr( strtolower( $source ) ); ?>">
 						<span><?php echo esc_html( $template['category'] ); ?></span>
 						<h2><?php echo esc_html( $template['name'] ); ?></h2>
 						<p><?php echo esc_html( $template['description'] ); ?></p>
 						<div class="ac-template-meta"><span><strong><?php echo absint( $stage_count ); ?></strong> <?php esc_html_e( 'stages', 'assesscraft' ); ?></span><span><strong><?php echo absint( $question_count ); ?></strong> <?php esc_html_e( 'questions', 'assesscraft' ); ?></span></div>
 						<div class="ac-template-card-actions"><a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_use_template&template=' . rawurlencode( $slug ) ), 'assesscraft_use_template' ) ); ?>"><?php esc_html_e( 'Use this template', 'assesscraft' ); ?></a><button class="button ac-preview-template" type="button" data-template="<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Preview', 'assesscraft' ); ?></button></div>
-						<footer><span><?php echo esc_html( $template['source'] ?? __( 'Bundled', 'assesscraft' ) ); ?></span><span>v<?php echo esc_html( $template['version'] ?? '1.0.0' ); ?></span></footer>
+						<footer><span><?php echo esc_html( $source ); ?></span><span>v<?php echo esc_html( $template['version'] ?? '1.0.0' ); ?></span></footer>
 					</article>
 					<dialog class="ac-template-dialog" id="ac-template-<?php echo esc_attr( $slug ); ?>">
 						<div class="ac-template-dialog-header"><div><span><?php echo esc_html( $template['category'] ); ?></span><h2><?php echo esc_html( $template['name'] ); ?></h2></div><button type="button" class="ac-dialog-close" aria-label="<?php esc_attr_e( 'Close preview', 'assesscraft' ); ?>">&times;</button></div>
@@ -55,7 +86,15 @@ final class AssessCraft_Templates_Admin {
 						<div class="ac-template-dialog-actions"><button type="button" class="button ac-dialog-close"><?php esc_html_e( 'Close', 'assesscraft' ); ?></button><a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_use_template&template=' . rawurlencode( $slug ) ), 'assesscraft_use_template' ) ); ?>"><?php esc_html_e( 'Use this template', 'assesscraft' ); ?></a></div>
 					</dialog>
 				<?php endforeach; ?>
-			</div>
+				</div>
+				<div class="ac-template-empty" id="ac-template-empty" hidden>
+					<span class="dashicons dashicons-search" aria-hidden="true"></span>
+					<h3><?php esc_html_e( 'No templates found', 'assesscraft' ); ?></h3>
+					<p><?php esc_html_e( 'Try another search term or clear the active filters.', 'assesscraft' ); ?></p>
+					<button class="button" type="button" data-reset-templates><?php esc_html_e( 'Clear filters', 'assesscraft' ); ?></button>
+				</div>
+				<nav class="ac-template-pagination" id="ac-template-pagination" aria-label="<?php esc_attr_e( 'Template pages', 'assesscraft' ); ?>"></nav>
+			</section>
 			<div class="ac-import-card ac-unified-import">
 				<div><span class="ac-eyebrow"><?php esc_html_e( 'Optional', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Import AssessCraft JSON', 'assesscraft' ); ?></h2>
 				<p><?php esc_html_e( 'Move an assessment from another website or install a reusable template pack. AssessCraft detects the file type automatically.', 'assesscraft' ); ?></p></div>
