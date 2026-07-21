@@ -77,6 +77,15 @@
 .ac-privacy-note { display: flex; gap: 12px; margin-top: 22px; padding: 15px; border-left: 3px solid #6e7f6a; background: #eef2ec; }
 .ac-privacy-note .dashicons { color: #4e6b4a; }
 .ac-privacy-note p { margin: 0; }
+.ac-template-page > .description { margin-bottom: 24px; font-size: 14px; }
+.ac-template-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 18px; max-width: 1100px; }
+.ac-template-card, .ac-import-card { padding: 24px; border: 1px solid #c3c4c7; border-radius: 4px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.ac-template-card > span { color: #9a7418; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.ac-template-card h2 { margin: 8px 0; font-size: 21px; }
+.ac-template-card p { min-height: 48px; color: #50575e; }
+.ac-import-card { max-width: 1050px; margin-top: 20px; }
+.ac-import-card h2 { margin-top: 0; }
+.ac-import-card form { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 
 @media (max-width: 782px) {
   .ac-panel { padding: 22px 18px; }
