@@ -10,7 +10,7 @@ final class AssessCraft_Shortcode {
 		$atts = shortcode_atts( array( 'id' => 0 ), $atts, 'assesscraft' );
 		$id   = absint( $atts['id'] );
 
-		if ( ! $id || AssessCraft_Post_Type::TYPE !== get_post_type( $id ) ) {
+		if ( ! $id || AssessCraft_Post_Type::TYPE !== get_post_type( $id ) || ( 'publish' !== get_post_status( $id ) && ! current_user_can( 'edit_post', $id ) ) ) {
 			return current_user_can( 'edit_posts' )
 				? '<p class="assesscraft-error">' . esc_html__( 'AssessCraft: select a valid assessment.', 'assesscraft' ) . '</p>'
 				: '';

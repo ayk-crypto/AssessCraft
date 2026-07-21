@@ -1,0 +1,41 @@
+name: Build installable plugin
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Assemble clean plugin directory
+        run: |
+          mkdir -p build/assesscraft
+          rsync -a \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'build/' \
+            --exclude 'docs/' \
+            --exclude '*.zip' \
+            ./ build/assesscraft/
+
+      - name: Create ZIP
+        run: cd build && zip -qr assesscraft.zip assesscraft
+
+      - name: Verify ZIP
+        run: unzip -t build/assesscraft.zip
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: assesscraft-plugin
+          path: build/assesscraft.zip
+          if-no-files-found: error
