@@ -58,6 +58,13 @@ final class AssessCraft_Admin {
 		wp_nonce_field( self::NONCE_ACTION, 'assesscraft_nonce' );
 		?>
 		<div class="ac-admin" id="assesscraft-admin">
+			<header class="ac-workspace-header">
+				<div class="ac-workspace-brand"><span class="dashicons dashicons-chart-bar"></span><div><strong><?php esc_html_e( 'AssessCraft', 'assesscraft' ); ?></strong><small><?php esc_html_e( 'Assessment workspace', 'assesscraft' ); ?></small></div></div>
+				<div class="ac-workspace-actions">
+					<span class="ac-save-hint"><span class="dashicons dashicons-saved"></span><?php esc_html_e( 'Changes save with WordPress Update', 'assesscraft' ); ?></span>
+					<span class="ac-status-pill <?php echo 'publish' === $post->post_status ? 'is-published' : ''; ?>"><?php echo 'publish' === $post->post_status ? esc_html__( 'Published', 'assesscraft' ) : esc_html__( 'Draft', 'assesscraft' ); ?></span>
+				</div>
+			</header>
 			<nav class="ac-tabs" aria-label="<?php esc_attr_e( 'Assessment settings', 'assesscraft' ); ?>">
 				<?php
 				$tabs = array(
@@ -70,8 +77,9 @@ final class AssessCraft_Admin {
 					'design'    => __( 'Design', 'assesscraft' ),
 					'publish'   => __( 'Publish', 'assesscraft' ),
 				);
+				$icons = array( 'overview' => 'welcome-write-blog', 'builder' => 'editor-ol', 'scoring' => 'chart-line', 'profiles' => 'groups', 'report' => 'media-document', 'lead-form' => 'email-alt', 'design' => 'art', 'publish' => 'share' );
 				foreach ( $tabs as $key => $label ) {
-					printf( '<button type="button" class="ac-tab%s" data-tab="%s">%s</button>', 'overview' === $key ? ' is-active' : '', esc_attr( $key ), esc_html( $label ) );
+					printf( '<button type="button" class="ac-tab%s" data-tab="%s"><span class="dashicons dashicons-%s"></span><span>%s</span></button>', 'overview' === $key ? ' is-active' : '', esc_attr( $key ), esc_attr( $icons[ $key ] ), esc_html( $label ) );
 				}
 				?>
 			</nav>
