@@ -166,11 +166,21 @@ final class AssessCraft_Admin {
 				<div class="ac-privacy-note"><span class="dashicons dashicons-lock"></span><p><strong><?php esc_html_e( 'Privacy-first default', 'assesscraft' ); ?></strong><br><?php esc_html_e( 'Completing an assessment never sends or stores a visitor’s result. Transmission occurs only after explicit consent and form submission.', 'assesscraft' ); ?></p></div>
 			</section>
 
-			<?php foreach ( array( 'design', 'publish' ) as $future_tab ) : ?>
+			<?php foreach ( array( 'design' ) as $future_tab ) : ?>
 				<section class="ac-panel" data-panel="<?php echo esc_attr( $future_tab ); ?>">
 					<div class="ac-coming-soon"><span class="dashicons dashicons-admin-tools"></span><h2><?php echo esc_html( $tabs[ $future_tab ] ); ?></h2><p><?php esc_html_e( 'This workspace is part of the next AssessCraft milestone.', 'assesscraft' ); ?></p></div>
 				</section>
 			<?php endforeach; ?>
+
+			<section class="ac-panel" data-panel="publish">
+				<div class="ac-panel-heading"><div><span class="ac-eyebrow"><?php esc_html_e( 'Place your assessment', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Publish', 'assesscraft' ); ?></h2></div><p><?php esc_html_e( 'Use the same assessment anywhere in WordPress.', 'assesscraft' ); ?></p></div>
+				<div class="ac-publish-grid">
+					<article><span class="dashicons dashicons-shortcode"></span><h3><?php esc_html_e( 'Shortcode', 'assesscraft' ); ?></h3><p><?php esc_html_e( 'Works in shortcode widgets, classic content, and most page builders.', 'assesscraft' ); ?></p><code>[assesscraft id=&quot;<?php echo absint( $post->ID ); ?>&quot;]</code></article>
+					<article><span class="dashicons dashicons-block-default"></span><h3><?php esc_html_e( 'Gutenberg', 'assesscraft' ); ?></h3><p><?php esc_html_e( 'Add the AssessCraft Assessment block and select this assessment.', 'assesscraft' ); ?></p><strong><?php esc_html_e( 'Block available', 'assesscraft' ); ?></strong></article>
+					<article><span class="dashicons dashicons-layout"></span><h3><?php esc_html_e( 'Elementor', 'assesscraft' ); ?></h3><p><?php esc_html_e( 'Search for the AssessCraft Assessment widget in Elementor.', 'assesscraft' ); ?></p><strong><?php echo did_action( 'elementor/loaded' ) ? esc_html__( 'Elementor detected', 'assesscraft' ) : esc_html__( 'Available when Elementor is active', 'assesscraft' ); ?></strong></article>
+				</div>
+				<p class="ac-publish-note"><span class="dashicons dashicons-visibility"></span><?php esc_html_e( 'Draft assessments are visible to editors for preview but remain hidden from public visitors until published.', 'assesscraft' ); ?></p>
+			</section>
 
 			<input type="hidden" id="assesscraft-stages-json" name="assesscraft_stages_json" value="<?php echo esc_attr( wp_json_encode( $config['stages'] ) ); ?>">
 			<input type="hidden" id="assesscraft-scoring-json" name="assesscraft_scoring_json" value="<?php echo esc_attr( wp_json_encode( $config['scoring'] ) ); ?>">

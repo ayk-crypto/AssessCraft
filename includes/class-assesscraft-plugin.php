@@ -14,6 +14,8 @@ final class AssessCraft_Plugin {
 		( new AssessCraft_Templates_Admin() )->register();
 		( new AssessCraft_Shortcode() )->register();
 		( new AssessCraft_Lead_Endpoint() )->register();
+		( new AssessCraft_Block() )->register();
+		( new AssessCraft_Elementor() )->register();
 
 		do_action( 'assesscraft_loaded', $this );
 	}

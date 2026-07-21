@@ -86,6 +86,14 @@
 .ac-import-card { max-width: 1050px; margin-top: 20px; }
 .ac-import-card h2 { margin-top: 0; }
 .ac-import-card form { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.ac-publish-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.ac-publish-grid article { padding: 22px; border: 1px solid #dcdcde; background: #fff; }
+.ac-publish-grid article > .dashicons { width: 34px; height: 34px; color: #b08d2b; font-size: 34px; }
+.ac-publish-grid h3 { margin: 12px 0 6px; }
+.ac-publish-grid p { min-height: 58px; color: #646970; }
+.ac-publish-grid code { display: block; overflow-x: auto; padding: 8px; }
+.ac-publish-grid strong { color: #4e6b4a; font-size: 12px; }
+.ac-publish-note { display: flex; gap: 9px; align-items: center; margin-top: 18px; padding: 13px; border-left: 3px solid #b08d2b; background: #fffaf0; }
 
 @media (max-width: 782px) {
   .ac-panel { padding: 22px 18px; }
@@ -100,4 +108,5 @@
   .ac-condition { grid-template-columns: 1fr; }
   .ac-condition-value2 { display: none; }
   .ac-condition.is-between .ac-condition-value2 { display: block; visibility: visible; }
+  .ac-publish-grid { grid-template-columns: 1fr; }
 }
