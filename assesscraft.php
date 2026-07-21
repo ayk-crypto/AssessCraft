@@ -3,7 +3,7 @@
  * Plugin Name: AssessCraft - Assessment & Report Builder
  * Plugin URI:  https://assesscraft.com/
  * Description: Build scored, multi-stage assessments that generate personalized reports and qualified leads.
- * Version:     0.8.3
+ * Version:     0.8.4
  * Author:      AssessCraft
  * Text Domain: assesscraft
  * Requires at least: 6.5
@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ASSESSCRAFT_VERSION', '0.8.3' );
+define( 'ASSESSCRAFT_VERSION', '0.8.4' );
 define( 'ASSESSCRAFT_FILE', __FILE__ );
 define( 'ASSESSCRAFT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ASSESSCRAFT_URL', plugin_dir_url( __FILE__ ) );
