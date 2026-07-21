@@ -51,6 +51,21 @@
 .ac-coming-soon { padding: 64px 24px; text-align: center; color: #646970; }
 .ac-coming-soon .dashicons { width: 44px; height: 44px; color: #b08d2b; font-size: 44px; }
 .ac-coming-soon h2 { color: #1b2430; }
+.ac-band-list, .ac-profile-list { display: flex; flex-direction: column; gap: 14px; }
+.ac-band { display: grid; grid-template-columns: 54px minmax(150px, .8fr) 100px 100px minmax(220px, 1.5fr) 50px; gap: 12px; align-items: end; padding: 16px; border: 1px solid #dcdcde; border-radius: 4px; background: #fff; }
+.ac-band-color { align-self: center; }
+.ac-band-color input { width: 42px; height: 42px; padding: 2px; border: 1px solid #c3c4c7; background: #fff; cursor: pointer; }
+.ac-band-interpretation { min-width: 0; }
+.ac-profile { border: 1px solid #c3c4c7; border-radius: 4px; background: #fff; }
+.ac-profile-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 17px; border-bottom: 1px solid #dcdcde; background: #f6f7f7; }
+.ac-profile-header div { display: grid; gap: 3px; }
+.ac-profile-header span { color: #9a7418; font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+.ac-profile-body { padding: 18px; }
+.ac-condition-list { display: flex; flex-direction: column; gap: 8px; margin: 18px 0 10px; }
+.ac-condition { display: grid; grid-template-columns: minmax(170px, 1fr) minmax(150px, .8fr) 100px 100px 30px; gap: 8px; align-items: center; padding: 10px; border: 1px solid #dcdcde; background: #fafafa; }
+.ac-condition select, .ac-condition input { width: 100%; }
+.ac-condition-value2 { visibility: hidden; }
+.ac-condition.is-between .ac-condition-value2 { visibility: visible; }
 
 @media (max-width: 782px) {
   .ac-panel { padding: 22px 18px; }
@@ -60,5 +75,9 @@
   .ac-stage-title { grid-template-columns: auto 1fr; }
   .ac-stage-title small { display: none; }
   .ac-switches { flex-direction: column; gap: 8px; }
+  .ac-band { grid-template-columns: 48px 1fr 1fr; }
+  .ac-band-interpretation { grid-column: 1 / -1; }
+  .ac-condition { grid-template-columns: 1fr; }
+  .ac-condition-value2 { display: none; }
+  .ac-condition.is-between .ac-condition-value2 { display: block; visibility: visible; }
 }
-

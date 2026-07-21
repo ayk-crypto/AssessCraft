@@ -101,13 +101,34 @@ final class AssessCraft_Admin {
 				</div>
 			</section>
 
-			<?php foreach ( array( 'scoring', 'profiles', 'report', 'lead-form', 'design', 'publish' ) as $future_tab ) : ?>
+			<section class="ac-panel" data-panel="scoring">
+				<div class="ac-panel-heading">
+					<div><span class="ac-eyebrow"><?php esc_html_e( 'Result classification', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Score bands', 'assesscraft' ); ?></h2></div>
+					<button type="button" class="button button-primary" id="ac-add-band"><?php esc_html_e( 'Add score band', 'assesscraft' ); ?></button>
+				</div>
+				<p class="ac-help"><?php esc_html_e( 'Classify overall and stage scores from 0 to 100. Bands are evaluated from top to bottom.', 'assesscraft' ); ?></p>
+				<div class="ac-band-list" id="ac-band-list"></div>
+			</section>
+
+			<section class="ac-panel" data-panel="profiles">
+				<div class="ac-panel-heading">
+					<div><span class="ac-eyebrow"><?php esc_html_e( 'Personalized outcomes', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Result profiles', 'assesscraft' ); ?></h2></div>
+					<button type="button" class="button button-primary" id="ac-add-profile"><?php esc_html_e( 'Add profile', 'assesscraft' ); ?></button>
+				</div>
+				<p class="ac-help"><?php esc_html_e( 'Profiles use the overall or individual stage scores. The highest-priority matching profile appears in the report.', 'assesscraft' ); ?></p>
+				<div class="ac-profile-list" id="ac-profile-list"></div>
+				<div class="ac-empty-state" id="ac-empty-profiles"><div class="dashicons dashicons-groups"></div><h3><?php esc_html_e( 'No profiles yet', 'assesscraft' ); ?></h3><p><?php esc_html_e( 'Create a profile to turn scores into a meaningful result narrative.', 'assesscraft' ); ?></p><button type="button" class="button button-primary ac-add-profile"><?php esc_html_e( 'Add first profile', 'assesscraft' ); ?></button></div>
+			</section>
+
+			<?php foreach ( array( 'report', 'lead-form', 'design', 'publish' ) as $future_tab ) : ?>
 				<section class="ac-panel" data-panel="<?php echo esc_attr( $future_tab ); ?>">
 					<div class="ac-coming-soon"><span class="dashicons dashicons-admin-tools"></span><h2><?php echo esc_html( $tabs[ $future_tab ] ); ?></h2><p><?php esc_html_e( 'This workspace is part of the next AssessCraft milestone.', 'assesscraft' ); ?></p></div>
 				</section>
 			<?php endforeach; ?>
 
 			<input type="hidden" id="assesscraft-stages-json" name="assesscraft_stages_json" value="<?php echo esc_attr( wp_json_encode( $config['stages'] ) ); ?>">
+			<input type="hidden" id="assesscraft-scoring-json" name="assesscraft_scoring_json" value="<?php echo esc_attr( wp_json_encode( $config['scoring'] ) ); ?>">
+			<input type="hidden" id="assesscraft-profiles-json" name="assesscraft_profiles_json" value="<?php echo esc_attr( wp_json_encode( $config['profiles'] ) ); ?>">
 		</div>
 		<?php
 	}
@@ -138,6 +159,17 @@ final class AssessCraft_Admin {
 			$stages = json_decode( wp_unslash( $_POST['assesscraft_stages_json'] ), true );
 			$config['stages'] = is_array( $stages ) ? AssessCraft_Schema::sanitize_stages( $stages ) : array();
 		}
+		if ( isset( $_POST['assesscraft_scoring_json'] ) ) {
+			$scoring = json_decode( wp_unslash( $_POST['assesscraft_scoring_json'] ), true );
+			if ( is_array( $scoring ) ) {
+				$config['scoring']['method'] = 'weighted_percentage';
+				$config['scoring']['bands'] = AssessCraft_Schema::sanitize_bands( is_array( $scoring['bands'] ?? null ) ? $scoring['bands'] : array() );
+			}
+		}
+		if ( isset( $_POST['assesscraft_profiles_json'] ) ) {
+			$profiles = json_decode( wp_unslash( $_POST['assesscraft_profiles_json'] ), true );
+			$config['profiles'] = is_array( $profiles ) ? AssessCraft_Schema::sanitize_profiles( $profiles ) : array();
+		}
 
 		update_post_meta( $post_id, '_assesscraft_config', AssessCraft_Schema::sanitize( $config ) );
 	}
@@ -161,4 +193,3 @@ final class AssessCraft_Admin {
 		}
 	}
 }
-

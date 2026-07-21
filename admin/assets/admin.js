@@ -7,8 +7,17 @@
   var stageList = document.getElementById('ac-stage-list');
   var emptyState = document.getElementById('ac-empty-builder');
   var jsonField = document.getElementById('assesscraft-stages-json');
+  var scoringField = document.getElementById('assesscraft-scoring-json');
+  var profilesField = document.getElementById('assesscraft-profiles-json');
+  var bandList = document.getElementById('ac-band-list');
+  var profileList = document.getElementById('ac-profile-list');
+  var emptyProfiles = document.getElementById('ac-empty-profiles');
   var settings = window.assessCraftAdmin || { questionTypes: {}, i18n: {} };
-  var state = { stages: parseStages(jsonField.value) };
+  var state = {
+    stages: parseStages(jsonField.value),
+    scoring: parseObject(scoringField.value, { method: 'weighted_percentage', bands: [] }),
+    profiles: parseStages(profilesField.value)
+  };
 
   function parseStages(value) {
     try {
@@ -16,6 +25,15 @@
       return Array.isArray(stages) ? stages : [];
     } catch (error) {
       return [];
+    }
+  }
+
+  function parseObject(value, fallback) {
+    try {
+      var parsed = JSON.parse(value || '{}');
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : fallback;
+    } catch (error) {
+      return fallback;
     }
   }
 
@@ -47,6 +65,8 @@
 
   function sync() {
     jsonField.value = JSON.stringify(state.stages);
+    scoringField.value = JSON.stringify(state.scoring);
+    profilesField.value = JSON.stringify(state.profiles);
   }
 
   function render() {
@@ -55,7 +75,85 @@
       stageList.appendChild(renderStage(item, stageIndex));
     });
     emptyState.hidden = state.stages.length > 0;
+    renderBands();
+    renderProfiles();
     sync();
+  }
+
+  function renderBands() {
+    bandList.innerHTML = '';
+    (state.scoring.bands || []).forEach(function (band, bandIndex) {
+      var row = document.createElement('article');
+      row.className = 'ac-band';
+      row.innerHTML =
+        '<div class="ac-band-color"><input type="color" value="' + escapeHtml(band.color || '#6E7F6A') + '" aria-label="Band color"></div>' +
+        '<label class="ac-field"><span>Classification</span><input class="ac-band-label" value="' + escapeHtml(band.label || '') + '" placeholder="e.g. Strong"></label>' +
+        '<label class="ac-field"><span>Minimum</span><input class="ac-band-min" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(band.min == null ? 0 : band.min) + '"></label>' +
+        '<label class="ac-field"><span>Maximum</span><input class="ac-band-max" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(band.max == null ? 100 : band.max) + '"></label>' +
+        '<label class="ac-field ac-band-interpretation"><span>Interpretation</span><textarea rows="2" placeholder="Explain what this classification means">' + escapeHtml(band.interpretation || '') + '</textarea></label>' +
+        '<button type="button" class="button-link-delete ac-delete-band">Delete</button>';
+      row.querySelector('input[type="color"]').addEventListener('input', function (event) { band.color = event.target.value; sync(); });
+      row.querySelector('.ac-band-label').addEventListener('input', function (event) { band.label = event.target.value; sync(); });
+      row.querySelector('.ac-band-min').addEventListener('input', function (event) { band.min = Number(event.target.value); sync(); });
+      row.querySelector('.ac-band-max').addEventListener('input', function (event) { band.max = Number(event.target.value); sync(); });
+      row.querySelector('textarea').addEventListener('input', function (event) { band.interpretation = event.target.value; sync(); });
+      row.querySelector('.ac-delete-band').addEventListener('click', function () { if (window.confirm(settings.i18n.confirmDelete)) { state.scoring.bands.splice(bandIndex, 1); render(); } });
+      bandList.appendChild(row);
+    });
+  }
+
+  function metricOptions(selected) {
+    var options = [{ value: 'overall', label: 'Overall score' }];
+    state.stages.forEach(function (stage, index) { options.push({ value: 'stage_' + stage.id, label: 'Stage: ' + (stage.name || 'Stage ' + (index + 1)) }); });
+    return options.map(function (item) { return '<option value="' + escapeHtml(item.value) + '"' + (selected === item.value ? ' selected' : '') + '>' + escapeHtml(item.label) + '</option>'; }).join('');
+  }
+
+  function renderProfiles() {
+    profileList.innerHTML = '';
+    state.profiles.sort(function (a, b) { return (Number(b.priority) || 0) - (Number(a.priority) || 0); });
+    state.profiles.forEach(function (profile, profileIndex) {
+      var card = document.createElement('article');
+      card.className = 'ac-profile';
+      card.innerHTML =
+        '<header class="ac-profile-header"><div><span>Result profile</span><strong>' + escapeHtml(profile.title || 'Untitled profile') + '</strong></div><button type="button" class="button-link-delete ac-delete-profile">Delete</button></header>' +
+        '<div class="ac-profile-body"><div class="ac-form-grid">' +
+          '<label class="ac-field"><span>Profile title</span><input class="ac-profile-title" value="' + escapeHtml(profile.title || '') + '"></label>' +
+          '<label class="ac-field"><span>Priority</span><input class="ac-profile-priority" type="number" value="' + escapeHtml(profile.priority || 0) + '"></label>' +
+          '<label class="ac-field ac-field-wide"><span>Description</span><textarea class="ac-profile-description" rows="3">' + escapeHtml(profile.description || '') + '</textarea></label>' +
+          '<label class="ac-field ac-field-wide"><span>Recommendation</span><textarea class="ac-profile-recommendation" rows="3">' + escapeHtml(profile.recommendation || '') + '</textarea></label>' +
+          '<label class="ac-field"><span>Condition matching</span><select class="ac-profile-match"><option value="all"' + (profile.match !== 'any' ? ' selected' : '') + '>Match all conditions</option><option value="any"' + (profile.match === 'any' ? ' selected' : '') + '>Match any condition</option></select></label>' +
+        '</div><div class="ac-condition-list"></div><button type="button" class="button-link ac-add-condition">+ Add condition</button></div>';
+      var conditionList = card.querySelector('.ac-condition-list');
+      (profile.conditions || []).forEach(function (condition, conditionIndex) { conditionList.appendChild(renderCondition(condition, profile, conditionIndex)); });
+      card.querySelector('.ac-profile-title').addEventListener('input', function (event) { profile.title = event.target.value; card.querySelector('.ac-profile-header strong').textContent = profile.title || 'Untitled profile'; sync(); });
+      card.querySelector('.ac-profile-priority').addEventListener('input', function (event) { profile.priority = Number(event.target.value) || 0; sync(); });
+      card.querySelector('.ac-profile-description').addEventListener('input', function (event) { profile.description = event.target.value; sync(); });
+      card.querySelector('.ac-profile-recommendation').addEventListener('input', function (event) { profile.recommendation = event.target.value; sync(); });
+      card.querySelector('.ac-profile-match').addEventListener('change', function (event) { profile.match = event.target.value; sync(); });
+      card.querySelector('.ac-add-condition').addEventListener('click', function () { profile.conditions = profile.conditions || []; profile.conditions.push({ metric: 'overall', operator: 'gte', value: 70, value2: 100 }); render(); });
+      card.querySelector('.ac-delete-profile').addEventListener('click', function () { if (window.confirm(settings.i18n.confirmDelete)) { state.profiles.splice(profileIndex, 1); render(); } });
+      profileList.appendChild(card);
+    });
+    emptyProfiles.hidden = state.profiles.length > 0;
+  }
+
+  function renderCondition(condition, profile, conditionIndex) {
+    var row = document.createElement('div');
+    row.className = 'ac-condition';
+    row.innerHTML =
+      '<select class="ac-condition-metric" aria-label="Score to evaluate">' + metricOptions(condition.metric) + '</select>' +
+      '<select class="ac-condition-operator" aria-label="Comparison"><option value="gte">is at least</option><option value="lte">is at most</option><option value="gt">is greater than</option><option value="lt">is less than</option><option value="between">is between</option></select>' +
+      '<input class="ac-condition-value" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(condition.value == null ? 0 : condition.value) + '" aria-label="Value">' +
+      '<input class="ac-condition-value2" type="number" min="0" max="100" step="0.01" value="' + escapeHtml(condition.value2 == null ? 100 : condition.value2) + '" aria-label="Second value">' +
+      '<button type="button" class="button-link-delete" aria-label="Delete condition">&times;</button>';
+    row.querySelector('.ac-condition-operator').value = condition.operator || 'gte';
+    row.classList.toggle('is-between', condition.operator === 'between');
+    row.querySelector('.ac-condition-metric').addEventListener('change', function (event) { condition.metric = event.target.value; sync(); });
+    row.querySelector('.ac-condition-operator').addEventListener('change', function (event) { condition.operator = event.target.value; row.classList.toggle('is-between', condition.operator === 'between'); sync(); });
+    row.querySelector('.ac-condition-value').addEventListener('input', function (event) { condition.value = Number(event.target.value); sync(); });
+    row.querySelector('.ac-condition-value2').addEventListener('input', function (event) { condition.value2 = Number(event.target.value); sync(); });
+    row.querySelector('.button-link-delete').addEventListener('click', function () { profile.conditions.splice(conditionIndex, 1); render(); });
+    return row;
   }
 
   function renderStage(item, stageIndex) {
@@ -188,6 +286,7 @@
     });
   });
   root.querySelectorAll('.ac-add-stage').forEach(function (button) { button.addEventListener('click', function () { state.stages.push(stage()); render(); }); });
+  document.getElementById('ac-add-band').addEventListener('click', function () { state.scoring.bands.push({ id: id('band'), min: 0, max: 100, label: 'New classification', color: '#6E7F6A', interpretation: '' }); render(); });
+  root.querySelectorAll('.ac-add-profile, #ac-add-profile').forEach(function (button) { button.addEventListener('click', function () { state.profiles.push({ id: id('profile'), title: '', description: '', recommendation: '', match: 'all', priority: state.profiles.length + 1, conditions: [{ metric: 'overall', operator: 'gte', value: 70, value2: 100 }] }); render(); }); });
   render();
 }());
-
