@@ -111,6 +111,13 @@
     };
   }
 
+  function responseSignals(items, responses) {
+    return items.map(function (item) {
+      var answer = responses[item.question.id];
+      return answer ? { prompt: item.question.prompt, stage: item.stage.name, score: normalizedScore(item.question, answer) } : null;
+    }).filter(Boolean).sort(function (a, b) { return a.score - b.score; });
+  }
+
   function Runner(root, payload) {
     this.root = root;
     this.payload = payload;
@@ -328,6 +335,18 @@
         detail.appendChild(row);
       });
       shell.appendChild(detail);
+      var signals = responseSignals(this.items, this.responses);
+      if (signals.length) {
+        var signalSection = element('section', 'ac-report-section ac-signal-section');
+        signalSection.appendChild(element('div', 'ac-front-eyebrow', 'Response signals'));
+        signals.slice(0, Math.min(3, signals.length)).forEach(function (signal) {
+          var signalRow = element('article', 'ac-signal-item');
+          signalRow.appendChild(element('span', '', signal.stage));
+          signalRow.appendChild(element('p', '', signal.prompt));
+          signalSection.appendChild(signalRow);
+        });
+        shell.appendChild(signalSection);
+      }
     }
     if (has('recommendation')) {
       var orderedStages = result.stages.slice().sort(function (a, b) { return a.score - b.score; });
