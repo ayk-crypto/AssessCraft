@@ -6,6 +6,7 @@
   "name": "Business Readiness Assessment",
   "description": "Evaluate whether strategy, market understanding, operations, leadership, and financial foundations are ready to support execution.",
   "category": "Business Performance",
+  "icon": "performance",
   "scales": {
     "agreement": [
       { "label": "Strongly Disagree", "score": 1 },
