@@ -55,7 +55,26 @@ final class AssessCraft_Features {
 		return self::MATRIX;
 	}
 
-	private static function enforcement_enabled(): bool {
-		return defined( 'ASSESSCRAFT_COMMERCIAL_ENFORCEMENT' ) && ASSESSCRAFT_COMMERCIAL_ENFORCEMENT;
+	public static function is_pro(): bool {
+		return self::PLAN_PRO === self::plan();
+	}
+
+	public static function upgrade_url(): string {
+		if ( function_exists( 'assesscraft_fs' ) ) {
+			$freemius = assesscraft_fs();
+			if ( is_object( $freemius ) && method_exists( $freemius, 'get_upgrade_url' ) ) {
+				return (string) $freemius->get_upgrade_url();
+			}
+		}
+
+		return admin_url( 'edit.php?post_type=' . AssessCraft_Post_Type::TYPE . '&page=assesscraft-pricing' );
+	}
+
+	public static function enforcement_enabled(): bool {
+		if ( defined( 'ASSESSCRAFT_COMMERCIAL_ENFORCEMENT' ) ) {
+			return (bool) ASSESSCRAFT_COMMERCIAL_ENFORCEMENT;
+		}
+
+		return (bool) apply_filters( 'assesscraft_commercial_enforcement', true );
 	}
 }
