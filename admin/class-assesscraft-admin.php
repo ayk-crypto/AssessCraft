@@ -19,6 +19,14 @@ final class AssessCraft_Admin {
 	}
 
 	public function enqueue_assets( string $hook ): void {
+		if ( 'ac_assessment_page_assesscraft-getting-started' === $hook ) {
+			wp_enqueue_style( 'assesscraft-admin', ASSESSCRAFT_URL . 'admin/assets/admin.css', array(), ASSESSCRAFT_VERSION );
+			return;
+		}
+		if ( 'ac_assessment_page_assesscraft-leads' === $hook ) {
+			wp_enqueue_style( 'assesscraft-admin', ASSESSCRAFT_URL . 'admin/assets/admin.css', array(), ASSESSCRAFT_VERSION );
+			return;
+		}
 		if ( 'ac_assessment_page_assesscraft-templates' === $hook ) {
 			wp_enqueue_style( 'assesscraft-admin', ASSESSCRAFT_URL . 'admin/assets/admin.css', array(), ASSESSCRAFT_VERSION );
 			wp_enqueue_script( 'assesscraft-templates', ASSESSCRAFT_URL . 'admin/assets/templates.js', array(), ASSESSCRAFT_VERSION, true );
@@ -63,6 +71,7 @@ final class AssessCraft_Admin {
 			<header class="ac-workspace-header">
 				<div class="ac-workspace-brand"><span class="dashicons dashicons-chart-bar"></span><div><strong><?php esc_html_e( 'AssessCraft', 'assesscraft' ); ?></strong><small><?php esc_html_e( 'Assessment workspace', 'assesscraft' ); ?></small></div></div>
 				<div class="ac-workspace-actions">
+					<a class="ac-workspace-help" href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . AssessCraft_Post_Type::TYPE . '&page=assesscraft-getting-started' ) ); ?>"><span class="dashicons dashicons-editor-help"></span><?php esc_html_e( 'Help', 'assesscraft' ); ?></a>
 					<span class="ac-save-hint"><span class="dashicons dashicons-saved"></span><?php esc_html_e( 'Changes save with WordPress Update', 'assesscraft' ); ?></span>
 					<span class="ac-status-pill <?php echo 'publish' === $post->post_status ? 'is-published' : ''; ?>"><?php echo 'publish' === $post->post_status ? esc_html__( 'Published', 'assesscraft' ) : esc_html__( 'Draft', 'assesscraft' ); ?></span>
 				</div>
@@ -173,6 +182,7 @@ final class AssessCraft_Admin {
 			<section class="ac-panel" data-panel="lead-form">
 				<div class="ac-panel-heading"><div><span class="ac-eyebrow"><?php esc_html_e( 'Opt-in conversion', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Consultation lead form', 'assesscraft' ); ?></h2></div></div>
 				<label class="ac-enable-card"><input type="checkbox" name="assesscraft_lead_enabled" value="1" <?php checked( ! empty( $config['lead_form']['enabled'] ) ); ?>><span><strong><?php esc_html_e( 'Enable consultation requests', 'assesscraft' ); ?></strong><small><?php esc_html_e( 'Results are sent only when the visitor submits this form.', 'assesscraft' ); ?></small></span></label>
+				<label class="ac-enable-card ac-storage-card"><input type="checkbox" name="assesscraft_store_responses" value="1" <?php checked( ! empty( $config['lead_form']['store_responses'] ) ); ?>><span><strong><?php esc_html_e( 'Store submitted consultation requests in WordPress', 'assesscraft' ); ?></strong><small><?php esc_html_e( 'Disabled by default. Stores contact details and the result summary, never individual question answers.', 'assesscraft' ); ?></small></span></label>
 				<div class="ac-form-grid ac-lead-settings">
 					<label class="ac-field"><span><?php esc_html_e( 'Recipient email', 'assesscraft' ); ?></span><input type="email" name="assesscraft_lead_recipient" value="<?php echo esc_attr( $config['lead_form']['recipient'] ); ?>" placeholder="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>"></label>
 					<label class="ac-field"><span><?php esc_html_e( 'Email subject', 'assesscraft' ); ?></span><input name="assesscraft_lead_subject" value="<?php echo esc_attr( $config['lead_form']['subject'] ); ?>"></label>
@@ -272,6 +282,7 @@ final class AssessCraft_Admin {
 		$posted_sections = isset( $_POST['assesscraft_report_sections'] ) && is_array( $_POST['assesscraft_report_sections'] ) ? array_map( 'sanitize_key', wp_unslash( $_POST['assesscraft_report_sections'] ) ) : array();
 		$config['report']['sections'] = array_values( array_intersect( $allowed_sections, $posted_sections ) );
 		$config['lead_form']['enabled']         = ! empty( $_POST['assesscraft_lead_enabled'] );
+		$config['lead_form']['store_responses'] = ! empty( $_POST['assesscraft_store_responses'] );
 		$config['lead_form']['recipient']       = isset( $_POST['assesscraft_lead_recipient'] ) ? sanitize_email( wp_unslash( $_POST['assesscraft_lead_recipient'] ) ) : '';
 		$config['lead_form']['subject']         = $this->posted_text( 'assesscraft_lead_subject' );
 		$config['lead_form']['consent_label']   = $this->posted_textarea( 'assesscraft_consent_label' );
