@@ -19,6 +19,14 @@ final class AssessCraft_Admin {
 	}
 
 	public function enqueue_assets( string $hook ): void {
+		if ( 'ac_assessment_page_assesscraft-getting-started' === $hook ) {
+			wp_enqueue_style( 'assesscraft-admin', ASSESSCRAFT_URL . 'admin/assets/admin.css', array(), ASSESSCRAFT_VERSION );
+			return;
+		}
+		if ( 'ac_assessment_page_assesscraft-leads' === $hook ) {
+			wp_enqueue_style( 'assesscraft-admin', ASSESSCRAFT_URL . 'admin/assets/admin.css', array(), ASSESSCRAFT_VERSION );
+			return;
+		}
 		if ( 'ac_assessment_page_assesscraft-templates' === $hook ) {
 			wp_enqueue_style( 'assesscraft-admin', ASSESSCRAFT_URL . 'admin/assets/admin.css', array(), ASSESSCRAFT_VERSION );
 			wp_enqueue_script( 'assesscraft-templates', ASSESSCRAFT_URL . 'admin/assets/templates.js', array(), ASSESSCRAFT_VERSION, true );
@@ -39,6 +47,12 @@ final class AssessCraft_Admin {
 			'assesscraft-admin',
 			'assessCraftAdmin',
 			array(
+				'features' => array(
+					'profileLimit'   => AssessCraft_Features::limit( 'profiles' ),
+					'weighted'       => AssessCraft_Features::available( 'weighted_scoring' ),
+					'reverseScoring' => AssessCraft_Features::available( 'reverse_scoring' ),
+					'upgradeUrl'     => AssessCraft_Features::upgrade_url(),
+				),
 				'questionTypes' => array(
 					'scale'   => __( 'Agreement scale', 'assesscraft' ),
 					'choice'  => __( 'Multiple choice', 'assesscraft' ),
@@ -58,11 +72,15 @@ final class AssessCraft_Admin {
 		$config = get_post_meta( $post->ID, '_assesscraft_config', true );
 		$config = AssessCraft_Schema::sanitize( is_array( $config ) ? $config : array() );
 		wp_nonce_field( self::NONCE_ACTION, 'assesscraft_nonce' );
+		$profile_limit = AssessCraft_Features::limit( 'profiles' );
+		$is_pro_email  = AssessCraft_Features::available( 'consultation_email' );
+		$advanced_design = AssessCraft_Features::available( 'advanced_design' );
 		?>
 		<div class="ac-admin" id="assesscraft-admin">
 			<header class="ac-workspace-header">
 				<div class="ac-workspace-brand"><span class="dashicons dashicons-chart-bar"></span><div><strong><?php esc_html_e( 'AssessCraft', 'assesscraft' ); ?></strong><small><?php esc_html_e( 'Assessment workspace', 'assesscraft' ); ?></small></div></div>
 				<div class="ac-workspace-actions">
+					<a class="ac-workspace-help" href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . AssessCraft_Post_Type::TYPE . '&page=assesscraft-getting-started' ) ); ?>"><span class="dashicons dashicons-editor-help"></span><?php esc_html_e( 'Help', 'assesscraft' ); ?></a>
 					<span class="ac-save-hint"><span class="dashicons dashicons-saved"></span><?php esc_html_e( 'Changes save with WordPress Update', 'assesscraft' ); ?></span>
 					<span class="ac-status-pill <?php echo 'publish' === $post->post_status ? 'is-published' : ''; ?>"><?php echo 'publish' === $post->post_status ? esc_html__( 'Published', 'assesscraft' ) : esc_html__( 'Draft', 'assesscraft' ); ?></span>
 				</div>
@@ -135,7 +153,7 @@ final class AssessCraft_Admin {
 					<div><span class="ac-eyebrow"><?php esc_html_e( 'Personalized outcomes', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Result profiles', 'assesscraft' ); ?></h2></div>
 					<button type="button" class="button button-primary" id="ac-add-profile"><?php esc_html_e( 'Add profile', 'assesscraft' ); ?></button>
 				</div>
-				<p class="ac-help"><?php esc_html_e( 'Profiles use the overall or individual stage scores. The highest-priority matching profile appears in the report.', 'assesscraft' ); ?></p>
+				<p class="ac-help"><?php esc_html_e( 'Profiles use the overall or individual stage scores. The highest-priority matching profile appears in the report.', 'assesscraft' ); ?><?php if ( $profile_limit >= 0 ) : ?> <strong><?php printf( esc_html__( 'Free includes up to %d profiles.', 'assesscraft' ), absint( $profile_limit ) ); ?></strong><?php endif; ?></p>
 				<div class="ac-profile-list" id="ac-profile-list"></div>
 				<div class="ac-empty-state" id="ac-empty-profiles"><div class="dashicons dashicons-groups"></div><h3><?php esc_html_e( 'No profiles yet', 'assesscraft' ); ?></h3><p><?php esc_html_e( 'Create a profile to turn scores into a meaningful result narrative.', 'assesscraft' ); ?></p><button type="button" class="button button-primary ac-add-profile"><?php esc_html_e( 'Add first profile', 'assesscraft' ); ?></button></div>
 			</section>
@@ -173,9 +191,10 @@ final class AssessCraft_Admin {
 			<section class="ac-panel" data-panel="lead-form">
 				<div class="ac-panel-heading"><div><span class="ac-eyebrow"><?php esc_html_e( 'Opt-in conversion', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Consultation lead form', 'assesscraft' ); ?></h2></div></div>
 				<label class="ac-enable-card"><input type="checkbox" name="assesscraft_lead_enabled" value="1" <?php checked( ! empty( $config['lead_form']['enabled'] ) ); ?>><span><strong><?php esc_html_e( 'Enable consultation requests', 'assesscraft' ); ?></strong><small><?php esc_html_e( 'Results are sent only when the visitor submits this form.', 'assesscraft' ); ?></small></span></label>
+				<label class="ac-enable-card ac-storage-card"><input type="checkbox" name="assesscraft_store_responses" value="1" <?php checked( ! empty( $config['lead_form']['store_responses'] ) ); ?>><span><strong><?php esc_html_e( 'Store submitted consultation requests in WordPress', 'assesscraft' ); ?></strong><small><?php esc_html_e( 'Disabled by default. Stores contact details and the result summary, never individual question answers.', 'assesscraft' ); ?></small></span></label>
 				<div class="ac-form-grid ac-lead-settings">
-					<label class="ac-field"><span><?php esc_html_e( 'Recipient email', 'assesscraft' ); ?></span><input type="email" name="assesscraft_lead_recipient" value="<?php echo esc_attr( $config['lead_form']['recipient'] ); ?>" placeholder="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>"></label>
-					<label class="ac-field"><span><?php esc_html_e( 'Email subject', 'assesscraft' ); ?></span><input name="assesscraft_lead_subject" value="<?php echo esc_attr( $config['lead_form']['subject'] ); ?>"></label>
+					<label class="ac-field<?php echo $is_pro_email ? '' : ' ac-pro-locked'; ?>"><span><?php esc_html_e( 'Recipient email', 'assesscraft' ); ?><?php if ( ! $is_pro_email ) : ?> — <?php esc_html_e( 'Pro', 'assesscraft' ); ?><?php endif; ?></span><input type="email" name="assesscraft_lead_recipient" value="<?php echo esc_attr( $config['lead_form']['recipient'] ); ?>" placeholder="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>" <?php disabled( ! $is_pro_email ); ?>></label>
+					<label class="ac-field<?php echo $is_pro_email ? '' : ' ac-pro-locked'; ?>"><span><?php esc_html_e( 'Email subject', 'assesscraft' ); ?><?php if ( ! $is_pro_email ) : ?> — <?php esc_html_e( 'Pro', 'assesscraft' ); ?><?php endif; ?></span><input name="assesscraft_lead_subject" value="<?php echo esc_attr( $config['lead_form']['subject'] ); ?>" <?php disabled( ! $is_pro_email ); ?>></label>
 					<label class="ac-field ac-field-wide"><span><?php esc_html_e( 'Consent label', 'assesscraft' ); ?></span><textarea rows="2" name="assesscraft_consent_label"><?php echo esc_textarea( $config['lead_form']['consent_label'] ); ?></textarea></label>
 					<label class="ac-field ac-field-wide"><span><?php esc_html_e( 'Success message', 'assesscraft' ); ?></span><textarea rows="2" name="assesscraft_success_message"><?php echo esc_textarea( $config['lead_form']['success_message'] ); ?></textarea></label>
 				</div>
@@ -189,7 +208,8 @@ final class AssessCraft_Admin {
 						<?php
 						$colors = array( 'primary' => __( 'Primary / dark', 'assesscraft' ), 'accent' => __( 'Accent', 'assesscraft' ), 'background' => __( 'Page background', 'assesscraft' ), 'surface' => __( 'Card surface', 'assesscraft' ), 'text' => __( 'Main text', 'assesscraft' ), 'muted' => __( 'Secondary text', 'assesscraft' ), 'button_text' => __( 'Button text', 'assesscraft' ) );
 						foreach ( $colors as $key => $label ) {
-							printf( '<label class="ac-color-field"><span>%s</span><i class="ac-color-swatch" style="background:%s" aria-hidden="true"></i><input class="ac-design-color-code" name="assesscraft_design_%s" value="%s" data-design="%s" maxlength="7" spellcheck="false" aria-label="%s"></label>', esc_html( $label ), esc_attr( $config['design'][ $key ] ), esc_attr( $key ), esc_attr( strtoupper( $config['design'][ $key ] ) ), esc_attr( $key ), esc_attr( sprintf( __( '%s hexadecimal color', 'assesscraft' ), $label ) ) );
+							$is_limited = ! $advanced_design && ! in_array( $key, array( 'primary', 'accent' ), true );
+							printf( '<label class="ac-color-field%s"><span>%s%s</span><i class="ac-color-swatch" style="background:%s" aria-hidden="true"></i><input class="ac-design-color-code" name="assesscraft_design_%s" value="%s" data-design="%s" maxlength="7" spellcheck="false" aria-label="%s"%s></label>', $is_limited ? ' ac-pro-locked' : '', esc_html( $label ), $is_limited ? ' — ' . esc_html__( 'Pro', 'assesscraft' ) : '', esc_attr( $config['design'][ $key ] ), esc_attr( $key ), esc_attr( strtoupper( $config['design'][ $key ] ) ), esc_attr( $key ), esc_attr( sprintf( __( '%s hexadecimal color', 'assesscraft' ), $label ) ), disabled( $is_limited, true, false ) );
 						}
 						?>
 						<label class="ac-field"><span><?php esc_html_e( 'Typography', 'assesscraft' ); ?></span><select name="assesscraft_design_font" data-design="font"><option value="system" <?php selected( $config['design']['font'], 'system' ); ?>><?php esc_html_e( 'Modern system font', 'assesscraft' ); ?></option><option value="serif" <?php selected( $config['design']['font'], 'serif' ); ?>><?php esc_html_e( 'Editorial serif', 'assesscraft' ); ?></option></select></label>
@@ -221,12 +241,16 @@ final class AssessCraft_Admin {
 		echo '<p>' . esc_html__( 'Place this assessment on any page:', 'assesscraft' ) . '</p>';
 		echo '<p><code>[assesscraft id=&quot;' . absint( $post->ID ) . '&quot;]</code></p>';
 		echo '<p class="description">' . esc_html__( 'Elementor and Gutenberg widgets will use this same assessment ID.', 'assesscraft' ) . '</p>';
-		$export_url = wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_export&assessment_id=' . absint( $post->ID ) ), 'assesscraft_export' );
-		echo '<p><a class="button button-secondary" href="' . esc_url( $export_url ) . '">' . esc_html__( 'Export JSON', 'assesscraft' ) . '</a></p>';
+		if ( AssessCraft_Features::available( 'json_portability' ) ) {
+			$export_url = wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_export&assessment_id=' . absint( $post->ID ) ), 'assesscraft_export' );
+			echo '<p><a class="button button-secondary" href="' . esc_url( $export_url ) . '">' . esc_html__( 'Export JSON', 'assesscraft' ) . '</a></p>';
+		} else {
+			echo '<p><a class="button button-secondary" href="' . esc_url( AssessCraft_Features::upgrade_url() ) . '">' . esc_html__( 'Unlock JSON export with Pro', 'assesscraft' ) . '</a></p>';
+		}
 		$duplicate_url = wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_duplicate&assessment_id=' . absint( $post->ID ) ), 'assesscraft_duplicate' );
 		echo '<p><a class="button button-secondary" href="' . esc_url( $duplicate_url ) . '">' . esc_html__( 'Duplicate Assessment', 'assesscraft' ) . '</a></p>';
 		?>
-		<details class="ac-save-template-box">
+		<?php if ( AssessCraft_Features::available( 'custom_templates' ) ) : ?><details class="ac-save-template-box">
 			<summary><?php esc_html_e( 'Save as reusable template', 'assesscraft' ); ?></summary>
 			<div class="ac-save-template-form" data-save-template data-action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" data-assessment="<?php echo absint( $post->ID ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'assesscraft_save_template' ) ); ?>">
 				<label><span><?php esc_html_e( 'Template name', 'assesscraft' ); ?></span><input data-template-field="name" value="<?php echo esc_attr( get_the_title( $post ) ); ?>"></label>
@@ -236,7 +260,7 @@ final class AssessCraft_Admin {
 				<p class="description"><?php esc_html_e( 'Save or update the assessment first so the template includes your latest changes.', 'assesscraft' ); ?></p>
 				<button class="button button-primary ac-save-template-submit" type="button"><?php esc_html_e( 'Save Template', 'assesscraft' ); ?></button>
 			</div>
-		</details>
+		</details><?php else : ?><p><a href="<?php echo esc_url( AssessCraft_Features::upgrade_url() ); ?>"><?php esc_html_e( 'Save reusable templates with Pro', 'assesscraft' ); ?></a></p><?php endif; ?>
 		<?php
 	}
 
@@ -256,8 +280,9 @@ final class AssessCraft_Admin {
 			return;
 		}
 
-		$config = get_post_meta( $post_id, '_assesscraft_config', true );
-		$config = AssessCraft_Schema::sanitize( is_array( $config ) ? $config : array() );
+		$config  = get_post_meta( $post_id, '_assesscraft_config', true );
+		$config  = AssessCraft_Schema::sanitize( is_array( $config ) ? $config : array() );
+		$current = $config;
 		$config['overview']['heading']        = $this->posted_text( 'assesscraft_heading' );
 		$config['overview']['description']    = $this->posted_textarea( 'assesscraft_description' );
 		$config['overview']['start_label']    = $this->posted_text( 'assesscraft_start_label' );
@@ -272,6 +297,7 @@ final class AssessCraft_Admin {
 		$posted_sections = isset( $_POST['assesscraft_report_sections'] ) && is_array( $_POST['assesscraft_report_sections'] ) ? array_map( 'sanitize_key', wp_unslash( $_POST['assesscraft_report_sections'] ) ) : array();
 		$config['report']['sections'] = array_values( array_intersect( $allowed_sections, $posted_sections ) );
 		$config['lead_form']['enabled']         = ! empty( $_POST['assesscraft_lead_enabled'] );
+		$config['lead_form']['store_responses'] = ! empty( $_POST['assesscraft_store_responses'] );
 		$config['lead_form']['recipient']       = isset( $_POST['assesscraft_lead_recipient'] ) ? sanitize_email( wp_unslash( $_POST['assesscraft_lead_recipient'] ) ) : '';
 		$config['lead_form']['subject']         = $this->posted_text( 'assesscraft_lead_subject' );
 		$config['lead_form']['consent_label']   = $this->posted_textarea( 'assesscraft_consent_label' );
@@ -301,6 +327,7 @@ final class AssessCraft_Admin {
 			$config['profiles'] = is_array( $profiles ) ? AssessCraft_Schema::sanitize_profiles( $profiles ) : array();
 		}
 
+		$config = AssessCraft_Entitlements::preserve_restricted_config( $current, $config );
 		update_post_meta( $post_id, '_assesscraft_config', AssessCraft_Schema::sanitize( $config ) );
 	}
 

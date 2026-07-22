@@ -3,7 +3,7 @@ Contributors: assesscraft
 Tags: assessment, lead generation, reports, scoring, forms
 Requires at least: 6.5
 Requires PHP: 8.0
-Stable tag: 0.11.0-alpha.1
+Stable tag: 0.17.0-alpha.1
 License: GPLv2 or later
 
 Build scored, multi-stage assessments that generate personalized reports and qualified leads.
@@ -20,6 +20,54 @@ AssessCraft is a foundation release for a visual assessment builder designed for
 4. Create an assessment and embed it with the generated shortcode.
 
 == Changelog ==
+
+= 0.17.0-alpha.1 =
+
+* Enforces the commercial Free/Pro matrix with server-side limits and upgrade guidance.
+* Keeps existing Pro-built assessments rendering after downgrade while preserving locked configuration.
+* Free includes one published assessment, three profiles, and WordPress consultation-request storage.
+* Pro unlocks email notifications, JSON portability, custom templates, Elementor, advanced scoring/design, CSV export, and custom retention.
+
+= 0.16.0-alpha.1 =
+* Add safe, versioned assessment and database migrations with pre-migration configuration backups.
+* Add WordPress personal-data export, erasure, and suggested privacy-policy content.
+* Add explicit keep-or-delete uninstall behavior and consent timestamps for stored requests.
+* Add privacy-safe error logging, automated scoring/schema tests, compatibility CI, and release documentation.
+
+= 0.15.0-alpha.2 =
+* Keep WordPress and Freemius admin notices above the branded Getting Started hero.
+* Improve the onboarding page heading structure for accessibility.
+
+= 0.15.0-alpha.1 =
+* Integrated the Freemius WordPress SDK for AssessCraft licensing, accounts, paid plans, and automatic update delivery.
+* Connected verified Freemius premium entitlement to the provider-neutral Free and Pro feature registry.
+* Corrected the generated custom-post-type menu integration and preserved the AssessCraft onboarding route.
+* Commercial feature enforcement remains disabled during licensing validation.
+
+= 0.14.0-alpha.2 =
+* Added real onboarding detection for shortcode, Gutenberg, and Elementor embeds.
+* Added privacy-safe test-completion tracking without storing answers or visitor information.
+* Added a directly visible Help link inside the assessment workspace.
+
+= 0.14.0-alpha.1 =
+* Added a centralized, provider-neutral Free and Pro feature registry without enforcing restrictions during alpha testing.
+* Defined three Free result profiles, Pro consultation email delivery, and consultation storage for both editions.
+* Added sequential plugin and assessment-schema migrations with bounded upgrade history.
+* Added a responsive first-activation Getting Started experience, guided launch checklist, improved empty paths, and contextual editor help.
+
+= 0.13.0-alpha.1 =
+* Added accessible progress semantics, report focus management, and clearer form submission announcements.
+* Recalculates consultation scores and profiles on the server from verified answer IDs instead of trusting browser-supplied results.
+* Rejects incomplete or unverifiable consultation submissions before email delivery or storage.
+
+= 0.12.0-alpha.2 =
+* Fixed a PHP parse error in consultation-request dashboard pagination that prevented plugin activation.
+
+= 0.12.0-alpha.1 =
+* Added optional per-assessment storage for consented consultation requests, disabled by default.
+* Added an administrator-only consultation request dashboard with score, profile, assessment, contact details, search, and filtering.
+* Added filtered CSV export, individual deletion, full purge, configurable retention, and daily privacy cleanup.
+* Stores compact result summaries only and never stores individual question answers.
 
 = 0.11.0-alpha.1 =
 * Added nonce-protected deletion for custom templates while keeping bundled templates immutable.

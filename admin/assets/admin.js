@@ -13,6 +13,7 @@
   var profileList = document.getElementById('ac-profile-list');
   var emptyProfiles = document.getElementById('ac-empty-profiles');
   var settings = window.assessCraftAdmin || { questionTypes: {}, i18n: {} };
+  var features = settings.features || { profileLimit: -1, weighted: true, reverseScoring: true };
   var state = {
     stages: parseStages(jsonField.value),
     scoring: parseObject(scoringField.value, { method: 'weighted_percentage', bands: [] }),
@@ -143,6 +144,10 @@
       card.querySelector('.ac-profile-match').addEventListener('change', function (event) { profile.match = event.target.value; sync(); });
       card.querySelector('.ac-add-condition').addEventListener('click', function () { profile.conditions = profile.conditions || []; profile.conditions.push({ metric: 'overall', operator: 'gte', value: 70, value2: 100 }); render(); });
       card.querySelector('.ac-delete-profile').addEventListener('click', function () { if (window.confirm(settings.i18n.confirmDelete)) { state.profiles.splice(profileIndex, 1); render(); } });
+	  if (features.profileLimit >= 0 && profileIndex >= features.profileLimit) {
+		card.classList.add('ac-pro-locked');
+		card.querySelectorAll('input, textarea, select, button').forEach(function (control) { control.disabled = true; });
+	  }
       profileList.appendChild(card);
     });
     emptyProfiles.hidden = state.profiles.length > 0;
@@ -181,7 +186,7 @@
       '<div class="ac-stage-body">' +
         '<div class="ac-form-grid ac-stage-fields">' +
           '<label class="ac-field"><span>Stage name</span><input class="ac-stage-name" value="' + escapeHtml(item.name || '') + '" placeholder="e.g. Growth"></label>' +
-          '<label class="ac-field"><span>Weight</span><input class="ac-stage-weight" type="number" min="0" step="0.1" value="' + escapeHtml(item.weight == null ? 1 : item.weight) + '"></label>' +
+          '<label class="ac-field' + (features.weighted ? '' : ' ac-pro-locked') + '"><span>Weight' + (features.weighted ? '' : ' — Pro') + '</span><input class="ac-stage-weight" type="number" min="0" step="0.1" value="' + escapeHtml(item.weight == null ? 1 : item.weight) + '"' + (features.weighted ? '' : ' disabled') + '></label>' +
           '<label class="ac-field ac-field-wide"><span>Description</span><textarea class="ac-stage-description" rows="2" placeholder="What does this stage measure?">' + escapeHtml(item.description || '') + '</textarea></label>' +
         '</div>' +
         '<div class="ac-question-list"></div>' +
@@ -233,7 +238,7 @@
         '<label class="ac-field ac-field-wide"><span>Question</span><textarea class="ac-question-prompt" rows="2" placeholder="Enter the statement or question">' + escapeHtml(item.prompt || '') + '</textarea></label>' +
         '<div class="ac-form-grid ac-question-settings">' +
           '<label class="ac-field"><span>Question type</span><select class="ac-question-type">' + options + '</select></label>' +
-          '<div class="ac-switches"><label><input class="ac-required" type="checkbox"' + (item.required ? ' checked' : '') + '> Required</label><label><input class="ac-reverse" type="checkbox"' + (item.reverse ? ' checked' : '') + '> Reverse scoring</label></div>' +
+          '<div class="ac-switches"><label><input class="ac-required" type="checkbox"' + (item.required ? ' checked' : '') + '> Required</label><label class="' + (features.reverseScoring ? '' : 'ac-pro-locked') + '"><input class="ac-reverse" type="checkbox"' + (item.reverse ? ' checked' : '') + (features.reverseScoring ? '' : ' disabled') + '> Reverse scoring' + (features.reverseScoring ? '' : ' — Pro') + '</label></div>' +
         '</div>' +
         '<div class="ac-answer-heading"><span>Answer choices</span><span>Score</span></div>' +
         '<div class="ac-answer-list"></div>' +
@@ -304,7 +309,13 @@
   try { var savedTab = window.sessionStorage.getItem('assesscraft-active-tab'); if (savedTab) activateTab(root.querySelector('[data-tab="' + savedTab + '"]')); } catch (error) {}
   root.querySelectorAll('.ac-add-stage').forEach(function (button) { button.addEventListener('click', function () { state.stages.push(stage()); render(); }); });
   document.getElementById('ac-add-band').addEventListener('click', function () { state.scoring.bands.push({ id: id('band'), min: 0, max: 100, label: 'New classification', color: '#6E7F6A', interpretation: '' }); render(); });
-  root.querySelectorAll('.ac-add-profile, #ac-add-profile').forEach(function (button) { button.addEventListener('click', function () { state.profiles.push({ id: id('profile'), title: '', description: '', recommendation: '', match: 'all', priority: state.profiles.length + 1, conditions: [{ metric: 'overall', operator: 'gte', value: 70, value2: 100 }] }); render(); }); });
+  root.querySelectorAll('.ac-add-profile, #ac-add-profile').forEach(function (button) { button.addEventListener('click', function () {
+	if (features.profileLimit >= 0 && state.profiles.length >= features.profileLimit) {
+	  window.location.href = features.upgradeUrl || '#';
+	  return;
+	}
+	state.profiles.push({ id: id('profile'), title: '', description: '', recommendation: '', match: 'all', priority: state.profiles.length + 1, conditions: [{ metric: 'overall', operator: 'gte', value: 70, value2: 100 }] }); render();
+  }); });
 
   var designPreview = document.getElementById('ac-design-preview');
   function updateDesignPreview() {
