@@ -4,6 +4,14 @@ defined( 'ABSPATH' ) || exit;
 final class AssessCraft_Schema {
 	public const VERSION = 1;
 
+	public static function migrate( array $config ): array {
+		$version = absint( $config['schema_version'] ?? 0 );
+		if ( $version < 1 ) {
+			$config['schema_version'] = 1;
+		}
+		return self::sanitize( $config );
+	}
+
 	public static function defaults(): array {
 		return array(
 			'schema_version' => self::VERSION,
