@@ -39,6 +39,7 @@
 .ac-front-question-card { padding: 34px; border: 1px solid #dad5c7; border-radius: var(--ac-radius); background: var(--ac-surface); }
 .ac-question-prompt { margin: 0 0 26px; color: var(--ac-primary); font-size: clamp(21px, 3vw, 27px); line-height: 1.35; }
 .ac-question-prompt:focus { outline: none; }
+.ac-front-title:focus { outline: none; }
 .ac-choice-list { display: flex; flex-direction: column; gap: 10px; }
 .ac-choice { display: flex; align-items: center; gap: 13px; min-height: 52px; padding: 12px 15px; border: 1px solid #d4d0c5; background: #fff; cursor: pointer; transition: border-color .15s, background .15s; }
 .ac-choice:hover { border-color: var(--ac-primary); }
@@ -68,6 +69,7 @@
 .ac-result-band { display: block; margin: -8px 0 12px; font-size: 12px; font-style: normal; font-weight: 700; }
 .ac-result-meter { height: 4px; overflow: hidden; background: #e8e5dc; }
 .ac-result-meter div { height: 100%; background: var(--ac-accent); }
+.ac-result-meter[role="progressbar"] { position: relative; }
 .ac-report-section { margin: 28px 0; }
 .ac-interpretation-card { position: relative; padding: 20px 20px 18px; border: 1px solid #dad5c7; border-bottom: 0; background: var(--ac-surface); }
 .ac-interpretation-card:last-child { border-bottom: 1px solid #dad5c7; }
