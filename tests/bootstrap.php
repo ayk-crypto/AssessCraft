@@ -1,5 +1,6 @@
 <?php
 define( 'ABSPATH', __DIR__ . '/' );
+function absint( $value ) { return abs( (int) $value ); }
 function sanitize_key( $value ) { return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $value ) ); }
 function sanitize_text_field( $value ) { return trim( strip_tags( (string) $value ) ); }
 function sanitize_textarea_field( $value ) { return trim( strip_tags( (string) $value ) ); }
