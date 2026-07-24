@@ -26,7 +26,7 @@ final class ScoringTest extends TestCase {
 	public function test_weighted_and_reverse_scoring(): void {
 		$result = AssessCraft_Scoring::calculate( $this->config(), array( 'q1' => 'high', 'q2' => 'low' ) );
 		$this->assertTrue( $result['valid'] );
-		$this->assertSame( 100.0, $result['overall'] );
+		$this->assertSame( 100, $result['overall'] );
 		$this->assertSame( 'Ready', $result['profile'] );
 	}
 
