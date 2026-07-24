@@ -17,6 +17,7 @@ final class AssessCraft_Plugin {
 		( new AssessCraft_Templates_Admin() )->register();
 		( new AssessCraft_Onboarding() )->register();
 		( new AssessCraft_System_Status() )->register();
+		( new AssessCraft_Upgrade() )->register();
 		( new AssessCraft_Shortcode() )->register();
 		( new AssessCraft_Lead_Endpoint() )->register();
 		( new AssessCraft_Lead_Store() )->register();
@@ -30,7 +31,6 @@ final class AssessCraft_Plugin {
 	public static function activate(): void {
 		( new AssessCraft_Post_Type() )->register_post_type();
 		( new AssessCraft_Lead_Store() )->maybe_install();
-		AssessCraft_Onboarding::queue_redirect();
 		flush_rewrite_rules();
 	}
 
