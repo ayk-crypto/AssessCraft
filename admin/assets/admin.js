@@ -12,6 +12,7 @@
   var bandList = document.getElementById('ac-band-list');
   var profileList = document.getElementById('ac-profile-list');
   var emptyProfiles = document.getElementById('ac-empty-profiles');
+  var profileLimitNotice = document.getElementById('ac-profile-limit-notice');
   var settings = window.assessCraftAdmin || { questionTypes: {}, i18n: {} };
   var features = settings.features || { profileLimit: -1, weighted: true, reverseScoring: true };
   var state = {
@@ -49,6 +50,37 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   }
 
+  function formatMessage(template, values) {
+    var index = 0;
+    return String(template || '').replace(/%(?:(\d+)\$)?d/g, function (match, position) {
+      var valueIndex = position ? Number(position) - 1 : index++;
+      return values[valueIndex];
+    });
+  }
+
+  function updateProfileLimitState() {
+    if (features.profileLimit < 0) return;
+    var used = state.profiles.length;
+    var atLimit = used >= features.profileLimit;
+    var addButton = document.getElementById('ac-add-profile');
+    if (addButton) {
+      addButton.classList.toggle('is-limit-reached', atLimit);
+      if (atLimit) addButton.setAttribute('aria-describedby', 'ac-profile-limit-description');
+      else addButton.removeAttribute('aria-describedby');
+    }
+    if (!profileLimitNotice) return;
+    if (!atLimit) {
+      profileLimitNotice.hidden = true;
+      return;
+    }
+    profileLimitNotice.querySelector('#ac-profile-limit-title').textContent =
+      formatMessage(settings.i18n.profileLimit, [features.profileLimit]);
+    profileLimitNotice.querySelector('#ac-profile-limit-description').textContent =
+      settings.i18n.profileLimitHelp || '';
+    profileLimitNotice.querySelector('#ac-profile-limit-usage').textContent =
+      formatMessage(settings.i18n.profileLimitUsed, [used, features.profileLimit]);
+  }
+
   function defaultAnswers(type) {
     if (type === 'yes_no') return [answer('Yes', 1), answer('No', 0)];
     if (type === 'numeric') return [1, 2, 3, 4, 5].map(function (score) { return answer(String(score), score); });
@@ -78,6 +110,7 @@
     emptyState.hidden = state.stages.length > 0;
     renderBands();
     renderProfiles();
+    updateProfileLimitState();
     var questionCount = state.stages.reduce(function (total, item) { return total + (item.questions || []).length; }, 0);
     var statusValues = { stages: state.stages.length, questions: questionCount, profiles: state.profiles.length };
     Object.keys(statusValues).forEach(function (key) { var node = root.querySelector('[data-status="' + key + '"]'); if (node) node.textContent = statusValues[key]; });
@@ -311,7 +344,10 @@
   document.getElementById('ac-add-band').addEventListener('click', function () { state.scoring.bands.push({ id: id('band'), min: 0, max: 100, label: 'New classification', color: '#6E7F6A', interpretation: '' }); render(); });
   root.querySelectorAll('.ac-add-profile, #ac-add-profile').forEach(function (button) { button.addEventListener('click', function () {
 	if (features.profileLimit >= 0 && state.profiles.length >= features.profileLimit) {
-	  window.location.href = features.upgradeUrl || '#';
+	  updateProfileLimitState();
+	  profileLimitNotice.hidden = false;
+	  profileLimitNotice.focus();
+	  profileLimitNotice.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 	  return;
 	}
 	state.profiles.push({ id: id('profile'), title: '', description: '', recommendation: '', match: 'all', priority: state.profiles.length + 1, conditions: [{ metric: 'overall', operator: 'gte', value: 70, value2: 100 }] }); render();
@@ -341,11 +377,20 @@
       var value = input.value.trim().toUpperCase();
       var valid = /^#[0-9A-F]{6}$/.test(value);
       input.classList.toggle('is-invalid', !valid);
-      if (valid) field.querySelector('.ac-color-swatch').style.background = value;
+      if (valid) field.querySelector('.ac-color-swatch').value = value;
     });
     root.querySelectorAll('[data-output]').forEach(function (output) { output.textContent = values[output.dataset.output] + 'px'; });
   }
   root.querySelectorAll('[data-design]').forEach(function (input) { input.addEventListener('input', updateDesignPreview); input.addEventListener('change', updateDesignPreview); });
+  root.querySelectorAll('[data-color-picker]').forEach(function (picker) {
+    picker.addEventListener('input', function () {
+      var codeInput = root.querySelector('.ac-design-color-code[data-design="' + picker.dataset.colorPicker + '"]');
+      if (!codeInput) return;
+      codeInput.value = picker.value.toUpperCase();
+      codeInput.classList.remove('is-invalid');
+      updateDesignPreview();
+    });
+  });
   root.querySelectorAll('.ac-design-color-code').forEach(function (input) { input.addEventListener('blur', function () { if (!/^#[0-9A-F]{6}$/.test(input.value.trim().toUpperCase())) { input.value = input.defaultValue.toUpperCase(); updateDesignPreview(); } }); });
   updateDesignPreview();
 
