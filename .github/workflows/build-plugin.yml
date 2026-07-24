@@ -30,11 +30,14 @@ jobs:
           mkdir -p build/assesscraft
           rsync -a \
             --exclude '.git' \
+            --exclude '.gitignore' \
+            --exclude '.editorconfig' \
             --exclude '.github/' \
             --exclude 'build/' \
             --exclude 'docs/' \
             --exclude 'tests/' \
             --exclude 'composer.*' \
+            --exclude 'README.md' \
             --exclude 'php*.xml*' \
             --exclude '*.zip' \
             ./ build/assesscraft/
