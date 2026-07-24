@@ -442,7 +442,7 @@
       };
       fetch(self.payload.lead_endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'same-origin' })
         .then(function (response) { return response.json().then(function (body) { if (!response.ok) throw new Error(body.message || 'The request could not be sent.'); return body; }); })
-		.then(function (body) { form.innerHTML = ''; var success = element('div', 'ac-lead-success', body.message || leadConfig.success_message || 'Thank you. Your request has been sent.'); success.setAttribute('role', 'status'); success.setAttribute('tabindex', '-1'); form.appendChild(success); success.focus(); })
+		.then(function (body) { form.innerHTML = ''; var success = element('div', 'ac-lead-success', body.message || leadConfig.success_message || 'Thank you. Your consultation request has been received.'); success.setAttribute('role', 'status'); success.setAttribute('tabindex', '-1'); form.appendChild(success); success.focus(); })
 		.catch(function (error) { status.textContent = error.message; status.classList.add('is-error'); status.setAttribute('role', 'alert'); submit.disabled = false; submit.removeAttribute('aria-busy'); submit.textContent = 'Send request'; });
     });
     container.appendChild(form);
