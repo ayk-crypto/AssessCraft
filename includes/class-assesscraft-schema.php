@@ -69,7 +69,7 @@ final class AssessCraft_Schema {
 				'send_results'    => true,
 				'recipient'       => '',
 				'subject'         => __( 'New AssessCraft consultation request', 'assesscraft' ),
-				'success_message' => __( 'Thank you. Your request and assessment summary have been sent.', 'assesscraft' ),
+				'success_message' => __( 'Thank you. Your consultation request has been received.', 'assesscraft' ),
 				'consent_label'   => __( 'I agree to share my contact details and assessment results for follow-up.', 'assesscraft' ),
 			),
 			'design' => array(
