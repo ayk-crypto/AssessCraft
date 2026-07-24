@@ -29,6 +29,8 @@ final class AssessCraft_Privacy {
 		$table = AssessCraft_Lead_Store::table_name();
 		$limit = 50;
 		$rows = $wpdb->get_results(
+			// The table name comes from the plugin's own fixed table-name method.
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->prepare( "SELECT * FROM {$table} WHERE email = %s ORDER BY id ASC LIMIT %d OFFSET %d", sanitize_email( $email_address ), $limit, ( max( 1, $page ) - 1 ) * $limit ),
 			ARRAY_A
 		);
@@ -47,6 +49,8 @@ final class AssessCraft_Privacy {
 	public function erase( string $email_address, int $page = 1 ): array {
 		global $wpdb;
 		$email = sanitize_email( $email_address );
+		// The table name comes from the plugin's own fixed table-name method.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		$count = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . AssessCraft_Lead_Store::table_name() . ' WHERE email = %s', $email ) );
 		$deleted = $count ? $wpdb->delete( AssessCraft_Lead_Store::table_name(), array( 'email' => $email ), array( '%s' ) ) : 0;
 		return array(
