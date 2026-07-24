@@ -329,10 +329,14 @@ final class AssessCraft_Admin {
 		) );
 
 		if ( isset( $_POST['assesscraft_stages_json'] ) ) {
+			// The nonce is verified above; schema sanitization is applied after JSON decoding.
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$stages = json_decode( wp_unslash( $_POST['assesscraft_stages_json'] ), true );
 			$config['stages'] = is_array( $stages ) ? AssessCraft_Schema::sanitize_stages( $stages ) : array();
 		}
 		if ( isset( $_POST['assesscraft_scoring_json'] ) ) {
+			// The nonce is verified above; scoring values are sanitized by the schema layer.
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$scoring = json_decode( wp_unslash( $_POST['assesscraft_scoring_json'] ), true );
 			if ( is_array( $scoring ) ) {
 				$config['scoring']['method'] = 'weighted_percentage';
@@ -340,6 +344,8 @@ final class AssessCraft_Admin {
 			}
 		}
 		if ( isset( $_POST['assesscraft_profiles_json'] ) ) {
+			// The nonce is verified above; profile values are sanitized by the schema layer.
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$profiles = json_decode( wp_unslash( $_POST['assesscraft_profiles_json'] ), true );
 			$config['profiles'] = is_array( $profiles ) ? AssessCraft_Schema::sanitize_profiles( $profiles ) : array();
 		}
@@ -349,10 +355,14 @@ final class AssessCraft_Admin {
 	}
 
 	private function posted_text( string $key ): string {
+		// The save() handler verifies the editor nonce before calling this helper.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		return isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : '';
 	}
 
 	private function posted_textarea( string $key ): string {
+		// The save() handler verifies the editor nonce before calling this helper.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		return isset( $_POST[ $key ] ) ? sanitize_textarea_field( wp_unslash( $_POST[ $key ] ) ) : '';
 	}
 
