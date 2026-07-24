@@ -12,9 +12,10 @@ final class PortabilityRegressionTest extends TestCase {
 		) ) );
 		$export = array( 'assesscraft_export' => 1, 'schema_version' => AssessCraft_Schema::VERSION, 'title' => 'Portable', 'config' => $config );
 		$decoded = json_decode( json_encode( $export, JSON_THROW_ON_ERROR ), true, 512, JSON_THROW_ON_ERROR );
+		$expected = AssessCraft_Schema::migrate( $config );
 		$imported = AssessCraft_Schema::migrate( $decoded['config'] );
 		$this->assertSame( $config['overview']['heading'], $imported['overview']['heading'] );
-		$this->assertSame( $config['stages'], $imported['stages'] );
+		$this->assertSame( $expected['stages'], $imported['stages'] );
 		$this->assertSame( AssessCraft_Schema::VERSION, $imported['schema_version'] );
 	}
 
