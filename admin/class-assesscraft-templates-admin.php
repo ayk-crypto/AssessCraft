@@ -163,6 +163,8 @@ final class AssessCraft_Templates_Admin {
 	public function import(): void {
 		$this->guard( 'assesscraft_import' );
 		$this->feature_required( 'json_portability' );
+		// guard() verifies the action nonce; individual upload fields are validated below.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.NonceVerification.Missing
 		$file = $_FILES['assessment_file'] ?? null;
 		if ( ! is_array( $file ) || UPLOAD_ERR_OK !== (int) ( $file['error'] ?? -1 ) || ! is_uploaded_file( $file['tmp_name'] ?? '' ) || (int) ( $file['size'] ?? 0 ) > 2 * MB_IN_BYTES ) {
 			wp_die( esc_html__( 'Please upload a valid JSON file smaller than 2 MB.', 'assesscraft' ) );
@@ -223,6 +225,8 @@ final class AssessCraft_Templates_Admin {
 	public function save_template(): void {
 		$this->guard( 'assesscraft_save_template' );
 		$this->feature_required( 'custom_templates' );
+		// guard() verifies the action nonce before any posted values are read.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		$post_id = absint( $_POST['assessment_id'] ?? 0 );
 		if ( ! $post_id || ! current_user_can( 'edit_post', $post_id ) || AssessCraft_Post_Type::TYPE !== get_post_type( $post_id ) ) {
 			wp_die( esc_html__( 'The selected assessment cannot be saved as a template.', 'assesscraft' ) );
@@ -234,6 +238,7 @@ final class AssessCraft_Templates_Admin {
 			'version' => sanitize_text_field( wp_unslash( $_POST['template_version'] ?? '1.0.0' ) ),
 			'config' => (array) get_post_meta( $post_id, '_assesscraft_config', true ),
 		) );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		if ( is_wp_error( $result ) ) {
 			wp_die( esc_html( $result->get_error_message() ) );
 		}
@@ -244,6 +249,8 @@ final class AssessCraft_Templates_Admin {
 	public function import_template(): void {
 		$this->guard( 'assesscraft_import_template' );
 		$this->feature_required( 'custom_templates' );
+		// guard() verifies the action nonce; individual upload fields are validated below.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.NonceVerification.Missing
 		$file = $_FILES['template_file'] ?? null;
 		if ( ! is_array( $file ) || UPLOAD_ERR_OK !== (int) ( $file['error'] ?? -1 ) || ! is_uploaded_file( $file['tmp_name'] ?? '' ) || (int) ( $file['size'] ?? 0 ) > 2 * MB_IN_BYTES ) {
 			wp_die( esc_html__( 'Please upload a valid template JSON file smaller than 2 MB.', 'assesscraft' ) );
@@ -263,6 +270,8 @@ final class AssessCraft_Templates_Admin {
 	public function import_json(): void {
 		$this->guard( 'assesscraft_import_json' );
 		$this->feature_required( 'json_portability' );
+		// guard() verifies the action nonce; individual upload fields are validated below.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.NonceVerification.Missing
 		$file = $_FILES['json_file'] ?? null;
 		if ( ! is_array( $file ) || UPLOAD_ERR_OK !== (int) ( $file['error'] ?? -1 ) || ! is_uploaded_file( $file['tmp_name'] ?? '' ) || (int) ( $file['size'] ?? 0 ) > 2 * MB_IN_BYTES ) {
 			wp_die( esc_html__( 'Please upload a valid AssessCraft JSON file smaller than 2 MB.', 'assesscraft' ) );
