@@ -67,6 +67,8 @@ final class AssessCraft_Migrations {
 				if ( $migrated !== $config ) {
 					update_post_meta( $assessment_id, '_assesscraft_config_backup', array( 'plugin_version' => ASSESSCRAFT_VERSION, 'schema_version' => absint( $config['schema_version'] ?? 0 ), 'backed_up_at' => gmdate( 'c' ), 'config' => $config ) );
 					if ( false === update_post_meta( $assessment_id, '_assesscraft_config', $migrated ) ) {
+						// This value is used only in an internal exception message, not rendered output.
+						// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 						throw new RuntimeException( 'Could not update assessment ' . $assessment_id );
 					}
 				}
