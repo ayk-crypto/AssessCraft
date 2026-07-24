@@ -3,7 +3,7 @@ Contributors: assesscraft
 Tags: assessment, lead generation, reports, scoring, forms
 Requires at least: 6.5
 Requires PHP: 8.0
-Stable tag: 0.18.0-alpha.1
+Stable tag: 0.18.0-alpha.7
 License: GPLv2 or later
 
 Build scored, multi-stage assessments that generate personalized reports and qualified leads.
@@ -20,6 +20,46 @@ AssessCraft is a foundation release for a visual assessment builder designed for
 4. Create an assessment and embed it with the generated shortcode.
 
 == Changelog ==
+
+= 0.18.0-alpha.7 =
+
+* Removes the standalone Getting Started interface and its sidebar entry.
+* Opens the Assessments list directly after activation and from the main AssessCraft menu.
+* Removes links and redirects that pointed to the retired onboarding screen.
+* Retains privacy-safe assessment-completion tracking and contextual editor guidance.
+
+= 0.18.0-alpha.6 =
+
+* Aligns the internal Free/Pro comparison with the website capability table.
+* Persists onboarding completion and improves admin-page styling consistency.
+* Refines Consultation Requests layout and destructive-action controls.
+
+= 0.18.0-alpha.5 =
+
+* Adds a professional internal Free-to-Pro overview with no external redirects.
+* Adds a distinct Upgrade to Pro menu item and a subtle Current plan: Free indicator.
+* Adds contextual Learn about Pro links at genuine Free-edition limits.
+* Adds an Explore Pro action on the WordPress Plugins screen.
+* Keeps Pro clearly marked as Coming Soon with no checkout or licensing interface.
+
+= 0.18.0-alpha.4 =
+
+* Replaces the raw Pro-template error page with a consistent in-app limit state.
+* Locks Pro template actions in both the catalog and preview.
+* Separates Free form wording from Pro email-delivery settings.
+* Promotes and visually distinguishes Getting Started in the AssessCraft menu.
+* Redesigns Consultation Requests for clearer scanning and data management.
+* Replaces browser deletion prompts with typed, in-app confirmation dialogs.
+
+= 0.18.0-alpha.3 =
+
+* Clearly separates the Free WordPress lead-storage option from Pro email notifications.
+* Disables the email-notification control in Free and labels it Pro — Coming Soon.
+* Adds working visual color pickers synchronized with manual hexadecimal color fields.
+
+= 0.18.0-alpha.2 =
+* Keeps administrators inside AssessCraft when the three-profile Free limit is reached.
+* Replaces the legacy external upgrade redirect with an accessible in-plugin limit notice.
 
 = 0.18.0-alpha.1 =
 
