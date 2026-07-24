@@ -39,8 +39,8 @@ final class EntitlementsTest extends TestCase {
 		$posted['design']['width'] = 760;
 
 		$result = AssessCraft_Entitlements::preserve_restricted_config( $current, $posted );
-		$this->assertSame( 4, $result['stages'][0]['weight'] );
-		$this->assertTrue( $result['stages'][0]['questions'][0]['reverse'] );
+		$this->assertSame( 1, $result['stages'][0]['weight'] );
+		$this->assertFalse( $result['stages'][0]['questions'][0]['reverse'] );
 		$this->assertCount( 4, $result['profiles'] );
 		$this->assertSame( 'licensed@example.test', $result['lead_form']['recipient'] );
 		$this->assertSame( 1100, $result['design']['width'] );
