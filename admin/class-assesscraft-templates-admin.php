@@ -96,7 +96,7 @@ final class AssessCraft_Templates_Admin {
 						<p><?php echo esc_html( $template['description'] ); ?></p>
 						<div class="ac-template-preview-summary"><span><strong><?php echo absint( $stage_count ); ?></strong><?php esc_html_e( 'Stages', 'assesscraft' ); ?></span><span><strong><?php echo absint( $question_count ); ?></strong><?php esc_html_e( 'Questions', 'assesscraft' ); ?></span><span><strong><?php echo absint( count( $template['config']['profiles'] ?? array() ) ); ?></strong><?php esc_html_e( 'Profiles', 'assesscraft' ); ?></span></div>
 						<div class="ac-template-stage-preview"><?php foreach ( $template['config']['stages'] ?? array() as $index => $stage ) : ?><article><span><?php echo esc_html( str_pad( (string) ( $index + 1 ), 2, '0', STR_PAD_LEFT ) ); ?></span><div><h3><?php echo esc_html( $stage['name'] ?? '' ); ?></h3><p><?php echo esc_html( $stage['description'] ?? '' ); ?></p><small><?php printf( esc_html__( '%d questions', 'assesscraft' ), count( $stage['questions'] ?? array() ) ); ?></small></div></article><?php endforeach; ?></div>
-						<div class="ac-template-dialog-actions"><button type="button" class="button ac-dialog-close"><?php esc_html_e( 'Close', 'assesscraft' ); ?></button><a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_use_template&template=' . rawurlencode( $slug ) ), 'assesscraft_use_template' ) ); ?>"><?php esc_html_e( 'Use this template', 'assesscraft' ); ?></a></div>
+						<div class="ac-template-dialog-actions"><button type="button" class="button ac-dialog-close"><?php esc_html_e( 'Close', 'assesscraft' ); ?></button><?php if ( $can_use ) : ?><a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_use_template&template=' . rawurlencode( $slug ) ), 'assesscraft_use_template' ) ); ?>"><?php esc_html_e( 'Use this template', 'assesscraft' ); ?></a><?php else : ?><span class="ac-template-pro-action"><span class="button disabled" aria-disabled="true"><?php esc_html_e( 'Pro — Coming Soon', 'assesscraft' ); ?></span><small><?php esc_html_e( 'Preview is available in Free. Using this template requires Pro.', 'assesscraft' ); ?></small></span><?php endif; ?></div>
 					</dialog>
 				<?php endforeach; ?>
 				</div>
@@ -130,7 +130,8 @@ final class AssessCraft_Templates_Admin {
 			wp_die( esc_html__( 'The selected template does not exist.', 'assesscraft' ) );
 		}
 		if ( ! $this->can_use_template( sanitize_key( wp_unslash( $_GET['template'] ?? '' ) ), $template ) ) {
-			$this->feature_required( 'custom_templates' );
+			wp_safe_redirect( add_query_arg( 'assesscraft_notice', 'template-pro-required', admin_url( 'edit.php?post_type=' . AssessCraft_Post_Type::TYPE . '&page=assesscraft-templates' ) ) );
+			exit;
 		}
 		$post_id = wp_insert_post(
 			array(
@@ -296,6 +297,10 @@ final class AssessCraft_Templates_Admin {
 	private function render_notice(): void {
 		$notice = sanitize_key( wp_unslash( $_GET['assesscraft_notice'] ?? '' ) );
 		$messages = array( 'template-saved' => __( 'Assessment saved to the custom template library.', 'assesscraft' ), 'template-imported' => __( 'Template package imported successfully.', 'assesscraft' ), 'template-deleted' => __( 'Custom template deleted.', 'assesscraft' ) );
+		if ( 'template-pro-required' === $notice ) {
+			echo '<div class="ac-template-limit-notice" role="status"><span class="dashicons dashicons-lock" aria-hidden="true"></span><div><strong>' . esc_html__( 'This template is included with AssessCraft Pro', 'assesscraft' ) . '</strong><p>' . esc_html__( 'You can preview it in the Free edition. Template access will become available when Pro launches.', 'assesscraft' ) . '</p><span class="ac-coming-soon-label">' . esc_html__( 'Pro — Coming Soon', 'assesscraft' ) . '</span> <a class="ac-learn-pro-link" href="' . esc_url( AssessCraft_Upgrade::url() ) . '">' . esc_html__( 'Learn about Pro', 'assesscraft' ) . '</a></div></div>';
+			return;
+		}
 		if ( isset( $messages[ $notice ] ) ) {
 			printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $messages[ $notice ] ) );
 		}
