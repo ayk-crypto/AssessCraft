@@ -58,6 +58,28 @@
     });
   }
 
+  function applyPublishLimit() {
+    if (!features.publishLimitReached) return;
+    var publishButton = document.getElementById('publish');
+    var publishActions = document.getElementById('major-publishing-actions');
+    if (publishButton) {
+      publishButton.disabled = true;
+      publishButton.classList.add('disabled');
+      publishButton.setAttribute('aria-describedby', 'ac-publish-limit-message');
+    }
+    if (!publishActions || document.getElementById('ac-publish-limit-message')) return;
+    var notice = document.createElement('div');
+    notice.id = 'ac-publish-limit-message';
+    notice.className = 'ac-editor-publish-limit';
+    notice.setAttribute('role', 'status');
+    notice.innerHTML =
+      '<span class="dashicons dashicons-lock" aria-hidden="true"></span>' +
+      '<div><strong>' + escapeHtml(settings.i18n.publishLimit || '') + '</strong>' +
+      '<p>' + escapeHtml(settings.i18n.publishLimitHelp || '') + '</p>' +
+      '<a href="' + escapeHtml(settings.upgradeUrl || '#') + '">' + escapeHtml(settings.i18n.explorePro || '') + '</a></div>';
+    publishActions.parentNode.insertBefore(notice, publishActions);
+  }
+
   function updateProfileLimitState() {
     if (features.profileLimit < 0) return;
     var used = state.profiles.length;
@@ -393,6 +415,7 @@
   });
   root.querySelectorAll('.ac-design-color-code').forEach(function (input) { input.addEventListener('blur', function () { if (!/^#[0-9A-F]{6}$/.test(input.value.trim().toUpperCase())) { input.value = input.defaultValue.toUpperCase(); updateDesignPreview(); } }); });
   updateDesignPreview();
+  applyPublishLimit();
 
   var saveTemplate = document.querySelector('[data-save-template]');
   if (saveTemplate) {

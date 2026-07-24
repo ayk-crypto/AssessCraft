@@ -2,7 +2,7 @@
 defined( 'ABSPATH' ) || exit;
 
 final class AssessCraft_Migrations {
-	private const VERSION = 2;
+	private const VERSION = 3;
 	private const OPTION = 'assesscraft_migration_version';
 	private const LOG_OPTION = 'assesscraft_migration_log';
 	private const LOCK = 'assesscraft_migration_lock';
@@ -48,6 +48,10 @@ final class AssessCraft_Migrations {
 		if ( false === get_option( 'assesscraft_uninstall_behavior', false ) ) {
 			add_option( 'assesscraft_uninstall_behavior', 'keep', '', false );
 		}
+	}
+
+	private function migrate_to_3(): void {
+		$this->migrate_assessments();
 	}
 
 	private function migrate_assessments(): void {

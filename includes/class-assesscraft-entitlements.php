@@ -57,6 +57,26 @@ final class AssessCraft_Entitlements {
 		);
 	}
 
+	public static function publish_limit_reached( int $post_id = 0 ): bool {
+		$limit = AssessCraft_Features::limit( 'published_assessments' );
+		if ( $limit < 0 || ( $post_id && 'publish' === get_post_status( $post_id ) ) ) {
+			return false;
+		}
+
+		$published = get_posts(
+			array(
+				'post_type'      => AssessCraft_Post_Type::TYPE,
+				'post_status'    => 'publish',
+				'posts_per_page' => max( 1, $limit ),
+				'fields'         => 'ids',
+				'post__not_in'   => $post_id ? array( $post_id ) : array(),
+				'no_found_rows'  => true,
+			)
+		);
+
+		return count( $published ) >= $limit;
+	}
+
 	public static function preserve_restricted_config( array $current, array $posted ): array {
 		if ( ! AssessCraft_Features::available( 'weighted_scoring' ) ) {
 			$current_stages = array_column( $current['stages'] ?? array(), null, 'id' );

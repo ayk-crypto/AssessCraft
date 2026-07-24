@@ -435,6 +435,11 @@
 .ac-privacy-note, .ac-publish-note { border-radius: 0 7px 7px 0; }
 .ac-panel .button-primary { min-height: 38px; padding: 4px 16px; border-radius: 6px; background: #3155e7; font-weight: 600; }
 .ac-publish-grid article { min-height: 180px; }
+.ac-editor-publish-limit { display: flex; gap: 10px; margin: 10px 0; padding: 12px; border: 1px solid #e7d49d; border-radius: 7px; background: #fff9e8; color: #3c434a; }
+.ac-editor-publish-limit > .dashicons { flex: 0 0 auto; color: #9a7418; }
+.ac-editor-publish-limit strong { display: block; margin-bottom: 4px; }
+.ac-editor-publish-limit p { margin: 0 0 6px; color: #59636e; line-height: 1.45; }
+.ac-editor-publish-limit a { font-weight: 600; }
 
 /* Modern answer-choice editor */
 .ac-answer-heading { display: none; }
