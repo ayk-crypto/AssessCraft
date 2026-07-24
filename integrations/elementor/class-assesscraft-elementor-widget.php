@@ -50,6 +50,9 @@ final class AssessCraft_Elementor_Widget extends \Elementor\Widget_Base {
 	}
 
 	private function assessment_options(): array {
+		if ( ! AssessCraft_Features::available( 'elementor' ) ) {
+			return array( '' => esc_html__( 'Elementor integration — Pro Coming Soon', 'assesscraft' ) );
+		}
 		$posts = get_posts(
 			array(
 				'post_type'      => AssessCraft_Post_Type::TYPE,
@@ -66,4 +69,3 @@ final class AssessCraft_Elementor_Widget extends \Elementor\Widget_Base {
 		return $options;
 	}
 }
-

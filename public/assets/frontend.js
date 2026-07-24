@@ -128,6 +128,8 @@
     this.responses = {};
     this.index = 0;
     this.error = '';
+	this.root.setAttribute('role', 'region');
+	this.root.setAttribute('aria-label', (this.overview.heading || payload.title || 'Assessment') + ' interactive assessment');
     this.applyDesign();
   }
 
@@ -147,7 +149,6 @@
 
   Runner.prototype.clear = function () {
     this.root.innerHTML = '';
-    this.root.setAttribute('aria-live', 'polite');
   };
 
   Runner.prototype.renderIntro = function () {
@@ -200,7 +201,15 @@
     var top = element('div', 'ac-progress-row');
     var track = element('div', 'ac-progress-track');
     var fill = element('div', 'ac-progress-fill');
-    fill.style.width = ((this.index / this.items.length) * 100) + '%';
+	var progress = ((this.index + 1) / this.items.length) * 100;
+	track.setAttribute('role', 'progressbar');
+	track.setAttribute('aria-label', 'Assessment progress');
+	track.setAttribute('aria-valuemin', '1');
+	track.setAttribute('aria-valuemax', String(this.items.length));
+	track.setAttribute('aria-valuenow', String(this.index + 1));
+	track.setAttribute('aria-valuetext', (this.index + 1) + ' of ' + this.items.length + ' questions');
+	fill.style.width = progress + '%';
+	fill.setAttribute('aria-hidden', 'true');
     track.appendChild(fill);
     top.appendChild(track);
     top.appendChild(element('span', 'ac-progress-label', (this.index + 1) + ' of ' + this.items.length));
@@ -317,6 +326,11 @@
           card.appendChild(badge);
         }
         var meter = element('div', 'ac-result-meter');
+		meter.setAttribute('role', 'progressbar');
+		meter.setAttribute('aria-label', stage.name + ' score');
+		meter.setAttribute('aria-valuemin', '0');
+		meter.setAttribute('aria-valuemax', '100');
+		meter.setAttribute('aria-valuenow', String(Math.round(stage.score)));
         var fill = element('div', ''); fill.style.width = stage.score + '%'; meter.appendChild(fill); card.appendChild(meter);
         scores.appendChild(card);
       });
@@ -383,6 +397,15 @@
       shell.appendChild(restart);
     }
     this.root.appendChild(shell);
+	if (this.payload.completion_endpoint && !this.completionRecorded) {
+	  this.completionRecorded = true;
+	  fetch(this.payload.completion_endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assessment_id: this.payload.id }), credentials: 'same-origin' }).catch(function () {});
+	}
+	var reportHeading = shell.querySelector('.ac-front-title');
+	if (reportHeading) {
+		reportHeading.tabIndex = -1;
+		window.requestAnimationFrame(function () { reportHeading.focus(); });
+	}
     this.root.dispatchEvent(new CustomEvent('assesscraft:complete', { detail: { assessment: this.payload, result: result, profile: profile, overallBand: overallBand, responses: this.responses } }));
   };
 
@@ -404,23 +427,23 @@
     var consentInput = document.createElement('input'); consentInput.type = 'checkbox'; consentInput.name = 'consent'; consentInput.required = true;
     consent.appendChild(consentInput); consent.appendChild(element('span', '', leadConfig.consent_label || 'I agree to share my contact details and assessment results for follow-up.'));
     form.appendChild(consent);
-    var status = element('p', 'ac-lead-status'); status.setAttribute('role', 'status'); form.appendChild(status);
+	var status = element('p', 'ac-lead-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); form.appendChild(status);
     var submit = element('button', 'ac-front-button', 'Send request'); submit.type = 'submit'; form.appendChild(submit);
     form.addEventListener('submit', function (event) {
       event.preventDefault();
       if (!form.reportValidity()) return;
-      submit.disabled = true; submit.textContent = 'Sending...'; status.textContent = '';
+	  submit.disabled = true; submit.setAttribute('aria-busy', 'true'); submit.textContent = 'Sending...'; status.textContent = ''; status.classList.remove('is-error');
       var data = new FormData(form);
       var payload = {
         assessment_id: self.payload.id,
         name: data.get('name'), email: data.get('email'), company: data.get('company'), phone: data.get('phone'), message: data.get('message'), website: data.get('website'),
         consent: data.get('consent') === 'on',
-        result: { overall: result.overall, classification: overallBand ? overallBand.label : '', profile: profile ? profile.title : '', stages: result.stages.map(function (stage) { return { name: stage.name, score: stage.score }; }) }
+		responses: Object.keys(self.responses).reduce(function (output, questionId) { output[questionId] = self.responses[questionId].id; return output; }, {})
       };
       fetch(self.payload.lead_endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'same-origin' })
         .then(function (response) { return response.json().then(function (body) { if (!response.ok) throw new Error(body.message || 'The request could not be sent.'); return body; }); })
-        .then(function (body) { form.innerHTML = ''; var success = element('div', 'ac-lead-success', body.message || leadConfig.success_message || 'Thank you. Your request has been sent.'); success.setAttribute('role', 'status'); form.appendChild(success); })
-        .catch(function (error) { status.textContent = error.message; status.classList.add('is-error'); submit.disabled = false; submit.textContent = 'Send request'; });
+		.then(function (body) { form.innerHTML = ''; var success = element('div', 'ac-lead-success', body.message || leadConfig.success_message || 'Thank you. Your consultation request has been received.'); success.setAttribute('role', 'status'); success.setAttribute('tabindex', '-1'); form.appendChild(success); success.focus(); })
+		.catch(function (error) { status.textContent = error.message; status.classList.add('is-error'); status.setAttribute('role', 'alert'); submit.disabled = false; submit.removeAttribute('aria-busy'); submit.textContent = 'Send request'; });
     });
     container.appendChild(form);
     form.querySelector('input[name="name"]').focus();
@@ -428,7 +451,7 @@
 
   document.querySelectorAll('.assesscraft-app').forEach(function (root) {
     var payload = parsePayload(root);
-    if (!payload) { root.textContent = 'This assessment could not be loaded.'; return; }
+	if (!payload) { root.setAttribute('role', 'alert'); root.textContent = 'This assessment could not be loaded.'; return; }
     new Runner(root, payload).renderIntro();
   });
 }());

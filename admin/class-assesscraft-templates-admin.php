@@ -30,6 +30,13 @@ final class AssessCraft_Templates_Admin {
 			wp_die( esc_html__( 'You do not have permission to access templates.', 'assesscraft' ) );
 		}
 		$templates  = AssessCraft_Template_Registry::all();
+		$free_template = '';
+		foreach ( $templates as $candidate_slug => $candidate ) {
+			if ( empty( $candidate['is_custom'] ) ) {
+				$free_template = (string) $candidate_slug;
+				break;
+			}
+		}
 		$categories = array_values( array_unique( array_filter( array_map( static fn( array $template ): string => (string) ( $template['category'] ?? '' ), $templates ) ) ) );
 		$sources    = array_values( array_unique( array_map( static fn( array $template ): string => (string) ( $template['source'] ?? __( 'Bundled', 'assesscraft' ) ), $templates ) ) );
 		sort( $categories, SORT_NATURAL | SORT_FLAG_CASE );
@@ -74,13 +81,14 @@ final class AssessCraft_Templates_Admin {
 					$question_count = array_sum( array_map( static fn( array $stage ): int => count( $stage['questions'] ?? array() ), $template['config']['stages'] ?? array() ) );
 					$source = (string) ( $template['source'] ?? __( 'Bundled', 'assesscraft' ) );
 					$search_text = implode( ' ', array( $template['name'] ?? '', $template['description'] ?? '', $template['category'] ?? '', $source ) );
+					$can_use = AssessCraft_Features::is_pro() || ( empty( $template['is_custom'] ) && $slug === $free_template );
 					?>
 					<article class="ac-template-card" data-search="<?php echo esc_attr( strtolower( $search_text ) ); ?>" data-name="<?php echo esc_attr( strtolower( (string) ( $template['name'] ?? '' ) ) ); ?>" data-category="<?php echo esc_attr( strtolower( (string) ( $template['category'] ?? '' ) ) ); ?>" data-source="<?php echo esc_attr( strtolower( $source ) ); ?>" data-modified="<?php echo absint( $template['modified_at'] ?? 0 ); ?>">
 						<div class="ac-template-card-heading"><span class="ac-template-icon dashicons dashicons-<?php echo esc_attr( $template['icon'] ?? 'analytics' ); ?>" aria-hidden="true"></span><span><?php echo esc_html( $template['category'] ); ?></span></div>
 						<h2><?php echo esc_html( $template['name'] ); ?></h2>
 						<p><?php echo esc_html( $template['description'] ); ?></p>
 						<div class="ac-template-meta"><span><strong><?php echo absint( $stage_count ); ?></strong> <?php esc_html_e( 'stages', 'assesscraft' ); ?></span><span><strong><?php echo absint( $question_count ); ?></strong> <?php esc_html_e( 'questions', 'assesscraft' ); ?></span></div>
-						<div class="ac-template-card-actions"><a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_use_template&template=' . rawurlencode( $slug ) ), 'assesscraft_use_template' ) ); ?>"><?php esc_html_e( 'Use this template', 'assesscraft' ); ?></a><button class="button ac-preview-template" type="button" data-template="<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Preview', 'assesscraft' ); ?></button><?php if ( ! empty( $template['is_custom'] ) ) : ?><a class="button-link-delete ac-delete-template" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_delete_template&template=' . rawurlencode( $slug ) ), 'assesscraft_delete_template' ) ); ?>" data-template-name="<?php echo esc_attr( $template['name'] ); ?>"><?php esc_html_e( 'Delete', 'assesscraft' ); ?></a><?php endif; ?></div>
+						<div class="ac-template-card-actions"><?php if ( $can_use ) : ?><a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_use_template&template=' . rawurlencode( $slug ) ), 'assesscraft_use_template' ) ); ?>"><?php esc_html_e( 'Use this template', 'assesscraft' ); ?></a><?php else : ?><span class="button disabled" aria-disabled="true"><?php esc_html_e( 'Pro — Coming Soon', 'assesscraft' ); ?></span><?php endif; ?><button class="button ac-preview-template" type="button" data-template="<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Preview', 'assesscraft' ); ?></button><?php if ( ! empty( $template['is_custom'] ) && AssessCraft_Features::available( 'custom_templates' ) ) : ?><a class="button-link-delete ac-delete-template" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_delete_template&template=' . rawurlencode( $slug ) ), 'assesscraft_delete_template' ) ); ?>" data-template-name="<?php echo esc_attr( $template['name'] ); ?>"><?php esc_html_e( 'Delete', 'assesscraft' ); ?></a><?php endif; ?></div>
 						<footer><span><?php echo esc_html( $source ); ?><?php if ( empty( $template['is_custom'] ) ) : ?> <span class="dashicons dashicons-lock" aria-label="<?php esc_attr_e( 'Protected bundled template', 'assesscraft' ); ?>"></span><?php endif; ?></span><span>v<?php echo esc_html( $template['version'] ?? '1.0.0' ); ?></span></footer>
 					</article>
 					<dialog class="ac-template-dialog" id="ac-template-<?php echo esc_attr( $slug ); ?>">
@@ -88,7 +96,7 @@ final class AssessCraft_Templates_Admin {
 						<p><?php echo esc_html( $template['description'] ); ?></p>
 						<div class="ac-template-preview-summary"><span><strong><?php echo absint( $stage_count ); ?></strong><?php esc_html_e( 'Stages', 'assesscraft' ); ?></span><span><strong><?php echo absint( $question_count ); ?></strong><?php esc_html_e( 'Questions', 'assesscraft' ); ?></span><span><strong><?php echo absint( count( $template['config']['profiles'] ?? array() ) ); ?></strong><?php esc_html_e( 'Profiles', 'assesscraft' ); ?></span></div>
 						<div class="ac-template-stage-preview"><?php foreach ( $template['config']['stages'] ?? array() as $index => $stage ) : ?><article><span><?php echo esc_html( str_pad( (string) ( $index + 1 ), 2, '0', STR_PAD_LEFT ) ); ?></span><div><h3><?php echo esc_html( $stage['name'] ?? '' ); ?></h3><p><?php echo esc_html( $stage['description'] ?? '' ); ?></p><small><?php printf( esc_html__( '%d questions', 'assesscraft' ), count( $stage['questions'] ?? array() ) ); ?></small></div></article><?php endforeach; ?></div>
-						<div class="ac-template-dialog-actions"><button type="button" class="button ac-dialog-close"><?php esc_html_e( 'Close', 'assesscraft' ); ?></button><a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_use_template&template=' . rawurlencode( $slug ) ), 'assesscraft_use_template' ) ); ?>"><?php esc_html_e( 'Use this template', 'assesscraft' ); ?></a></div>
+						<div class="ac-template-dialog-actions"><button type="button" class="button ac-dialog-close"><?php esc_html_e( 'Close', 'assesscraft' ); ?></button><?php if ( $can_use ) : ?><a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_use_template&template=' . rawurlencode( $slug ) ), 'assesscraft_use_template' ) ); ?>"><?php esc_html_e( 'Use this template', 'assesscraft' ); ?></a><?php else : ?><span class="ac-template-pro-action"><span class="button disabled" aria-disabled="true"><?php esc_html_e( 'Pro — Coming Soon', 'assesscraft' ); ?></span><small><?php esc_html_e( 'Preview is available in Free. Using this template requires Pro.', 'assesscraft' ); ?></small></span><?php endif; ?></div>
 					</dialog>
 				<?php endforeach; ?>
 				</div>
@@ -100,15 +108,15 @@ final class AssessCraft_Templates_Admin {
 				</div>
 				<nav class="ac-template-pagination" id="ac-template-pagination" aria-label="<?php esc_attr_e( 'Template pages', 'assesscraft' ); ?>"></nav>
 			</section>
-			<div class="ac-import-card ac-unified-import">
+			<div class="ac-import-card ac-unified-import<?php echo AssessCraft_Features::available( 'json_portability' ) ? '' : ' ac-pro-locked'; ?>">
 				<div><span class="ac-eyebrow"><?php esc_html_e( 'Optional', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Import AssessCraft JSON', 'assesscraft' ); ?></h2>
 				<p><?php esc_html_e( 'Move an assessment from another website or install a reusable template pack. AssessCraft detects the file type automatically.', 'assesscraft' ); ?></p></div>
-				<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post" enctype="multipart/form-data">
+				<?php if ( AssessCraft_Features::available( 'json_portability' ) ) : ?><form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post" enctype="multipart/form-data">
 					<input type="hidden" name="action" value="assesscraft_import_json">
 					<?php wp_nonce_field( 'assesscraft_import_json' ); ?>
 					<input type="file" name="json_file" accept="application/json,.json" required>
 					<button class="button button-secondary" type="submit"><?php esc_html_e( 'Import File', 'assesscraft' ); ?></button>
-				</form>
+				</form><?php else : ?><p><span class="button disabled" aria-disabled="true"><?php esc_html_e( 'JSON import — Pro Coming Soon', 'assesscraft' ); ?></span></p><?php endif; ?>
 				<small><?php esc_html_e( 'Accepted: AssessCraft assessment exports and template packages up to 2 MB.', 'assesscraft' ); ?></small>
 			</div>
 		</div>
@@ -120,6 +128,10 @@ final class AssessCraft_Templates_Admin {
 		$template = AssessCraft_Template_Registry::get( sanitize_key( wp_unslash( $_GET['template'] ?? '' ) ) );
 		if ( ! $template ) {
 			wp_die( esc_html__( 'The selected template does not exist.', 'assesscraft' ) );
+		}
+		if ( ! $this->can_use_template( sanitize_key( wp_unslash( $_GET['template'] ?? '' ) ), $template ) ) {
+			wp_safe_redirect( add_query_arg( 'assesscraft_notice', 'template-pro-required', admin_url( 'edit.php?post_type=' . AssessCraft_Post_Type::TYPE . '&page=assesscraft-templates' ) ) );
+			exit;
 		}
 		$post_id = wp_insert_post(
 			array(
@@ -139,6 +151,7 @@ final class AssessCraft_Templates_Admin {
 
 	public function delete_template(): void {
 		$this->guard( 'assesscraft_delete_template' );
+		$this->feature_required( 'custom_templates' );
 		$result = AssessCraft_Template_Registry::delete_custom( sanitize_key( wp_unslash( $_GET['template'] ?? '' ) ) );
 		if ( is_wp_error( $result ) ) {
 			wp_die( esc_html( $result->get_error_message() ) );
@@ -149,6 +162,9 @@ final class AssessCraft_Templates_Admin {
 
 	public function import(): void {
 		$this->guard( 'assesscraft_import' );
+		$this->feature_required( 'json_portability' );
+		// guard() verifies the action nonce; individual upload fields are validated below.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.NonceVerification.Missing
 		$file = $_FILES['assessment_file'] ?? null;
 		if ( ! is_array( $file ) || UPLOAD_ERR_OK !== (int) ( $file['error'] ?? -1 ) || ! is_uploaded_file( $file['tmp_name'] ?? '' ) || (int) ( $file['size'] ?? 0 ) > 2 * MB_IN_BYTES ) {
 			wp_die( esc_html__( 'Please upload a valid JSON file smaller than 2 MB.', 'assesscraft' ) );
@@ -176,6 +192,7 @@ final class AssessCraft_Templates_Admin {
 
 	public function export(): void {
 		$this->guard( 'assesscraft_export' );
+		$this->feature_required( 'json_portability' );
 		$post_id = absint( $_GET['assessment_id'] ?? 0 );
 		if ( ! $post_id || ! current_user_can( 'edit_post', $post_id ) || AssessCraft_Post_Type::TYPE !== get_post_type( $post_id ) ) {
 			wp_die( esc_html__( 'The selected assessment cannot be exported.', 'assesscraft' ) );
@@ -207,6 +224,9 @@ final class AssessCraft_Templates_Admin {
 
 	public function save_template(): void {
 		$this->guard( 'assesscraft_save_template' );
+		$this->feature_required( 'custom_templates' );
+		// guard() verifies the action nonce before any posted values are read.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		$post_id = absint( $_POST['assessment_id'] ?? 0 );
 		if ( ! $post_id || ! current_user_can( 'edit_post', $post_id ) || AssessCraft_Post_Type::TYPE !== get_post_type( $post_id ) ) {
 			wp_die( esc_html__( 'The selected assessment cannot be saved as a template.', 'assesscraft' ) );
@@ -218,6 +238,7 @@ final class AssessCraft_Templates_Admin {
 			'version' => sanitize_text_field( wp_unslash( $_POST['template_version'] ?? '1.0.0' ) ),
 			'config' => (array) get_post_meta( $post_id, '_assesscraft_config', true ),
 		) );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		if ( is_wp_error( $result ) ) {
 			wp_die( esc_html( $result->get_error_message() ) );
 		}
@@ -227,6 +248,9 @@ final class AssessCraft_Templates_Admin {
 
 	public function import_template(): void {
 		$this->guard( 'assesscraft_import_template' );
+		$this->feature_required( 'custom_templates' );
+		// guard() verifies the action nonce; individual upload fields are validated below.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.NonceVerification.Missing
 		$file = $_FILES['template_file'] ?? null;
 		if ( ! is_array( $file ) || UPLOAD_ERR_OK !== (int) ( $file['error'] ?? -1 ) || ! is_uploaded_file( $file['tmp_name'] ?? '' ) || (int) ( $file['size'] ?? 0 ) > 2 * MB_IN_BYTES ) {
 			wp_die( esc_html__( 'Please upload a valid template JSON file smaller than 2 MB.', 'assesscraft' ) );
@@ -245,6 +269,9 @@ final class AssessCraft_Templates_Admin {
 
 	public function import_json(): void {
 		$this->guard( 'assesscraft_import_json' );
+		$this->feature_required( 'json_portability' );
+		// guard() verifies the action nonce; individual upload fields are validated below.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.NonceVerification.Missing
 		$file = $_FILES['json_file'] ?? null;
 		if ( ! is_array( $file ) || UPLOAD_ERR_OK !== (int) ( $file['error'] ?? -1 ) || ! is_uploaded_file( $file['tmp_name'] ?? '' ) || (int) ( $file['size'] ?? 0 ) > 2 * MB_IN_BYTES ) {
 			wp_die( esc_html__( 'Please upload a valid AssessCraft JSON file smaller than 2 MB.', 'assesscraft' ) );
@@ -279,6 +306,10 @@ final class AssessCraft_Templates_Admin {
 	private function render_notice(): void {
 		$notice = sanitize_key( wp_unslash( $_GET['assesscraft_notice'] ?? '' ) );
 		$messages = array( 'template-saved' => __( 'Assessment saved to the custom template library.', 'assesscraft' ), 'template-imported' => __( 'Template package imported successfully.', 'assesscraft' ), 'template-deleted' => __( 'Custom template deleted.', 'assesscraft' ) );
+		if ( 'template-pro-required' === $notice ) {
+			echo '<div class="ac-template-limit-notice" role="status"><span class="dashicons dashicons-lock" aria-hidden="true"></span><div><strong>' . esc_html__( 'This template is included with AssessCraft Pro', 'assesscraft' ) . '</strong><p>' . esc_html__( 'You can preview it in the Free edition. Template access will become available when Pro launches.', 'assesscraft' ) . '</p><span class="ac-coming-soon-label">' . esc_html__( 'Pro — Coming Soon', 'assesscraft' ) . '</span> <a class="ac-learn-pro-link" href="' . esc_url( AssessCraft_Upgrade::url() ) . '">' . esc_html__( 'Learn about Pro', 'assesscraft' ) . '</a></div></div>';
+			return;
+		}
 		if ( isset( $messages[ $notice ] ) ) {
 			printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $messages[ $notice ] ) );
 		}
@@ -289,5 +320,31 @@ final class AssessCraft_Templates_Admin {
 			wp_die( esc_html__( 'You do not have permission to perform this action.', 'assesscraft' ) );
 		}
 		check_admin_referer( $action );
+	}
+
+	private function feature_required( string $feature ): void {
+		if ( AssessCraft_Features::available( $feature ) ) {
+			return;
+		}
+		wp_die(
+			esc_html__( 'This feature requires AssessCraft Pro, which is coming soon.', 'assesscraft' ),
+			esc_html__( 'AssessCraft Pro required', 'assesscraft' ),
+			array( 'response' => 403 )
+		);
+	}
+
+	private function can_use_template( string $slug, array $template ): bool {
+		if ( AssessCraft_Features::is_pro() ) {
+			return true;
+		}
+		if ( ! empty( $template['is_custom'] ) ) {
+			return false;
+		}
+		foreach ( AssessCraft_Template_Registry::all() as $candidate_slug => $candidate ) {
+			if ( empty( $candidate['is_custom'] ) ) {
+				return $slug === $candidate_slug;
+			}
+		}
+		return false;
 	}
 }

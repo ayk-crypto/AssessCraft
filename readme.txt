@@ -3,7 +3,7 @@ Contributors: assesscraft
 Tags: assessment, lead generation, reports, scoring, forms
 Requires at least: 6.5
 Requires PHP: 8.0
-Stable tag: 0.11.0-alpha.1
+Stable tag: 0.18.0-alpha.7
 License: GPLv2 or later
 
 Build scored, multi-stage assessments that generate personalized reports and qualified leads.
@@ -20,6 +20,100 @@ AssessCraft is a foundation release for a visual assessment builder designed for
 4. Create an assessment and embed it with the generated shortcode.
 
 == Changelog ==
+
+= 0.18.0-alpha.7 =
+
+* Removes the standalone Getting Started interface and its sidebar entry.
+* Opens the Assessments list directly after activation and from the main AssessCraft menu.
+* Removes links and redirects that pointed to the retired onboarding screen.
+* Retains privacy-safe assessment-completion tracking and contextual editor guidance.
+
+= 0.18.0-alpha.6 =
+
+* Aligns the internal Free/Pro comparison with the website capability table.
+* Persists onboarding completion and improves admin-page styling consistency.
+* Refines Consultation Requests layout and destructive-action controls.
+
+= 0.18.0-alpha.5 =
+
+* Adds a professional internal Free-to-Pro overview with no external redirects.
+* Adds a distinct Upgrade to Pro menu item and a subtle Current plan: Free indicator.
+* Adds contextual Learn about Pro links at genuine Free-edition limits.
+* Adds an Explore Pro action on the WordPress Plugins screen.
+* Keeps Pro clearly marked as Coming Soon with no checkout or licensing interface.
+
+= 0.18.0-alpha.4 =
+
+* Replaces the raw Pro-template error page with a consistent in-app limit state.
+* Locks Pro template actions in both the catalog and preview.
+* Separates Free form wording from Pro email-delivery settings.
+* Promotes and visually distinguishes Getting Started in the AssessCraft menu.
+* Redesigns Consultation Requests for clearer scanning and data management.
+* Replaces browser deletion prompts with typed, in-app confirmation dialogs.
+
+= 0.18.0-alpha.3 =
+
+* Clearly separates the Free WordPress lead-storage option from Pro email notifications.
+* Disables the email-notification control in Free and labels it Pro — Coming Soon.
+* Adds working visual color pickers synchronized with manual hexadecimal color fields.
+
+= 0.18.0-alpha.2 =
+* Keeps administrators inside AssessCraft when the three-profile Free limit is reached.
+* Replaces the legacy external upgrade redirect with an accessible in-plugin limit notice.
+
+= 0.18.0-alpha.1 =
+
+* Removed Freemius, its SDK bootstrap, dependency, account screens, checkout links, notices, and branding.
+* Prepared a clean AssessCraft Free edition branded by Onset Media.
+* Keeps the provider-independent feature registry ready for a future direct Pro edition.
+* Replaces unavailable upgrade actions with clear, non-intrusive Pro Coming Soon labels.
+* Enforces one published assessment, three profiles, one starter template, standard scoring, Gutenberg, shortcode, and WordPress lead storage in Free.
+
+= 0.17.0-alpha.1 =
+
+* Enforces the commercial Free/Pro matrix with server-side limits and upgrade guidance.
+* Keeps existing Pro-built assessments rendering after downgrade while preserving locked configuration.
+* Free includes one published assessment, three profiles, and WordPress consultation-request storage.
+* Pro unlocks email notifications, JSON portability, custom templates, Elementor, advanced scoring/design, CSV export, and custom retention.
+
+= 0.16.0-alpha.1 =
+* Add safe, versioned assessment and database migrations with pre-migration configuration backups.
+* Add WordPress personal-data export, erasure, and suggested privacy-policy content.
+* Add explicit keep-or-delete uninstall behavior and consent timestamps for stored requests.
+* Add privacy-safe error logging, automated scoring/schema tests, compatibility CI, and release documentation.
+
+= 0.15.0-alpha.2 =
+* Keep WordPress and third-party admin notices above the branded Getting Started hero.
+* Improve the onboarding page heading structure for accessibility.
+
+= 0.15.0-alpha.1 =
+* Introduced a provider-neutral Free and Pro feature registry.
+* Preserved the AssessCraft onboarding route while commercial architecture was evaluated.
+
+= 0.14.0-alpha.2 =
+* Added real onboarding detection for shortcode, Gutenberg, and Elementor embeds.
+* Added privacy-safe test-completion tracking without storing answers or visitor information.
+* Added a directly visible Help link inside the assessment workspace.
+
+= 0.14.0-alpha.1 =
+* Added a centralized, provider-neutral Free and Pro feature registry without enforcing restrictions during alpha testing.
+* Defined three Free result profiles, Pro consultation email delivery, and consultation storage for both editions.
+* Added sequential plugin and assessment-schema migrations with bounded upgrade history.
+* Added a responsive first-activation Getting Started experience, guided launch checklist, improved empty paths, and contextual editor help.
+
+= 0.13.0-alpha.1 =
+* Added accessible progress semantics, report focus management, and clearer form submission announcements.
+* Recalculates consultation scores and profiles on the server from verified answer IDs instead of trusting browser-supplied results.
+* Rejects incomplete or unverifiable consultation submissions before email delivery or storage.
+
+= 0.12.0-alpha.2 =
+* Fixed a PHP parse error in consultation-request dashboard pagination that prevented plugin activation.
+
+= 0.12.0-alpha.1 =
+* Added optional per-assessment storage for consented consultation requests, disabled by default.
+* Added an administrator-only consultation request dashboard with score, profile, assessment, contact details, search, and filtering.
+* Added filtered CSV export, individual deletion, full purge, configurable retention, and daily privacy cleanup.
+* Stores compact result summaries only and never stores individual question answers.
 
 = 0.11.0-alpha.1 =
 * Added nonce-protected deletion for custom templates while keeping bundled templates immutable.
