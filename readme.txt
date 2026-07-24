@@ -3,7 +3,7 @@ Contributors: assesscraft
 Tags: assessment, lead generation, reports, scoring, forms
 Requires at least: 6.5
 Requires PHP: 8.0
-Stable tag: 0.15.0-alpha.2
+Stable tag: 0.18.0-alpha.1
 License: GPLv2 or later
 
 Build scored, multi-stage assessments that generate personalized reports and qualified leads.
@@ -21,15 +21,34 @@ AssessCraft is a foundation release for a visual assessment builder designed for
 
 == Changelog ==
 
+= 0.18.0-alpha.1 =
+
+* Removed Freemius, its SDK bootstrap, dependency, account screens, checkout links, notices, and branding.
+* Prepared a clean AssessCraft Free edition branded by Onset Media.
+* Keeps the provider-independent feature registry ready for a future direct Pro edition.
+* Replaces unavailable upgrade actions with clear, non-intrusive Pro Coming Soon labels.
+* Enforces one published assessment, three profiles, one starter template, standard scoring, Gutenberg, shortcode, and WordPress lead storage in Free.
+
+= 0.17.0-alpha.1 =
+
+* Enforces the commercial Free/Pro matrix with server-side limits and upgrade guidance.
+* Keeps existing Pro-built assessments rendering after downgrade while preserving locked configuration.
+* Free includes one published assessment, three profiles, and WordPress consultation-request storage.
+* Pro unlocks email notifications, JSON portability, custom templates, Elementor, advanced scoring/design, CSV export, and custom retention.
+
+= 0.16.0-alpha.1 =
+* Add safe, versioned assessment and database migrations with pre-migration configuration backups.
+* Add WordPress personal-data export, erasure, and suggested privacy-policy content.
+* Add explicit keep-or-delete uninstall behavior and consent timestamps for stored requests.
+* Add privacy-safe error logging, automated scoring/schema tests, compatibility CI, and release documentation.
+
 = 0.15.0-alpha.2 =
-* Keep WordPress and Freemius admin notices above the branded Getting Started hero.
+* Keep WordPress and third-party admin notices above the branded Getting Started hero.
 * Improve the onboarding page heading structure for accessibility.
 
 = 0.15.0-alpha.1 =
-* Integrated the Freemius WordPress SDK for AssessCraft licensing, accounts, paid plans, and automatic update delivery.
-* Connected verified Freemius premium entitlement to the provider-neutral Free and Pro feature registry.
-* Corrected the generated custom-post-type menu integration and preserved the AssessCraft onboarding route.
-* Commercial feature enforcement remains disabled during licensing validation.
+* Introduced a provider-neutral Free and Pro feature registry.
+* Preserved the AssessCraft onboarding route while commercial architecture was evaluated.
 
 = 0.14.0-alpha.2 =
 * Added real onboarding detection for shortcode, Gutenberg, and Elementor embeds.

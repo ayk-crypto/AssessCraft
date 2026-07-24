@@ -55,7 +55,19 @@ final class AssessCraft_Features {
 		return self::MATRIX;
 	}
 
-	private static function enforcement_enabled(): bool {
-		return defined( 'ASSESSCRAFT_COMMERCIAL_ENFORCEMENT' ) && ASSESSCRAFT_COMMERCIAL_ENFORCEMENT;
+	public static function is_pro(): bool {
+		return self::PLAN_PRO === self::plan();
+	}
+
+	public static function upgrade_url(): string {
+		return (string) apply_filters( 'assesscraft_pro_url', 'https://assesscraft.com/#pro-coming-soon' );
+	}
+
+	public static function enforcement_enabled(): bool {
+		if ( defined( 'ASSESSCRAFT_COMMERCIAL_ENFORCEMENT' ) ) {
+			return (bool) ASSESSCRAFT_COMMERCIAL_ENFORCEMENT;
+		}
+
+		return (bool) apply_filters( 'assesscraft_commercial_enforcement', true );
 	}
 }

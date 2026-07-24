@@ -1,0 +1,71 @@
+name: Release quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.0', '8.1', '8.2', '8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: PHP syntax
+        run: find . -type f -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+
+  unit:
+    name: Unit tests and standards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+      - run: composer install --no-interaction --prefer-dist
+      - run: composer test
+      - run: composer lint
+
+  javascript:
+    name: JavaScript syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: find . -type f -name '*.js' -not -path './node_modules/*' -not -path './vendor/*' -print0 | xargs -0 -n1 node --check
+
+  package:
+    name: Package regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+      - run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+      - name: Assemble package
+        run: |
+          mkdir -p build/assesscraft
+          rsync -a --exclude '.git' --exclude '.github/' --exclude 'build/' --exclude 'docs/' --exclude 'tests/' --exclude 'composer.*' --exclude 'php*.xml*' --exclude '*.zip' ./ build/assesscraft/
+          cd build && zip -qr assesscraft.zip assesscraft
+      - run: unzip -t build/assesscraft.zip
+      - name: Ensure development files are excluded
+        run: |
+          ! unzip -l build/assesscraft.zip | grep -E '(/tests/|/docs/|composer\.json|phpunit\.xml|phpcs\.xml)'
