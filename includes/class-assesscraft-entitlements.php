@@ -2,79 +2,8 @@
 defined( 'ABSPATH' ) || exit;
 
 final class AssessCraft_Entitlements {
-	private const NOTICE_KEY = 'assesscraft_entitlement_notice_';
-
 	public function register(): void {
-		add_filter( 'wp_insert_post_data', array( $this, 'enforce_publish_limit' ), 20, 2 );
-		add_action( 'admin_notices', array( $this, 'render_notice' ) );
-	}
-
-	public function enforce_publish_limit( array $data, array $postarr ): array {
-		if ( AssessCraft_Post_Type::TYPE !== ( $data['post_type'] ?? '' ) || 'publish' !== ( $data['post_status'] ?? '' ) ) {
-			return $data;
-		}
-
-		$limit = AssessCraft_Features::limit( 'published_assessments' );
-		if ( $limit < 0 ) {
-			return $data;
-		}
-
-		$post_id = absint( $postarr['ID'] ?? 0 );
-		if ( $post_id && 'publish' === get_post_status( $post_id ) ) {
-			return $data;
-		}
-
-		$published = get_posts(
-			array(
-				'post_type'      => AssessCraft_Post_Type::TYPE,
-				'post_status'    => 'publish',
-				'posts_per_page' => $limit + 1,
-				'fields'         => 'ids',
-				'post__not_in'   => $post_id ? array( $post_id ) : array(),
-			)
-		);
-
-		if ( count( $published ) >= $limit ) {
-			$data['post_status'] = 'draft';
-			set_transient( self::NOTICE_KEY . get_current_user_id(), 'publish-limit', MINUTE_IN_SECONDS );
-		}
-
-		return $data;
-	}
-
-	public function render_notice(): void {
-		$key    = self::NOTICE_KEY . get_current_user_id();
-		$notice = get_transient( $key );
-		if ( ! $notice ) {
-			return;
-		}
-		delete_transient( $key );
-		printf(
-			'<div class="notice notice-warning is-dismissible"><p>%1$s <a href="%2$s" target="_blank" rel="noopener noreferrer">%3$s</a></p></div>',
-			esc_html__( 'The Free plan supports one published assessment. This assessment was saved as a draft.', 'assesscraft' ),
-			esc_url( AssessCraft_Features::upgrade_url() ),
-			esc_html__( 'AssessCraft Pro is coming soon.', 'assesscraft' )
-		);
-	}
-
-	public static function publish_limit_reached( int $post_id = 0 ): bool {
-		$limit = AssessCraft_Features::limit( 'published_assessments' );
-		if ( $limit < 0 || ( $post_id && 'publish' === get_post_status( $post_id ) ) ) {
-			return false;
-		}
-
-		$published = get_posts(
-			array(
-				'post_type'      => AssessCraft_Post_Type::TYPE,
-				'post_status'    => 'publish',
-				'posts_per_page' => max( 1, $limit ),
-				'fields'         => 'ids',
-				'post__not_in'   => $post_id ? array( $post_id ) : array(),
-				'no_found_rows'  => true,
-			)
-		);
-
-		return count( $published ) >= $limit;
+		// Feature entitlements are enforced while assessment publishing remains unlimited.
 	}
 
 	public static function preserve_restricted_config( array $current, array $posted ): array {
