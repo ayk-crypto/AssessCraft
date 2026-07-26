@@ -1,13 +1,13 @@
-# WordPress.org release review — 0.18.0
+# WordPress.org release review — 0.18.1
 
 ## Release metadata
 
-- Plugin header version: `0.18.0`
-- Runtime version constant: `0.18.0`
-- Gutenberg editor asset version: `0.18.0`
-- WordPress.org stable tag: `0.18.0`
-- Planned Git tag: `v0.18.0`
-- Planned ZIP: `assesscraft-free-0.18.0.zip`
+- Plugin header version: `0.18.1`
+- Runtime version constant: `0.18.1`
+- Gutenberg editor asset version: `0.18.1`
+- WordPress.org stable tag: `0.18.1`
+- Planned Git tag: `v0.18.1`
+- Planned ZIP: `assesscraft-free-0.18.1.zip`
 - Minimum WordPress: `6.5`
 - Tested up to WordPress: `7.0`
 - Minimum PHP: `8.0`
@@ -53,4 +53,4 @@
 - WordPress.org icons, banners, and screenshots are maintained separately for
   the SVN `assets` directory.
 - The build workflow creates the exact named ZIP and its SHA-256 checksum.
-- The release workflow and PR checks must pass before `v0.18.0` is created.
+- The release workflow and PR checks must pass before `v0.18.1` is created.
