@@ -1,4 +1,8 @@
-# WordPress.org release review — 0.18.1
+# Archived WordPress.org release review — 0.18.1
+
+This document is retained as historical release evidence only. The WordPress.org
+submission and separation refactor were abandoned on 2026-07-26. The active
+direct-market release checklist is `DIRECT-MARKET-RELEASE-REVIEW.md`.
 
 ## Release metadata
 
@@ -53,4 +57,4 @@
 - WordPress.org icons, banners, and screenshots are maintained separately for
   the SVN `assets` directory.
 - The build workflow creates the exact named ZIP and its SHA-256 checksum.
-- The release workflow and PR checks must pass before `v0.18.1` is created.
+- The release workflow and PR checks were required before `v0.18.1` was created.
