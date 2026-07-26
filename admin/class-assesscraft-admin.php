@@ -48,6 +48,7 @@ final class AssessCraft_Admin {
 					'profileLimit'   => AssessCraft_Features::limit( 'profiles' ),
 					'weighted'       => AssessCraft_Features::available( 'weighted_scoring' ),
 					'reverseScoring' => AssessCraft_Features::available( 'reverse_scoring' ),
+					'publishLimitReached' => AssessCraft_Entitlements::publish_limit_reached( $post_id ),
 				),
 				'questionTypes' => array(
 					'scale'   => __( 'Agreement scale', 'assesscraft' ),
@@ -64,6 +65,8 @@ final class AssessCraft_Admin {
 						'profileLimitHelp' => __( 'You can edit your existing profiles or delete one before adding another. Additional profiles will be available in AssessCraft Pro — coming soon.', 'assesscraft' ),
 						/* translators: 1: Number of profiles currently used, 2: Maximum number of profiles allowed. */
 						'profileLimitUsed' => __( '%1$d of %2$d profiles used', 'assesscraft' ),
+					'publishLimit'     => __( 'Free edition publishing limit reached', 'assesscraft' ),
+					'publishLimitHelp' => __( 'AssessCraft Free supports one published assessment. You can keep editing and save this assessment as a draft, or unpublish the existing assessment first.', 'assesscraft' ),
 					'explorePro'       => __( 'Explore Pro — Coming Soon', 'assesscraft' ),
 				),
 				'upgradeUrl' => AssessCraft_Upgrade::url(),
