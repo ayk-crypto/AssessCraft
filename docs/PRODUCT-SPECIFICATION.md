@@ -112,5 +112,5 @@ Responses will use a separate custom table only when response storage is impleme
 
 ## Free and Pro boundary
 
-Do not enforce licensing until the complete core is stable. The likely Free edition will support one published assessment, standard scoring, basic reports, and shortcode/Gutenberg output. Pro will add unlimited assessments, weighted dimensions, conditional profiles, Elementor, advanced reports, lead workflows, integrations, import/export, and premium templates.
+Do not enforce licensing until the complete core is stable. The Free edition supports unlimited published assessments, standard scoring, basic reports, and shortcode/Gutenberg output. Pro will add unlimited assessments, weighted dimensions, conditional profiles, Elementor, advanced reports, lead workflows, integrations, import/export, and premium templates.
 
