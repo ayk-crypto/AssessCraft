@@ -1,7 +1,7 @@
-# AssessCraft Free 0.18.1
+# AssessCraft Free 0.18.2
 
-AssessCraft Free 0.18.1 is a WordPress.org compliance update to the assessment
-and report builder by Onset Media.
+AssessCraft Free 0.18.2 freezes the direct-market Free/Pro product model for
+distribution through AssessCraft.com.
 
 ## Highlights
 
@@ -13,18 +13,19 @@ and report builder by Onset Media.
 - Optionally store consultation requests in the WordPress database.
 - Manage stored requests with search, filters, deletion, purge, retention,
   personal-data export, and erasure support.
-- Publish unlimited assessments in the Free edition.
-- Keep Pro differentiated through advanced functionality rather than volume.
+- Publish one assessment in Free while keeping additional assessments as editable drafts.
+- Preserve the existing three-profile Free limit.
+- Keep all assessment data compatible with the separate AssessCraft Pro add-on.
 
 ## Release quality
 
-- Stable version: `0.18.1`
-- Git tag: `v0.18.1`
-- WordPress stable tag: `0.18.1`
+- Stable version: `0.18.2`
+- Git tag: `v0.18.2`
+- Direct-download edition: AssessCraft Free
 - Minimum WordPress: `6.5`
 - Tested up to WordPress: `7.0`
 - Minimum PHP: `8.0`
-- Release ZIP: `assesscraft-free-0.18.1.zip`
+- Release ZIP: `assesscraft-free-0.18.2.zip`
 
 ## SHA-256
 
