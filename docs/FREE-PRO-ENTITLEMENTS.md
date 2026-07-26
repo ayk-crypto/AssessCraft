@@ -6,7 +6,7 @@ The provider-neutral filter remains in place so a future direct AssessCraft Pro 
 
 ## Free
 
-- One published assessment; additional assessments remain editable drafts.
+- Unlimited published assessments, stages, and questions.
 - Unlimited stages and questions.
 - Standard scoring, bands, and on-screen reports.
 - Up to three editable result profiles.
@@ -17,7 +17,7 @@ The provider-neutral filter remains in place so a future direct AssessCraft Pro 
 
 ## Pro
 
-- Unlimited published assessments and profiles.
+- Unlimited publishing plus advanced Pro features and unlimited profiles.
 - Weighted and reverse scoring.
 - Email consultation notifications.
 - Elementor widget selection.
