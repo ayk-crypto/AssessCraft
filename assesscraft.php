@@ -3,7 +3,7 @@
  * Plugin Name: AssessCraft - Assessment & Report Builder
  * Plugin URI:  https://assesscraft.com/
  * Description: Build scored, multi-stage assessments that generate personalized reports and qualified leads.
- * Version:     0.18.0-beta.2
+ * Version:     0.18.0-beta.3
  * Author:      Onset Media
  * Author URI:  https://onset.media/
  * Text Domain: assesscraft
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ASSESSCRAFT_VERSION', '0.18.0-beta.2' );
+define( 'ASSESSCRAFT_VERSION', '0.18.0-beta.3' );
 define( 'ASSESSCRAFT_FILE', __FILE__ );
 define( 'ASSESSCRAFT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ASSESSCRAFT_URL', plugin_dir_url( __FILE__ ) );
