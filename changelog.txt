@@ -1,13 +1,14 @@
 === AssessCraft Changelog ===
 
-= 0.18.1 - 2026-07-26 =
+= 0.18.2 - 2026-07-26 =
 
-WordPress.org compliance update.
+Direct-market product-definition release.
 
-* Removes the one-published-assessment restriction from the Free edition.
-* Removes the obsolete publish-limit notice and disabled Publish-button behavior.
-* Updates entitlement tests and public documentation for unlimited publishing.
-* Keeps Pro differentiated through advanced features rather than assessment volume.
+* Restores the one-published-assessment limit for the direct-download Free edition.
+* Keeps up to three result profiles in Free.
+* Freezes AssessCraft Pro as a separate add-on installed alongside Free.
+* Documents the shared data-compatibility and downgrade contract.
+* Retires the WordPress.org separation plan from the active roadmap.
 
 = Pre-release history =
 
