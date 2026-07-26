@@ -1,31 +1,19 @@
 === AssessCraft Changelog ===
 
-= 0.18.0 - 2026-07-26 =
+= 0.18.1 - 2026-07-26 =
 
-First stable AssessCraft Free release.
+WordPress.org compliance update.
 
-* Visual builder for scored, multi-stage assessments.
-* Unlimited stages, questions, and answer choices.
-* Standard scoring bands and up to three conditional result profiles.
-* Personalized reports with interpretations and recommendations.
-* Gutenberg block and shortcode publishing.
-* Included starter template and scalable template catalog.
-* Optional consultation-request storage in the WordPress database.
-* Search, filtering, deletion, purge, and retention controls for stored requests.
-* WordPress personal-data export and erasure integration.
-* One published assessment in Free, with draft creation and editing preserved.
-* Responsive, keyboard-accessible visitor flow.
-* Provider-neutral Free/Pro entitlement architecture.
-* Freemius SDK, checkout, account screens, notices, and branding removed.
-* Retired onboarding screen and broken onboarding routes removed.
-* Release checks cover PHP 8.0-8.4 syntax, unit tests, JavaScript, security,
-  internationalization, PHP compatibility, and clean packaging.
+* Removes the one-published-assessment restriction from the Free edition.
+* Removes the obsolete publish-limit notice and disabled Publish-button behavior.
+* Updates entitlement tests and public documentation for unlimited publishing.
+* Keeps Pro differentiated through advanced features rather than assessment volume.
 
 = Pre-release history =
 
 The 0.18.0 alpha and beta cycle established the Free/Pro entitlement model,
 improved the assessment editor and template library, refined consultation
 request storage and privacy controls, removed the abandoned Freemius approach,
-retired the onboarding screen, and corrected the Free publishing-limit user
+retired the onboarding screen, and refined the Free publishing-limit user
 experience. The final beta.3 package was verified on WordPress staging before
 promotion to 0.18.0 stable.

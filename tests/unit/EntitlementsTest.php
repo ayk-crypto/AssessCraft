@@ -8,7 +8,7 @@ final class EntitlementsTest extends TestCase {
 
 	public function test_free_matrix_matches_product_decision(): void {
 		$GLOBALS['assesscraft_test_plan'] = 'free';
-		$this->assertSame( 1, AssessCraft_Features::limit( 'published_assessments' ) );
+		$this->assertSame( -1, AssessCraft_Features::limit( 'published_assessments' ) );
 		$this->assertSame( 3, AssessCraft_Features::limit( 'profiles' ) );
 		$this->assertTrue( AssessCraft_Features::available( 'lead_storage' ) );
 		$this->assertFalse( AssessCraft_Features::available( 'consultation_email' ) );
