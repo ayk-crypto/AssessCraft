@@ -3,7 +3,7 @@ Contributors: asfandyr
 Tags: assessment, questionnaire, lead generation, scoring, reports
 Requires at least: 6.5
 Tested up to: 7.0
-Stable tag: 0.18.1
+Stable tag: 0.18.2
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -18,7 +18,7 @@ Build a guided questionnaire, assign scores to answers, organize questions into 
 
 = Included in AssessCraft Free =
 
-* Unlimited published assessments, stages, and questions
+* One published assessment, with unlimited stages and questions
 * Standard answer scoring and configurable score bands
 * Up to three conditional result profiles
 * Personalized reports with interpretations and recommendations
@@ -61,7 +61,7 @@ AssessCraft requires WordPress 6.5 or later and PHP 8.0 or later.
 
 = How many assessments can I publish with the Free edition? =
 
-AssessCraft Free supports unlimited published assessments, stages, and questions.
+AssessCraft Free supports one published assessment. You can create additional assessments and keep them as editable drafts.
 
 = Can I add unlimited questions and stages? =
 
@@ -108,14 +108,14 @@ Review the [documentation](https://assesscraft.com/documentation/) and [troubles
 
 == Changelog ==
 
-= 0.18.1 =
+= 0.18.2 =
 
-* Removes the publishing limit so Free users can publish unlimited assessments.
-* Removes the obsolete publish-limit notice and disabled Publish-button behavior.
-* Keeps Pro differentiated through advanced features rather than assessment volume.
+* Restores one published assessment for the direct-download Free edition.
+* Keeps additional assessments available as editable drafts.
+* Freezes Pro as a separate add-on that shares Free's assessment data.
 
 == Upgrade Notice ==
 
-= 0.18.1 =
+= 0.18.2 =
 
-Free users can now publish unlimited assessments.
+Direct-market Free supports one published assessment; Pro adds unlimited publishing.
