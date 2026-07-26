@@ -3,7 +3,7 @@ Contributors: asfandyr
 Tags: assessment, questionnaire, lead generation, scoring, reports
 Requires at least: 6.5
 Tested up to: 7.0
-Stable tag: 0.18.0
+Stable tag: 0.18.1
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -18,7 +18,7 @@ Build a guided questionnaire, assign scores to answers, organize questions into 
 
 = Included in AssessCraft Free =
 
-* One published assessment with unlimited stages and questions
+* Unlimited published assessments, stages, and questions
 * Standard answer scoring and configurable score bands
 * Up to three conditional result profiles
 * Personalized reports with interpretations and recommendations
@@ -61,7 +61,7 @@ AssessCraft requires WordPress 6.5 or later and PHP 8.0 or later.
 
 = How many assessments can I publish with the Free edition? =
 
-AssessCraft Free supports one published assessment. You may keep additional assessments as drafts.
+AssessCraft Free supports unlimited published assessments, stages, and questions.
 
 = Can I add unlimited questions and stages? =
 
@@ -108,22 +108,14 @@ Review the [documentation](https://assesscraft.com/documentation/) and [troubles
 
 == Changelog ==
 
-= 0.18.0 =
+= 0.18.1 =
 
-* First stable AssessCraft Free release.
-* Builds scored, multi-stage assessments with unlimited stages and questions.
-* Adds standard score bands and up to three conditional result profiles.
-* Publishes assessments with Gutenberg or shortcode.
-* Generates personalized reports with interpretations and recommendations.
-* Includes a starter template and a scalable template catalog.
-* Stores consultation requests locally in WordPress when explicitly enabled.
-* Adds privacy controls, retention cleanup, personal-data export and erasure support.
-* Enforces the one-published-assessment Free limit while preserving draft editing.
-* Removes the abandoned Freemius integration and retired onboarding screen.
-* Passes the release unit, syntax, compatibility, security, internationalization, JavaScript, and packaging gates.
+* Removes the publishing limit so Free users can publish unlimited assessments.
+* Removes the obsolete publish-limit notice and disabled Publish-button behavior.
+* Keeps Pro differentiated through advanced features rather than assessment volume.
 
 == Upgrade Notice ==
 
-= 0.18.0 =
+= 0.18.1 =
 
-Initial stable release of AssessCraft Free.
+Free users can now publish unlimited assessments.
