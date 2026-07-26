@@ -64,11 +64,11 @@ jobs:
         run: |
           mkdir -p build/assesscraft
           rsync -a --exclude '.git' --exclude '.gitignore' --exclude '.editorconfig' --exclude '.github/' --exclude '.wordpress-org/' --exclude 'build/' --exclude 'docs/' --exclude 'tests/' --exclude 'composer.*' --exclude 'README.md' --exclude 'RELEASE_NOTES.md' --exclude 'CHECKSUMS.txt' --exclude 'php*.xml*' --exclude '*.zip' ./ build/assesscraft/
-          cd build && zip -qr assesscraft-free-0.18.1.zip assesscraft
-      - run: unzip -t build/assesscraft-free-0.18.1.zip
+          cd build && zip -qr assesscraft-free-0.18.2.zip assesscraft
+      - run: unzip -t build/assesscraft-free-0.18.2.zip
       - name: Ensure development files are excluded
         run: |
-          ! unzip -l build/assesscraft-free-0.18.1.zip | grep -E '(/tests/|/docs/|/\\.wordpress-org/|composer\\.json|phpunit\\.xml|phpcs\\.xml|RELEASE_NOTES\\.md|CHECKSUMS\\.txt)'
+          ! unzip -l build/assesscraft-free-0.18.2.zip | grep -E '(/tests/|/docs/|/\\.wordpress-org/|composer\\.json|phpunit\\.xml|phpcs\\.xml|RELEASE_NOTES\\.md|CHECKSUMS\\.txt)'
 
   plugin-check:
     name: WordPress Plugin Check
