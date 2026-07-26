@@ -50,7 +50,10 @@ final class AssessCraft_Templates_Admin {
 				<div class="ac-template-catalog-header">
 					<div>
 						<h2 id="ac-template-catalog-heading"><?php esc_html_e( 'Template library', 'assesscraft' ); ?></h2>
-						<p><?php printf( esc_html( _n( '%d template available', '%d templates available', count( $templates ), 'assesscraft' ) ), count( $templates ) ); ?></p>
+							<p><?php
+								/* translators: %d: Number of assessment templates available. */
+								printf( esc_html( _n( '%d template available', '%d templates available', count( $templates ), 'assesscraft' ) ), count( $templates ) );
+							?></p>
 					</div>
 					<div class="ac-template-result-count" id="ac-template-result-count" aria-live="polite"></div>
 				</div>
@@ -95,7 +98,10 @@ final class AssessCraft_Templates_Admin {
 						<div class="ac-template-dialog-header"><div><span><?php echo esc_html( $template['category'] ); ?></span><h2><?php echo esc_html( $template['name'] ); ?></h2></div><button type="button" class="ac-dialog-close" aria-label="<?php esc_attr_e( 'Close preview', 'assesscraft' ); ?>">&times;</button></div>
 						<p><?php echo esc_html( $template['description'] ); ?></p>
 						<div class="ac-template-preview-summary"><span><strong><?php echo absint( $stage_count ); ?></strong><?php esc_html_e( 'Stages', 'assesscraft' ); ?></span><span><strong><?php echo absint( $question_count ); ?></strong><?php esc_html_e( 'Questions', 'assesscraft' ); ?></span><span><strong><?php echo absint( count( $template['config']['profiles'] ?? array() ) ); ?></strong><?php esc_html_e( 'Profiles', 'assesscraft' ); ?></span></div>
-						<div class="ac-template-stage-preview"><?php foreach ( $template['config']['stages'] ?? array() as $index => $stage ) : ?><article><span><?php echo esc_html( str_pad( (string) ( $index + 1 ), 2, '0', STR_PAD_LEFT ) ); ?></span><div><h3><?php echo esc_html( $stage['name'] ?? '' ); ?></h3><p><?php echo esc_html( $stage['description'] ?? '' ); ?></p><small><?php printf( esc_html__( '%d questions', 'assesscraft' ), count( $stage['questions'] ?? array() ) ); ?></small></div></article><?php endforeach; ?></div>
+							<div class="ac-template-stage-preview"><?php foreach ( $template['config']['stages'] ?? array() as $index => $stage ) : ?><article><span><?php echo esc_html( str_pad( (string) ( $index + 1 ), 2, '0', STR_PAD_LEFT ) ); ?></span><div><h3><?php echo esc_html( $stage['name'] ?? '' ); ?></h3><p><?php echo esc_html( $stage['description'] ?? '' ); ?></p><small><?php
+								/* translators: %d: Number of questions in this assessment stage. */
+								printf( esc_html__( '%d questions', 'assesscraft' ), count( $stage['questions'] ?? array() ) );
+							?></small></div></article><?php endforeach; ?></div>
 						<div class="ac-template-dialog-actions"><button type="button" class="button ac-dialog-close"><?php esc_html_e( 'Close', 'assesscraft' ); ?></button><?php if ( $can_use ) : ?><a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=assesscraft_use_template&template=' . rawurlencode( $slug ) ), 'assesscraft_use_template' ) ); ?>"><?php esc_html_e( 'Use this template', 'assesscraft' ); ?></a><?php else : ?><span class="ac-template-pro-action"><span class="button disabled" aria-disabled="true"><?php esc_html_e( 'Pro — Coming Soon', 'assesscraft' ); ?></span><small><?php esc_html_e( 'Preview is available in Free. Using this template requires Pro.', 'assesscraft' ); ?></small></span><?php endif; ?></div>
 					</dialog>
 				<?php endforeach; ?>
@@ -213,7 +219,9 @@ final class AssessCraft_Templates_Admin {
 		if ( ! $post_id || ! current_user_can( 'edit_post', $post_id ) || AssessCraft_Post_Type::TYPE !== get_post_type( $post_id ) ) {
 			wp_die( esc_html__( 'The selected assessment cannot be duplicated.', 'assesscraft' ) );
 		}
-		$new_id = wp_insert_post( array( 'post_type' => AssessCraft_Post_Type::TYPE, 'post_status' => 'draft', 'post_title' => sprintf( __( '%s — Copy', 'assesscraft' ), get_the_title( $post_id ) ) ), true );
+			/* translators: %s: Title of the assessment being duplicated. */
+			$copy_title = sprintf( __( '%s — Copy', 'assesscraft' ), get_the_title( $post_id ) );
+			$new_id = wp_insert_post( array( 'post_type' => AssessCraft_Post_Type::TYPE, 'post_status' => 'draft', 'post_title' => $copy_title ), true );
 		if ( is_wp_error( $new_id ) ) {
 			wp_die( esc_html( $new_id->get_error_message() ) );
 		}

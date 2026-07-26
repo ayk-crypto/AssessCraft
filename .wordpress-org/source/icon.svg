@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">AssessCraft</title>
+  <desc id="desc">AssessCraft assessment bars, checkmark, and letter A.</desc>
+  <rect width="256" height="256" rx="52" fill="#192432"/>
+  <path d="M55 152V111l27-16v57z" fill="#FFFFFF"/>
+  <path d="M91 132V75l30-18v75z" fill="#6480FF"/>
+  <path d="M130 108V44l31-18v64z" fill="#D8B54A"/>
+  <path d="M48 164l25 25 36-42 23 28-19 20-4-5-34 38-49-47z" fill="#FFFFFF"/>
+  <path d="M101 209l58-117 68 117h-40l-29-53-23 53z" fill="#FFFFFF"/>
+</svg>

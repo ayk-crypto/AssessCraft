@@ -91,7 +91,7 @@ final class AssessCraft_Schema {
 			),
 			'design' => array(
 				'primary'    => '#1B2430',
-				'accent'     => '#B08D2B',
+				'accent'     => '#806414',
 				'background' => '#F6F4EE',
 				'surface'     => '#FFFFFF',
 				'text'        => '#1B2430',

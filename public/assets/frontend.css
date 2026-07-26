@@ -1,6 +1,6 @@
 .assesscraft-app {
   --ac-primary: #1b2430;
-  --ac-accent: #b08d2b;
+  --ac-accent: #806414;
   --ac-bg: #f6f4ee;
   --ac-surface: #fff;
   --ac-text: #1b2430;
@@ -89,7 +89,7 @@
 .ac-report-cta h3 { margin: 0 0 8px; color: #fff; font-size: 23px; }
 .ac-report-cta > p { margin: 0 0 18px; color: #d9dde3; }
 .ac-report-cta > small { display: block; margin-top: 11px; color: #b8c0cc; }
-.ac-report-cta > .ac-front-button { border-color: var(--ac-accent) !important; background: var(--ac-accent) !important; color: var(--ac-primary) !important; }
+.ac-report-cta > .ac-front-button { border-color: var(--ac-accent) !important; background: var(--ac-accent) !important; color: var(--ac-button-text) !important; }
 .ac-lead-form { margin-top: 22px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.18); }
 .ac-lead-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
 .ac-lead-grid label { display: grid; gap: 5px; }
