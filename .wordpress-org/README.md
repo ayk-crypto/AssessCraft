@@ -9,7 +9,7 @@ installable plugin ZIP.
 - `icon.svg`
 - `banner-772x250.png`
 - `banner-1544x500.png`
-- `screenshot-1.png` through `screenshot-8.png`
+- `screenshot-1.jpg` through `screenshot-8.jpg`
 
 The numbered screenshot descriptions are maintained in the same order under
 the `Screenshots` section of the root `readme.txt`.

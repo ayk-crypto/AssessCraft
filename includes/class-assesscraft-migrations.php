@@ -74,17 +74,20 @@ final class AssessCraft_Migrations {
 			if ( ! is_array( $config ) || '#B08D2B' !== strtoupper( (string) ( $config['design']['accent'] ?? '' ) ) ) {
 				continue;
 			}
+			$original_config = $config;
 			$config['design']['accent'] = '#806414';
-			update_post_meta(
-				$assessment_id,
-				'_assesscraft_config_backup',
-				array(
-					'plugin_version' => ASSESSCRAFT_VERSION,
-					'schema_version' => absint( $config['schema_version'] ?? 0 ),
-					'backed_up_at'   => gmdate( 'c' ),
-					'config'         => get_post_meta( $assessment_id, '_assesscraft_config', true ),
-				)
-			);
+			if ( ! metadata_exists( 'post', $assessment_id, '_assesscraft_config_backup' ) ) {
+				update_post_meta(
+					$assessment_id,
+					'_assesscraft_config_backup',
+					array(
+						'plugin_version' => ASSESSCRAFT_VERSION,
+						'schema_version' => absint( $original_config['schema_version'] ?? 0 ),
+						'backed_up_at'   => gmdate( 'c' ),
+						'config'         => $original_config,
+					)
+				);
+			}
 			if ( false === update_post_meta( $assessment_id, '_assesscraft_config', $config ) ) {
 				throw new RuntimeException( 'Could not update assessment accent.' );
 			}
