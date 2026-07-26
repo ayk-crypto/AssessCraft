@@ -6,7 +6,7 @@ final class AssessCraft_Features {
 	public const PLAN_PRO = 'pro';
 
 	private const MATRIX = array(
-		'published_assessments' => array( 'free' => -1, 'pro' => -1 ),
+		'published_assessments' => array( 'free' => 1, 'pro' => -1 ),
 		'profiles'              => array( 'free' => 3, 'pro' => -1 ),
 		'standard_scoring'       => array( 'free' => true, 'pro' => true ),
 		'weighted_scoring'       => array( 'free' => false, 'pro' => true ),

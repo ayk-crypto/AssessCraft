@@ -112,5 +112,4 @@ Responses will use a separate custom table only when response storage is impleme
 
 ## Free and Pro boundary
 
-Do not enforce licensing until the complete core is stable. The Free edition supports unlimited published assessments, standard scoring, basic reports, and shortcode/Gutenberg output. Pro will add unlimited assessments, weighted dimensions, conditional profiles, Elementor, advanced reports, lead workflows, integrations, import/export, and premium templates.
-
+The direct-market Free edition supports one published assessment, unlimited stages and questions, standard scoring, three basic profiles, basic reports, a starter template, WordPress lead storage, and shortcode/Gutenberg output. The separate `assesscraft-pro` add-on adds unlimited publishing and profiles, weighted and reverse scoring, conditional profiles, Elementor, advanced reports and design, lead email/CSV workflows, JSON portability, custom and premium templates, licensed updates, and priority support. Both plugins share the canonical data model; Pro extends Free and never replaces it.

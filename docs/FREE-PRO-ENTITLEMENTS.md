@@ -1,12 +1,12 @@
-# Free and Pro entitlements
+# Frozen direct-market Free and Pro definition
 
-AssessCraft resolves the current plan through the `assesscraft_current_plan` filter. Version 0.18 is distributed as the Free edition and has no bundled licensing SDK, account screen, checkout, or telemetry provider. Commercial enforcement is enabled by default.
+This is the authoritative product boundary for direct distribution from AssessCraft.com. It supersedes the abandoned WordPress.org separation plan.
 
-The provider-neutral filter remains in place so a future direct AssessCraft Pro edition can supply a verified `pro` entitlement without changing assessment data or feature rules.
+AssessCraft Free is the required core plugin. AssessCraft Pro is a separate `assesscraft-pro` add-on installed alongside Free. Pro supplies a verified `pro` entitlement through the existing `assesscraft_current_plan` filter; it does not replace Free, fork the assessment schema, or copy assessment records.
 
 ## Free
 
-- Unlimited published assessments, stages, and questions.
+- One published assessment; additional assessments remain editable drafts.
 - Unlimited stages and questions.
 - Standard scoring, bands, and on-screen reports.
 - Up to three editable result profiles.
@@ -17,13 +17,29 @@ The provider-neutral filter remains in place so a future direct AssessCraft Pro 
 
 ## Pro
 
-- Unlimited publishing plus advanced Pro features and unlimited profiles.
+- Unlimited published assessments and profiles.
 - Weighted and reverse scoring.
 - Email consultation notifications.
 - Elementor widget selection.
 - JSON import/export and custom reusable templates.
 - Full design controls.
 - CSV lead export and configurable retention.
+
+## Compatibility contract
+
+- Free and Pro use the same `ac_assessment` post type and versioned `_assesscraft_config` data.
+- Installing or activating Pro requires no assessment migration or duplication.
+- Deactivating Pro leaves Free active and all assessment data intact.
+- Free continues rendering existing Pro-authored assessments after license expiry or Pro deactivation.
+- Restricted Pro configuration is preserved read-only until Pro is reactivated.
+- The Pro add-on may extend services through hooks, but it must not redefine or replace the core schema.
+
+## Distribution decision
+
+- `0.18.1` remains an immutable historical release and is not the direct-market Free package.
+- `0.18.2` is the first frozen direct-download Free edition for AssessCraft.com.
+- WordPress.org submission and the related Free/Pro code-separation refactor are out of scope.
+- Free and Pro will be downloaded, licensed, updated, and supported through AssessCraft.com.
 
 ## Downgrades
 
