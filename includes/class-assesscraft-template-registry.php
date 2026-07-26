@@ -56,6 +56,7 @@ final class AssessCraft_Template_Registry {
 			'name'                 => $name,
 			'description'          => sanitize_text_field( $package['description'] ?? '' ),
 			'category'             => sanitize_text_field( $package['category'] ?? __( 'Custom', 'assesscraft' ) ),
+			'icon'                 => self::sanitize_icon( $package['icon'] ?? '', $package['category'] ?? '' ),
 			'config'               => AssessCraft_Schema::sanitize( $config ),
 		);
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -65,6 +66,36 @@ final class AssessCraft_Template_Registry {
 			return new WP_Error( 'assesscraft_template_write', __( 'AssessCraft could not write the template package.', 'assesscraft' ) );
 		}
 		return $package['slug'];
+	}
+
+	public static function delete_custom( string $slug ) {
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			return new WP_Error( 'assesscraft_template_permission', __( 'You do not have permission to delete templates.', 'assesscraft' ) );
+		}
+
+		$slug      = sanitize_key( $slug );
+		$directory = realpath( self::custom_directory() );
+		if ( ! $slug || ! $directory || ! is_dir( $directory ) ) {
+			return new WP_Error( 'assesscraft_template_missing', __( 'The selected custom template does not exist.', 'assesscraft' ) );
+		}
+
+		foreach ( glob( trailingslashit( $directory ) . '*.json' ) ?: array() as $file ) {
+			$real_file = realpath( $file );
+			$template  = $real_file ? self::load_file( $real_file ) : null;
+			if ( ! $template || empty( $template['is_custom'] ) || $slug !== $template['slug'] || ! str_starts_with( $real_file, trailingslashit( $directory ) ) ) {
+				continue;
+			}
+
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			WP_Filesystem();
+			global $wp_filesystem;
+			if ( ! $wp_filesystem || ! $wp_filesystem->delete( $real_file, false, 'f' ) ) {
+				return new WP_Error( 'assesscraft_template_delete', __( 'AssessCraft could not delete the custom template file.', 'assesscraft' ) );
+			}
+			return true;
+		}
+
+		return new WP_Error( 'assesscraft_template_locked', __( 'Bundled templates cannot be deleted.', 'assesscraft' ) );
 	}
 
 	private static function load_file( string $file ): ?array {
@@ -90,10 +121,32 @@ final class AssessCraft_Template_Registry {
 			'description' => sanitize_text_field( $data['description'] ?? '' ),
 			'category'    => sanitize_text_field( $data['category'] ?? __( 'General', 'assesscraft' ) ),
 			'version'     => sanitize_text_field( $data['version'] ?? '1.0.0' ),
+			'icon'        => self::sanitize_icon( $data['icon'] ?? '', $data['category'] ?? '' ),
 			'source'      => $is_bundled ? __( 'Bundled', 'assesscraft' ) : __( 'Custom', 'assesscraft' ),
 			'is_custom'   => ! $is_bundled,
+			'modified_at' => (int) ( filemtime( $file ) ?: 0 ),
 			'config'      => AssessCraft_Schema::sanitize( $config ),
 		);
+	}
+
+	private static function sanitize_icon( string $icon, string $category = '' ): string {
+		$allowed = array( 'analytics', 'businessman', 'chart-area', 'chart-bar', 'chart-line', 'groups', 'heart', 'lightbulb', 'lock', 'performance', 'portfolio', 'shield', 'superhero', 'welcome-learn-more' );
+		$icon    = sanitize_key( $icon );
+		if ( in_array( $icon, $allowed, true ) ) {
+			return $icon;
+		}
+
+		$category = strtolower( sanitize_text_field( $category ) );
+		if ( str_contains( $category, 'cyber' ) || str_contains( $category, 'security' ) ) {
+			return 'shield';
+		}
+		if ( str_contains( $category, 'strategy' ) || str_contains( $category, 'growth' ) ) {
+			return 'chart-line';
+		}
+		if ( str_contains( $category, 'people' ) || str_contains( $category, 'leadership' ) ) {
+			return 'groups';
+		}
+		return 'analytics';
 	}
 
 	private static function hydrate_config( array $config, array $scales ): array {

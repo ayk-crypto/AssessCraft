@@ -2,7 +2,53 @@
 defined( 'ABSPATH' ) || exit;
 
 final class AssessCraft_Schema {
-	public const VERSION = 1;
+	public const VERSION = 3;
+
+	public static function migrate( array $config ): array {
+		$version = absint( $config['schema_version'] ?? 0 );
+		if ( $version < 1 ) {
+			$config = self::migrate_to_1( $config );
+			$version = 1;
+		}
+		if ( $version < 2 ) {
+			$config = self::migrate_to_2( $config );
+			$version = 2;
+		}
+		if ( $version < 3 ) {
+			$config = self::migrate_to_3( $config );
+		}
+		$config['schema_version'] = self::VERSION;
+		return self::sanitize( $config );
+	}
+
+	private static function migrate_to_1( array $config ): array {
+		$config['schema_version'] = 1;
+		return $config;
+	}
+
+	private static function migrate_to_2( array $config ): array {
+		$config['lead_form'] = is_array( $config['lead_form'] ?? null ) ? $config['lead_form'] : array();
+		if ( isset( $config['lead_form']['email_enabled'] ) && ! isset( $config['lead_form']['send_results'] ) ) {
+			$config['lead_form']['send_results'] = (bool) $config['lead_form']['email_enabled'];
+		}
+		unset( $config['lead_form']['email_enabled'] );
+		$config['lead_form']['send_results'] = isset( $config['lead_form']['send_results'] ) ? (bool) $config['lead_form']['send_results'] : true;
+		$config['schema_version'] = 2;
+		return $config;
+	}
+
+	private static function migrate_to_3( array $config ): array {
+		$config['lead_form'] = is_array( $config['lead_form'] ?? null ) ? $config['lead_form'] : array();
+		$legacy_messages = array(
+			'Thank you. Your request and assessment summary have been sent.',
+			'Thank you. Your request has been sent.',
+		);
+		if ( in_array( $config['lead_form']['success_message'] ?? '', $legacy_messages, true ) ) {
+			$config['lead_form']['success_message'] = __( 'Thank you. Your consultation request has been received.', 'assesscraft' );
+		}
+		$config['schema_version'] = 3;
+		return $config;
+	}
 
 	public static function defaults(): array {
 		return array(
@@ -40,7 +86,7 @@ final class AssessCraft_Schema {
 				'send_results'    => true,
 				'recipient'       => '',
 				'subject'         => __( 'New AssessCraft consultation request', 'assesscraft' ),
-				'success_message' => __( 'Thank you. Your request and assessment summary have been sent.', 'assesscraft' ),
+				'success_message' => __( 'Thank you. Your consultation request has been received.', 'assesscraft' ),
 				'consent_label'   => __( 'I agree to share my contact details and assessment results for follow-up.', 'assesscraft' ),
 			),
 			'design' => array(

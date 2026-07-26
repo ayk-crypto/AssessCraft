@@ -5,6 +5,7 @@
   var search = document.getElementById('ac-template-search');
   var category = document.getElementById('ac-template-category');
   var source = document.getElementById('ac-template-source');
+  var sort = document.getElementById('ac-template-sort');
   var resultCount = document.getElementById('ac-template-result-count');
   var pagination = document.getElementById('ac-template-pagination');
   var empty = document.getElementById('ac-template-empty');
@@ -19,11 +20,19 @@
     var term = normalized(search && search.value);
     var selectedCategory = normalized(category && category.value);
     var selectedSource = normalized(source && source.value);
-    return Array.prototype.filter.call(grid.querySelectorAll('.ac-template-card'), function (card) {
+    var matches = Array.prototype.filter.call(grid.querySelectorAll('.ac-template-card'), function (card) {
       return (!term || normalized(card.dataset.search).indexOf(term) !== -1) &&
         (!selectedCategory || card.dataset.category === selectedCategory) &&
         (!selectedSource || card.dataset.source === selectedSource);
     });
+    var order = sort ? sort.value : 'name';
+    matches.sort(function (a, b) {
+      if (order === 'newest') return Number(b.dataset.modified || 0) - Number(a.dataset.modified || 0) || a.dataset.name.localeCompare(b.dataset.name);
+      if (order === 'category') return a.dataset.category.localeCompare(b.dataset.category) || a.dataset.name.localeCompare(b.dataset.name);
+      if (order === 'source') return a.dataset.source.localeCompare(b.dataset.source) || a.dataset.name.localeCompare(b.dataset.name);
+      return a.dataset.name.localeCompare(b.dataset.name);
+    });
+    return matches;
   }
 
   function pageButton(label, page, disabled, active, ariaLabel) {
@@ -71,6 +80,7 @@
     currentPage = Math.min(currentPage, pageCount);
     var first = (currentPage - 1) * perPage;
     var visible = matches.slice(first, first + perPage);
+    matches.forEach(function (card) { grid.appendChild(card); });
     cards.forEach(function (card) { card.hidden = visible.indexOf(card) === -1; });
     if (empty) empty.hidden = matches.length !== 0;
     if (resultCount) {
@@ -90,6 +100,7 @@
     if (search) search.value = '';
     if (category) category.value = '';
     if (source) source.value = '';
+    if (sort) sort.value = 'name';
     filtersChanged();
     if (search) search.focus();
   }
@@ -97,8 +108,14 @@
   if (search) search.addEventListener('input', filtersChanged);
   if (category) category.addEventListener('change', filtersChanged);
   if (source) source.addEventListener('change', filtersChanged);
+  if (sort) sort.addEventListener('change', filtersChanged);
   document.querySelectorAll('#ac-template-reset, [data-reset-templates]').forEach(function (button) {
     button.addEventListener('click', resetCatalog);
+  });
+  document.querySelectorAll('.ac-delete-template').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      if (!window.confirm('Delete “' + link.dataset.templateName + '”? This removes the custom template file and cannot be undone.')) event.preventDefault();
+    });
   });
   renderCatalog();
 

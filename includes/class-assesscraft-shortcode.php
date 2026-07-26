@@ -21,6 +21,9 @@ final class AssessCraft_Shortcode {
 
 		wp_enqueue_style( 'assesscraft-frontend', ASSESSCRAFT_URL . 'public/assets/frontend.css', array(), ASSESSCRAFT_VERSION );
 		wp_enqueue_script( 'assesscraft-frontend', ASSESSCRAFT_URL . 'public/assets/frontend.js', array(), ASSESSCRAFT_VERSION, true );
+		if ( ! is_admin() && is_singular() ) {
+			update_post_meta( $id, '_assesscraft_has_embed', absint( get_queried_object_id() ) );
+		}
 
 		$payload = wp_json_encode(
 			array(
@@ -28,6 +31,7 @@ final class AssessCraft_Shortcode {
 				'title'         => get_the_title( $id ),
 				'config'        => $config,
 				'lead_endpoint' => esc_url_raw( rest_url( 'assesscraft/v1/lead' ) ),
+				'completion_endpoint' => esc_url_raw( rest_url( 'assesscraft/v1/completion' ) ),
 			)
 		);
 

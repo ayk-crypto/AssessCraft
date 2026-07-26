@@ -48,14 +48,33 @@ final class AssessCraft_Lead_Endpoint {
 			return new WP_Error( 'assesscraft_invalid_contact', __( 'Please provide your name and a valid email address.', 'assesscraft' ), array( 'status' => 400 ) );
 		}
 
-		$result    = is_array( $request->get_param( 'result' ) ) ? $request->get_param( 'result' ) : array();
-		$recipient = sanitize_email( $config['lead_form']['recipient'] ?: get_option( 'admin_email' ) );
-		$subject   = sanitize_text_field( $config['lead_form']['subject'] ?: __( 'New AssessCraft consultation request', 'assesscraft' ) );
-		$body      = $this->build_email( $assessment_id, compact( 'name', 'email', 'company', 'phone', 'message' ), $result );
-		$headers   = array( 'Content-Type: text/plain; charset=UTF-8', 'Reply-To: ' . $name . ' <' . $email . '>' );
-
-		if ( ! $recipient || ! wp_mail( $recipient, $subject, $body, $headers ) ) {
-			return new WP_Error( 'assesscraft_mail_failed', __( 'The request could not be sent. Please try again or contact the website directly.', 'assesscraft' ), array( 'status' => 500 ) );
+		$responses = is_array( $request->get_param( 'responses' ) ) ? $request->get_param( 'responses' ) : array();
+		$result    = AssessCraft_Scoring::calculate( $config, $responses );
+		if ( empty( $result['valid'] ) ) {
+			return new WP_Error( 'assesscraft_incomplete_result', __( 'The assessment result could not be verified. Please complete all required questions.', 'assesscraft' ), array( 'status' => 400 ) );
+		}
+		$send_email = ! empty( $config['lead_form']['send_results'] ) && AssessCraft_Features::available( 'consultation_email' );
+		$stored = false;
+		if ( ! empty( $config['lead_form']['store_responses'] ) ) {
+			$stored = AssessCraft_Lead_Store::store( $assessment_id, compact( 'name', 'email', 'company', 'phone', 'message' ), $result );
+			if ( ! $stored ) {
+				AssessCraft_Logger::error( 'lead_storage_failed', 'A consented consultation request could not be stored.', array( 'assessment_id' => $assessment_id, 'operation' => 'lead_submit' ) );
+			}
+		}
+		if ( $send_email ) {
+			$recipient = sanitize_email( $config['lead_form']['recipient'] ?: get_option( 'admin_email' ) );
+			$subject   = sanitize_text_field( $config['lead_form']['subject'] ?: __( 'New AssessCraft consultation request', 'assesscraft' ) );
+			$body      = $this->build_email( $assessment_id, compact( 'name', 'email', 'company', 'phone', 'message' ), $result );
+			$headers   = array( 'Content-Type: text/plain; charset=UTF-8', 'Reply-To: ' . $name . ' <' . $email . '>' );
+			if ( ! $recipient || ! wp_mail( $recipient, $subject, $body, $headers ) ) {
+				AssessCraft_Logger::error( 'consultation_email_failed', 'A consultation notification email could not be delivered.', array( 'assessment_id' => $assessment_id, 'operation' => 'lead_submit' ) );
+				if ( ! $stored ) {
+					return new WP_Error( 'assesscraft_mail_failed', __( 'The request could not be sent. Please try again or contact the website directly.', 'assesscraft' ), array( 'status' => 500 ) );
+				}
+			}
+		}
+		if ( ! $send_email && ! $stored ) {
+			return new WP_Error( 'assesscraft_delivery_unavailable', __( 'This consultation request could not be recorded. Please contact the website directly.', 'assesscraft' ), array( 'status' => 500 ) );
 		}
 
 		return rest_ensure_response(

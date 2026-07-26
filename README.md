@@ -1,10 +1,12 @@
 # AssessCraft
 
+Current development version: `0.18.0-alpha.1`.
+
 **Build. Diagnose. Convert.**
 
 AssessCraft is a WordPress assessment and report builder for consultants and professional-service businesses. It is designed to turn visitor responses into structured scores, personalized reports, and opt-in qualified leads.
 
-> **Current status:** Staging-tested alpha. The core assessment journey, JSON templates, portability, Gutenberg block, Elementor widget, and automated packaging are implemented; broader compatibility testing and release hardening remain.
+> **Current status:** Free-edition alpha. Freemius has been removed, Free limits are enforced, and Pro capabilities remain provider-independent but unavailable until the direct AssessCraft licensing experience is introduced.
 
 ## Product direction
 
@@ -55,7 +57,7 @@ AssessCraft will provide:
 - Privacy-first storage defaults
 - Activation, deactivation, and uninstall handling
 
-See [the product specification](docs/PRODUCT-SPECIFICATION.md) for the complete architecture and delivery sequence.
+Release-hardening references are maintained in `docs/`, including upgrade and rollback procedures, compatibility testing, privacy and data handling, security/accessibility review gates, support workflow, legal drafts, tutorials, and the documentation screenshot plan.
 
 ## Development roadmap
 

@@ -6,6 +6,7 @@
   "name": "Sustainable Growth Assessment",
   "description": "Evaluate growth direction, operational capacity, and the sustainability of current ways of working.",
   "category": "Business Strategy",
+  "icon": "chart-line",
   "scales": {
     "agreement": [
       { "label": "Strongly Disagree", "score": 1 },
