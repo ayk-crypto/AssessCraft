@@ -1,6 +1,6 @@
 # AssessCraft
 
-Current stable version: `0.18.0`.
+Current stable version: `0.18.1`.
 
 **Build. Diagnose. Convert.**
 
