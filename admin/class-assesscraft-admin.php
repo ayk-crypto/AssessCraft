@@ -57,12 +57,14 @@ final class AssessCraft_Admin {
 					'numeric' => __( 'Numeric rating', 'assesscraft' ),
 				),
 				'i18n' => array(
-					'untitledStage'    => __( 'Untitled stage', 'assesscraft' ),
-					'untitledQuestion' => __( 'Untitled question', 'assesscraft' ),
-					'confirmDelete'    => __( 'Delete this item? This cannot be undone after saving.', 'assesscraft' ),
-					'profileLimit'     => __( 'The Free edition supports up to %d result profiles.', 'assesscraft' ),
-					'profileLimitHelp' => __( 'You can edit your existing profiles or delete one before adding another. Additional profiles will be available in AssessCraft Pro — coming soon.', 'assesscraft' ),
-					'profileLimitUsed' => __( '%1$d of %2$d profiles used', 'assesscraft' ),
+						'untitledStage'    => __( 'Untitled stage', 'assesscraft' ),
+						'untitledQuestion' => __( 'Untitled question', 'assesscraft' ),
+						'confirmDelete'    => __( 'Delete this item? This cannot be undone after saving.', 'assesscraft' ),
+						/* translators: %d: Maximum number of result profiles available in the Free edition. */
+						'profileLimit'     => __( 'The Free edition supports up to %d result profiles.', 'assesscraft' ),
+						'profileLimitHelp' => __( 'You can edit your existing profiles or delete one before adding another. Additional profiles will be available in AssessCraft Pro — coming soon.', 'assesscraft' ),
+						/* translators: 1: Number of profiles currently used, 2: Maximum number of profiles allowed. */
+						'profileLimitUsed' => __( '%1$d of %2$d profiles used', 'assesscraft' ),
 					'publishLimit'     => __( 'Free plan publishing limit reached', 'assesscraft' ),
 					'publishLimitHelp' => __( 'AssessCraft Free supports one published assessment. You can keep editing and save this assessment as a draft, or unpublish the existing assessment first.', 'assesscraft' ),
 					'explorePro'       => __( 'Explore Pro — Coming Soon', 'assesscraft' ),
@@ -156,7 +158,10 @@ final class AssessCraft_Admin {
 					<div><span class="ac-eyebrow"><?php esc_html_e( 'Personalized outcomes', 'assesscraft' ); ?></span><h2><?php esc_html_e( 'Result profiles', 'assesscraft' ); ?></h2></div>
 					<button type="button" class="button button-primary" id="ac-add-profile"><?php esc_html_e( 'Add profile', 'assesscraft' ); ?></button>
 				</div>
-				<p class="ac-help"><?php esc_html_e( 'Profiles use the overall or individual stage scores. The highest-priority matching profile appears in the report.', 'assesscraft' ); ?><?php if ( $profile_limit >= 0 ) : ?> <strong><?php printf( esc_html__( 'Free includes up to %d profiles.', 'assesscraft' ), absint( $profile_limit ) ); ?></strong><?php endif; ?></p>
+					<p class="ac-help"><?php esc_html_e( 'Profiles use the overall or individual stage scores. The highest-priority matching profile appears in the report.', 'assesscraft' ); ?><?php if ( $profile_limit >= 0 ) : ?> <strong><?php
+						/* translators: %d: Maximum number of result profiles available in the Free edition. */
+						printf( esc_html__( 'Free includes up to %d profiles.', 'assesscraft' ), absint( $profile_limit ) );
+					?></strong><?php endif; ?></p>
 				<div class="ac-profile-limit-notice" id="ac-profile-limit-notice" role="status" tabindex="-1" hidden>
 					<span class="dashicons dashicons-lock" aria-hidden="true"></span>
 					<div>
@@ -227,11 +232,15 @@ final class AssessCraft_Admin {
 				<div class="ac-design-layout">
 					<div class="ac-design-controls">
 						<?php
-						$colors = array( 'primary' => __( 'Primary / dark', 'assesscraft' ), 'accent' => __( 'Accent', 'assesscraft' ), 'background' => __( 'Page background', 'assesscraft' ), 'surface' => __( 'Card surface', 'assesscraft' ), 'text' => __( 'Main text', 'assesscraft' ), 'muted' => __( 'Secondary text', 'assesscraft' ), 'button_text' => __( 'Button text', 'assesscraft' ) );
-						foreach ( $colors as $key => $label ) {
-							$is_limited = ! $advanced_design && ! in_array( $key, array( 'primary', 'accent' ), true );
-							printf( '<label class="ac-color-field%s"><span>%s%s</span><input type="color" class="ac-color-swatch" value="%s" data-color-picker="%s" aria-label="%s"%s><input class="ac-design-color-code" name="assesscraft_design_%s" value="%s" data-design="%s" maxlength="7" spellcheck="false" aria-label="%s"%s></label>', $is_limited ? ' ac-pro-locked' : '', esc_html( $label ), $is_limited ? ' — ' . esc_html__( 'Pro', 'assesscraft' ) : '', esc_attr( $config['design'][ $key ] ), esc_attr( $key ), esc_attr( sprintf( __( 'Choose %s color', 'assesscraft' ), $label ) ), disabled( $is_limited, true, false ), esc_attr( $key ), esc_attr( strtoupper( $config['design'][ $key ] ) ), esc_attr( $key ), esc_attr( sprintf( __( '%s hexadecimal color', 'assesscraft' ), $label ) ), disabled( $is_limited, true, false ) );
-						}
+							$colors = array( 'primary' => __( 'Primary / dark', 'assesscraft' ), 'accent' => __( 'Accent', 'assesscraft' ), 'background' => __( 'Page background', 'assesscraft' ), 'surface' => __( 'Card surface', 'assesscraft' ), 'text' => __( 'Main text', 'assesscraft' ), 'muted' => __( 'Secondary text', 'assesscraft' ), 'button_text' => __( 'Button text', 'assesscraft' ) );
+							foreach ( $colors as $key => $label ) {
+								$is_limited = ! $advanced_design && ! in_array( $key, array( 'primary', 'accent' ), true );
+								/* translators: %s: Name of the configurable design color. */
+								$choose_color_label = sprintf( __( 'Choose %s color', 'assesscraft' ), $label );
+								/* translators: %s: Name of the configurable design color. */
+								$hex_color_label = sprintf( __( '%s hexadecimal color', 'assesscraft' ), $label );
+								printf( '<label class="ac-color-field%s"><span>%s%s</span><input type="color" class="ac-color-swatch" value="%s" data-color-picker="%s" aria-label="%s"%s><input class="ac-design-color-code" name="assesscraft_design_%s" value="%s" data-design="%s" maxlength="7" spellcheck="false" aria-label="%s"%s></label>', $is_limited ? ' ac-pro-locked' : '', esc_html( $label ), $is_limited ? ' — ' . esc_html__( 'Pro', 'assesscraft' ) : '', esc_attr( $config['design'][ $key ] ), esc_attr( $key ), esc_attr( $choose_color_label ), disabled( $is_limited, true, false ), esc_attr( $key ), esc_attr( strtoupper( $config['design'][ $key ] ) ), esc_attr( $key ), esc_attr( $hex_color_label ), disabled( $is_limited, true, false ) );
+							}
 						?>
 						<label class="ac-field"><span><?php esc_html_e( 'Typography', 'assesscraft' ); ?></span><select name="assesscraft_design_font" data-design="font"><option value="system" <?php selected( $config['design']['font'], 'system' ); ?>><?php esc_html_e( 'Modern system font', 'assesscraft' ); ?></option><option value="serif" <?php selected( $config['design']['font'], 'serif' ); ?>><?php esc_html_e( 'Editorial serif', 'assesscraft' ); ?></option></select></label>
 						<label class="ac-field"><span><?php esc_html_e( 'Corner radius', 'assesscraft' ); ?>: <output data-output="radius"><?php echo absint( $config['design']['radius'] ); ?>px</output></span><input type="range" min="0" max="24" name="assesscraft_design_radius" value="<?php echo absint( $config['design']['radius'] ); ?>" data-design="radius"></label>
