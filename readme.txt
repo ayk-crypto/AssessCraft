@@ -1,220 +1,129 @@
 === AssessCraft - Assessment & Report Builder ===
-Contributors: assesscraft
-Tags: assessment, lead generation, reports, scoring, forms
+Contributors: asfandyr
+Tags: assessment, questionnaire, lead generation, scoring, reports
 Requires at least: 6.5
+Tested up to: 7.0
+Stable tag: 0.18.0
 Requires PHP: 8.0
-Stable tag: 0.18.0-beta.3
 License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Build scored, multi-stage assessments that generate personalized reports and qualified leads.
+Build multi-stage assessments with scoring, personalized reports, Gutenberg and shortcode publishing, and privacy-conscious lead storage.
 
 == Description ==
 
-AssessCraft is a foundation release for a visual assessment builder designed for consultants and professional-service businesses.
+AssessCraft helps consultants, agencies, coaches, and professional-service teams create structured assessments inside WordPress.
+
+Build a guided questionnaire, assign scores to answers, organize questions into stages, and show visitors a personalized report when they finish. Assessments can be published with the native AssessCraft block or a shortcode.
+
+= Included in AssessCraft Free =
+
+* One published assessment with unlimited stages and questions
+* Standard answer scoring and configurable score bands
+* Up to three conditional result profiles
+* Personalized reports with interpretations and recommendations
+* Native Gutenberg block
+* Shortcode publishing
+* One bundled starter template
+* Consultation-request storage in the WordPress database
+* Searchable consultation-request dashboard
+* Privacy controls, configurable retention, and WordPress personal-data tools
+* Responsive frontend and keyboard-accessible assessment flow
+
+= How it works =
+
+1. Create an assessment from scratch or start with the included template.
+2. Add stages, questions, answer choices, scores, and result profiles.
+3. Configure report content and optional consultation-request collection.
+4. Publish the assessment.
+5. Add it to a page with the AssessCraft block or generated shortcode.
+
+= Privacy-conscious by design =
+
+Consultation-request storage is disabled until you enable it for an assessment. When enabled, AssessCraft stores the submitted contact fields, consent timestamp, calculated score, result profile, and compact report summary in your WordPress database. It does not store individual question answers.
+
+No assessment or consultation data is sent to AssessCraft or Onset Media. Site owners remain responsible for providing an appropriate privacy notice, choosing a retention period, and responding to data-subject requests.
+
+For detailed help, visit [AssessCraft documentation](https://assesscraft.com/documentation/).
 
 == Installation ==
 
-1. Upload the assesscraft folder to /wp-content/plugins/ or install the ZIP.
-2. Activate AssessCraft.
-3. Open AssessCraft in WordPress administration.
-4. Create an assessment and embed it with the generated shortcode.
+1. In WordPress, go to **Plugins > Add New Plugin**.
+2. Upload the AssessCraft ZIP and choose **Install Now**.
+3. Activate AssessCraft.
+4. Open **AssessCraft** in the WordPress administration menu.
+5. Create an assessment or use the included starter template.
+6. Publish it with the AssessCraft block or the generated shortcode.
+
+AssessCraft requires WordPress 6.5 or later and PHP 8.0 or later.
+
+== Frequently Asked Questions ==
+
+= How many assessments can I publish with the Free edition? =
+
+AssessCraft Free supports one published assessment. You may keep additional assessments as drafts.
+
+= Can I add unlimited questions and stages? =
+
+Yes. The Free edition does not limit the number of stages, questions, or answer choices in your assessment.
+
+= How do I place an assessment on a page? =
+
+Use the AssessCraft block in the Gutenberg editor, or paste the shortcode shown in the assessment's Publish tab into a page or post.
+
+= Does AssessCraft send visitor data to an external service? =
+
+No. The Free edition processes assessments on your WordPress site and, when consultation storage is enabled, stores submitted records in your WordPress database.
+
+= Does AssessCraft store every answer a visitor selects? =
+
+No. Stored consultation requests contain contact fields, consent information, the calculated score, result profile, and a compact result summary. Individual question answers are not stored.
+
+= Can I delete or export personal data? =
+
+AssessCraft integrates with WordPress personal-data export and erasure tools. Administrators can also delete individual consultation requests or purge stored requests from the AssessCraft dashboard.
+
+= What happens when the retention period expires? =
+
+AssessCraft schedules a daily cleanup and removes stored consultation requests older than the configured retention period. The default is 90 days.
+
+= Is Elementor included? =
+
+The Free edition supports Gutenberg and shortcodes. Elementor integration is reserved for AssessCraft Pro.
+
+= Where can I get help? =
+
+Review the [documentation](https://assesscraft.com/documentation/) and [troubleshooting guide](https://assesscraft.com/documentation/troubleshooting/). If the issue continues, use the [support page](https://assesscraft.com/support/).
+
+== Screenshots ==
+
+1. Assessment list with publication status and clear actions.
+2. Visual assessment builder for stages, questions, answer choices, and scores.
+3. Scoring workspace with configurable score bands and interpretations.
+4. Result-profile editor for personalized outcomes and recommendations.
+5. Template library with the included starter template and clear Free/Pro availability.
+6. Consultation Requests dashboard with search, filters, privacy controls, and retention settings.
+7. Visitor assessment flow with progress, accessible answer choices, and navigation.
+8. Personalized completion report with scores, interpretations, and recommendations.
 
 == Changelog ==
 
-= 0.18.0-beta.3 =
-* Refreshes editor assets after the beta.2 publishing-limit update so cached beta assets cannot leave the Publish control active.
+= 0.18.0 =
 
-= 0.18.0-beta.2 =
+* First stable AssessCraft Free release.
+* Builds scored, multi-stage assessments with unlimited stages and questions.
+* Adds standard score bands and up to three conditional result profiles.
+* Publishes assessments with Gutenberg or shortcode.
+* Generates personalized reports with interpretations and recommendations.
+* Includes a starter template and a scalable template catalog.
+* Stores consultation requests locally in WordPress when explicitly enabled.
+* Adds privacy controls, retention cleanup, personal-data export and erasure support.
+* Enforces the one-published-assessment Free limit while preserving draft editing.
+* Removes the abandoned Freemius integration and retired onboarding screen.
+* Passes the release unit, syntax, compatibility, security, internationalization, JavaScript, and packaging gates.
 
-* Updates legacy default consultation messages from “sent” to “received” while preserving customized wording.
-* Shows the Free publishing limit before submission and keeps draft saving available.
-* Adds a clear internal Pro path when the publishing limit has been reached.
+== Upgrade Notice ==
 
-= 0.18.0-beta.1 =
+= 0.18.0 =
 
-* Promotes the tested Free edition to its first public beta.
-* Passes WordPress security, internationalization, PHP compatibility, unit, syntax, JavaScript, and packaging release gates.
-* Includes the complete alpha.2–alpha.7 usability, entitlement, template, consultation-request, and onboarding corrections.
-
-= 0.18.0-alpha.7 =
-
-* Removes the standalone Getting Started interface and its sidebar entry.
-* Opens the Assessments list directly after activation and from the main AssessCraft menu.
-* Removes links and redirects that pointed to the retired onboarding screen.
-* Retains privacy-safe assessment-completion tracking and contextual editor guidance.
-
-= 0.18.0-alpha.6 =
-
-* Aligns the internal Free/Pro comparison with the website capability table.
-* Persists onboarding completion and improves admin-page styling consistency.
-* Refines Consultation Requests layout and destructive-action controls.
-
-= 0.18.0-alpha.5 =
-
-* Adds a professional internal Free-to-Pro overview with no external redirects.
-* Adds a distinct Upgrade to Pro menu item and a subtle Current plan: Free indicator.
-* Adds contextual Learn about Pro links at genuine Free-edition limits.
-* Adds an Explore Pro action on the WordPress Plugins screen.
-* Keeps Pro clearly marked as Coming Soon with no checkout or licensing interface.
-
-= 0.18.0-alpha.4 =
-
-* Replaces the raw Pro-template error page with a consistent in-app limit state.
-* Locks Pro template actions in both the catalog and preview.
-* Separates Free form wording from Pro email-delivery settings.
-* Promotes and visually distinguishes Getting Started in the AssessCraft menu.
-* Redesigns Consultation Requests for clearer scanning and data management.
-* Replaces browser deletion prompts with typed, in-app confirmation dialogs.
-
-= 0.18.0-alpha.3 =
-
-* Clearly separates the Free WordPress lead-storage option from Pro email notifications.
-* Disables the email-notification control in Free and labels it Pro — Coming Soon.
-* Adds working visual color pickers synchronized with manual hexadecimal color fields.
-
-= 0.18.0-alpha.2 =
-* Keeps administrators inside AssessCraft when the three-profile Free limit is reached.
-* Replaces the legacy external upgrade redirect with an accessible in-plugin limit notice.
-
-= 0.18.0-alpha.1 =
-
-* Removed Freemius, its SDK bootstrap, dependency, account screens, checkout links, notices, and branding.
-* Prepared a clean AssessCraft Free edition branded by Onset Media.
-* Keeps the provider-independent feature registry ready for a future direct Pro edition.
-* Replaces unavailable upgrade actions with clear, non-intrusive Pro Coming Soon labels.
-* Enforces one published assessment, three profiles, one starter template, standard scoring, Gutenberg, shortcode, and WordPress lead storage in Free.
-
-= 0.17.0-alpha.1 =
-
-* Enforces the commercial Free/Pro matrix with server-side limits and upgrade guidance.
-* Keeps existing Pro-built assessments rendering after downgrade while preserving locked configuration.
-* Free includes one published assessment, three profiles, and WordPress consultation-request storage.
-* Pro unlocks email notifications, JSON portability, custom templates, Elementor, advanced scoring/design, CSV export, and custom retention.
-
-= 0.16.0-alpha.1 =
-* Add safe, versioned assessment and database migrations with pre-migration configuration backups.
-* Add WordPress personal-data export, erasure, and suggested privacy-policy content.
-* Add explicit keep-or-delete uninstall behavior and consent timestamps for stored requests.
-* Add privacy-safe error logging, automated scoring/schema tests, compatibility CI, and release documentation.
-
-= 0.15.0-alpha.2 =
-* Keep WordPress and third-party admin notices above the branded Getting Started hero.
-* Improve the onboarding page heading structure for accessibility.
-
-= 0.15.0-alpha.1 =
-* Introduced a provider-neutral Free and Pro feature registry.
-* Preserved the AssessCraft onboarding route while commercial architecture was evaluated.
-
-= 0.14.0-alpha.2 =
-* Added real onboarding detection for shortcode, Gutenberg, and Elementor embeds.
-* Added privacy-safe test-completion tracking without storing answers or visitor information.
-* Added a directly visible Help link inside the assessment workspace.
-
-= 0.14.0-alpha.1 =
-* Added a centralized, provider-neutral Free and Pro feature registry without enforcing restrictions during alpha testing.
-* Defined three Free result profiles, Pro consultation email delivery, and consultation storage for both editions.
-* Added sequential plugin and assessment-schema migrations with bounded upgrade history.
-* Added a responsive first-activation Getting Started experience, guided launch checklist, improved empty paths, and contextual editor help.
-
-= 0.13.0-alpha.1 =
-* Added accessible progress semantics, report focus management, and clearer form submission announcements.
-* Recalculates consultation scores and profiles on the server from verified answer IDs instead of trusting browser-supplied results.
-* Rejects incomplete or unverifiable consultation submissions before email delivery or storage.
-
-= 0.12.0-alpha.2 =
-* Fixed a PHP parse error in consultation-request dashboard pagination that prevented plugin activation.
-
-= 0.12.0-alpha.1 =
-* Added optional per-assessment storage for consented consultation requests, disabled by default.
-* Added an administrator-only consultation request dashboard with score, profile, assessment, contact details, search, and filtering.
-* Added filtered CSV export, individual deletion, full purge, configurable retention, and daily privacy cleanup.
-* Stores compact result summaries only and never stores individual question answers.
-
-= 0.11.0-alpha.1 =
-* Added nonce-protected deletion for custom templates while keeping bundled templates immutable.
-* Added catalog sorting by name, category, newest, and source.
-* Added portable template icons with safe category-based fallbacks for existing JSON packages.
-
-= 0.10.3-rc.1 =
-* Release candidate combining reusable JSON template management, a scalable searchable template catalog, and the validated WordPress editor-save fix.
-* Prepared for final shortcode, Gutenberg, Elementor, responsive frontend, lead-delivery, and upgrade regression testing.
-
-= 0.10.3 =
-* Fixed assessment Publish and Update submissions being interrupted by invalid nested form markup.
-* Fixed lead-form settings, including the enable checkbox, not persisting after an assessment update.
-* Preserved the Save as reusable template workflow through an isolated submission that does not interfere with WordPress publishing.
-
-= 0.10.2 =
-* Added instant template search across names, descriptions, categories, and sources.
-* Added category and source filters with clear empty and reset states.
-* Added nine-per-page template pagination for larger commercial template libraries.
-* Improved the responsive template catalog layout for desktop, tablet, and mobile.
-
-= 0.10.1 =
-* Replaced separate template and assessment import boxes with one auto-detecting JSON importer.
-* Clarified that importing is optional and intended for site transfers and future template packs.
-
-= 0.10.0 =
-* Added detailed template previews before assessment creation.
-* Added assessment duplication from editor and assessment-list actions.
-* Added save-as-template with update-safe custom JSON storage in WordPress uploads.
-* Added separate reusable template-package import and template source/version metadata.
-
-= 0.9.0 =
-* Added a complete Business Readiness Assessment template with five stages and fifteen questions.
-* Added business-readiness outcome profiles, report interpretations, recommendations, and a distinct default theme.
-* Added stage and question counts to template cards.
-* Moved bundled assessment content into validated, versioned JSON template packages with reusable answer scales.
-
-= 0.8.4 =
-* Fixed truncated hexadecimal fields in score-band cards.
-* Aligned classification and score-range controls on a consistent baseline.
-
-= 0.8.3 =
-* Replaced native RGB color popovers with direct hexadecimal color controls in Design and Scoring.
-* Added live swatches, HEX validation, and safe invalid-value recovery.
-
-= 0.8.2 =
-* Redesigned answer choices as modern option cards with clearer scores and actions.
-* Redesigned score bands and added synchronized editable hexadecimal color codes.
-
-= 0.8.1 =
-* Redesigned the assessment editor as a dedicated commercial workspace.
-* Added branded workspace header, vertical guided navigation, improved field hierarchy, and responsive administration layouts.
-
-= 0.8.0 =
-* Added brand color, typography, radius, and width controls with a live preview.
-* Expanded reports with guaranteed outcome narratives, detailed interpretations, attention areas, and recommendations.
-* Improved the builder with sticky tabs, persistent workspace selection, and live stage/question/profile counts.
-
-= 0.7.0 =
-* Added a native dynamic Gutenberg assessment block.
-* Added an Elementor assessment widget that loads only when Elementor is active.
-* Added the complete Publish workspace and automated clean ZIP packaging.
-
-= 0.6.0 =
-* Added a reusable and extensible assessment template registry.
-* Added secure, portable JSON assessment import and export.
-* Added an original generic Sustainable Growth Assessment template.
-
-= 0.5.0 =
-* Added configurable report headings, sections, interpretations, recommendations, and consultation CTA.
-* Added a privacy-first, opt-in consultation lead form.
-* Added secure result-email delivery, consent enforcement, honeypot protection, and rate limiting.
-
-= 0.4.0 =
-* Added configurable score bands, classifications, colors, and interpretations.
-* Added conditional result profiles with stage or overall score rules.
-* Added profile narratives, recommendations, priorities, and frontend resolution.
-
-= 0.3.0 =
-* Added the complete visitor question flow with progress, Back/Next navigation, and required-answer validation.
-* Added preliminary weighted stage and overall score summaries.
-* Added responsive and accessible frontend assessment presentation.
-
-= 0.2.0 =
-* Added the visual Overview and assessment structure builder.
-* Added configurable stages, questions, answer choices, scoring values, and ordering.
-
-= 0.1.0 =
-* Initial architecture and installable foundation.
+Initial stable release of AssessCraft Free.

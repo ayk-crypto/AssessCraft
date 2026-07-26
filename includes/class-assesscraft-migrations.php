@@ -2,7 +2,7 @@
 defined( 'ABSPATH' ) || exit;
 
 final class AssessCraft_Migrations {
-	private const VERSION = 3;
+	private const VERSION = 4;
 	private const OPTION = 'assesscraft_migration_version';
 	private const LOG_OPTION = 'assesscraft_migration_log';
 	private const LOCK = 'assesscraft_migration_lock';
@@ -52,6 +52,43 @@ final class AssessCraft_Migrations {
 
 	private function migrate_to_3(): void {
 		$this->migrate_assessments();
+	}
+
+	private function migrate_to_4(): void {
+		$this->migrate_assessments();
+		$this->migrate_default_accent();
+	}
+
+	private function migrate_default_accent(): void {
+		$assessment_ids = get_posts(
+			array(
+				'post_type'      => AssessCraft_Post_Type::TYPE,
+				'post_status'    => 'any',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+			)
+		);
+		foreach ( $assessment_ids as $assessment_id ) {
+			$config = get_post_meta( $assessment_id, '_assesscraft_config', true );
+			if ( ! is_array( $config ) || '#B08D2B' !== strtoupper( (string) ( $config['design']['accent'] ?? '' ) ) ) {
+				continue;
+			}
+			$config['design']['accent'] = '#806414';
+			update_post_meta(
+				$assessment_id,
+				'_assesscraft_config_backup',
+				array(
+					'plugin_version' => ASSESSCRAFT_VERSION,
+					'schema_version' => absint( $config['schema_version'] ?? 0 ),
+					'backed_up_at'   => gmdate( 'c' ),
+					'config'         => get_post_meta( $assessment_id, '_assesscraft_config', true ),
+				)
+			);
+			if ( false === update_post_meta( $assessment_id, '_assesscraft_config', $config ) ) {
+				throw new RuntimeException( 'Could not update assessment accent.' );
+			}
+		}
 	}
 
 	private function migrate_assessments(): void {
