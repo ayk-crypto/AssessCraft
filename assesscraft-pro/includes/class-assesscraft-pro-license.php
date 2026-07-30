@@ -106,12 +106,21 @@ final class AssessCraft_Pro_License {
 	public function deactivate(): array {
 		$key = self::key();
 		if ( '' !== $key ) {
-			$this->request(
+			$response = $this->request(
 				'deactivate',
 				array(
 					'license_key' => $key,
 				)
 			);
+
+			if ( ! $response['success'] ) {
+				update_option( self::OPTION_LAST_CHECKED, time(), false );
+				update_option( self::OPTION_MESSAGE, $response['message'], false );
+				return array(
+					'success' => false,
+					'message' => $response['message'],
+				);
+			}
 		}
 
 		delete_option( self::OPTION_KEY );
@@ -168,10 +177,10 @@ final class AssessCraft_Pro_License {
 
 		$body = array_merge(
 			array(
-				'site_url'       => home_url( '/' ),
-				'pro_version'    => ASSESSCRAFT_PRO_VERSION,
-				'core_version'   => defined( 'ASSESSCRAFT_VERSION' ) ? ASSESSCRAFT_VERSION : '',
-				'product'        => 'assesscraft-pro',
+				'site_url'     => home_url( '/' ),
+				'pro_version'  => ASSESSCRAFT_PRO_VERSION,
+				'core_version' => defined( 'ASSESSCRAFT_VERSION' ) ? ASSESSCRAFT_VERSION : '',
+				'product'      => 'assesscraft-pro',
 			),
 			$additional_body
 		);
