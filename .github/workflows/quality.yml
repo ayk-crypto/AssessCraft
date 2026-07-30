@@ -105,8 +105,9 @@ jobs:
           unzip -t "build/$PRO_ZIP"
           PACKAGED_VERSION="$(unzip -p "build/$PRO_ZIP" assesscraft-pro/assesscraft-pro.php | sed -n 's/^ \* Version:[[:space:]]*//p' | head -n1)"
           test "$PACKAGED_VERSION" = "$PRO_VERSION"
-          unzip -p "build/$PRO_ZIP" assesscraft-pro/assesscraft-pro.php | grep -Fq 'Requires Plugins: assesscraft'
+          ! unzip -p "build/$PRO_ZIP" assesscraft-pro/assesscraft-pro.php | grep -Fq 'Requires Plugins:'
           unzip -p "build/$PRO_ZIP" assesscraft-pro/readme.txt | grep -Fq "Stable tag: $PRO_VERSION"
+          unzip -p "build/$PRO_ZIP" assesscraft-pro/includes/class-assesscraft-pro-dependencies.php | grep -Fq 'Complete setup to unlock Pro'
           ! unzip -l "build/$PRO_ZIP" | grep -E '(/tests/|/docs/|composer\.(json|lock)|phpunit\.xml|phpcs\.xml|\.DS_Store)'
       - name: Create Pro checksum
         run: cd build && sha256sum "$PRO_ZIP" > "$PRO_ZIP.sha256"
@@ -129,11 +130,6 @@ jobs:
         run: |
           mkdir -p build/assesscraft-pro
           rsync -a --exclude '.git' --exclude '.DS_Store' --exclude '*.zip' assesscraft-pro/ build/assesscraft-pro/
-          # Plugin Check automatically installs dependencies from WordPress.org.
-          # AssessCraft Free is distributed directly, so remove only this header
-          # from the temporary check copy. The real Pro package retains it and
-          # the package-regression job verifies that requirement separately.
-          sed -i '/^ \* Requires Plugins: assesscraft$/d' build/assesscraft-pro/assesscraft-pro.php
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:

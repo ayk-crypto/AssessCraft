@@ -1,0 +1,135 @@
+.ac-pro-dependency-notice {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 18px;
+	max-width: 980px;
+	padding: 20px 22px;
+	border-left-color: #5b42b4;
+	border-radius: 12px;
+	background: linear-gradient(135deg, #fff 0%, #faf8ff 100%);
+	box-shadow: 0 8px 24px rgba(36, 26, 61, 0.08);
+}
+
+.ac-pro-dependency-notice.notice {
+	margin-top: 18px;
+}
+
+.ac-pro-dependency-brand {
+	display: grid;
+	width: 48px;
+	height: 48px;
+	place-items: center;
+	border-radius: 13px;
+	background: #4f36a8;
+	color: #fff;
+	font-size: 16px;
+	font-weight: 800;
+	letter-spacing: -0.04em;
+	box-shadow: 0 7px 16px rgba(79, 54, 168, 0.24);
+}
+
+.ac-pro-dependency-content {
+	min-width: 0;
+}
+
+.ac-pro-dependency-heading {
+	display: flex;
+	justify-content: space-between;
+	gap: 16px;
+	align-items: flex-start;
+}
+
+.ac-pro-dependency-heading h2 {
+	margin: 2px 0 0;
+	color: #211936;
+	font-size: 18px;
+	line-height: 1.25;
+}
+
+.ac-pro-dependency-kicker {
+	color: #6a54b7;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+.ac-pro-dependency-status {
+	display: inline-flex;
+	flex: 0 0 auto;
+	padding: 5px 9px;
+	border-radius: 999px;
+	background: #fff1f2;
+	color: #9f1239;
+	font-size: 11px;
+	font-weight: 700;
+}
+
+.ac-pro-dependency-content > p {
+	max-width: 790px;
+	margin: 10px 0 0;
+	color: #575064;
+	font-size: 13px;
+	line-height: 1.55;
+}
+
+.ac-pro-dependency-actions {
+	display: flex;
+	gap: 9px;
+	align-items: center;
+	flex-wrap: wrap;
+	margin-top: 15px;
+}
+
+.ac-pro-dependency-actions .button {
+	min-height: 34px;
+}
+
+.ac-pro-dependency-text-link {
+	margin-left: 3px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.ac-pro-dependency-content .ac-pro-dependency-footnote {
+	margin-top: 13px;
+	padding-top: 12px;
+	border-top: 1px solid #ece8f5;
+	color: #777181;
+	font-size: 11px;
+}
+
+.ac-pro-setup-link {
+	color: #8a670e !important;
+	font-weight: 600;
+}
+
+@media screen and (max-width: 782px) {
+	.ac-pro-dependency-notice {
+		grid-template-columns: 1fr;
+		margin-right: 10px;
+		padding: 18px;
+	}
+
+	.ac-pro-dependency-heading {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.ac-pro-dependency-actions {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.ac-pro-dependency-actions .button,
+	.ac-pro-dependency-text-link {
+		width: 100%;
+		box-sizing: border-box;
+		text-align: center;
+	}
+
+	.ac-pro-dependency-text-link {
+		padding: 8px 0;
+	}
+}
