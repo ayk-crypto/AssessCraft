@@ -3,7 +3,7 @@ Contributors: asfandyr
 Tags: assessment, questionnaire, lead generation, scoring, reports
 Requires at least: 6.5
 Tested up to: 7.0
-Stable tag: 0.18.2
+Stable tag: 0.18.3
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -108,6 +108,14 @@ Review the [documentation](https://assesscraft.com/documentation/) and [troubles
 
 == Changelog ==
 
+= 0.18.3 =
+
+* Correctly recognizes an active AssessCraft Pro license before applying Free publication and profile limits.
+* Fixes imported assessments remaining as drafts when Pro is active.
+* Makes a blocked Free publication explicit instead of silently returning to the editor.
+* Updates the plan indicator to report the active Free or Pro plan accurately.
+* Replaces the browser-default JSON chooser with a responsive, accessible file-selection control.
+
 = 0.18.2 =
 
 * Restores one published assessment for the direct-download Free edition.
@@ -116,6 +124,6 @@ Review the [documentation](https://assesscraft.com/documentation/) and [troubles
 
 == Upgrade Notice ==
 
-= 0.18.2 =
+= 0.18.3 =
 
-Direct-market Free supports one published assessment; Pro adds unlimited publishing.
+Recommended for all Pro beta testers and sites importing assessment JSON files.
