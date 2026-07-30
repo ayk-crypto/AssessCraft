@@ -50,7 +50,7 @@ jobs:
       - run: find . -type f -name '*.js' -not -path './node_modules/*' -not -path './vendor/*' -print0 | xargs -0 -n1 node --check
 
   package:
-    name: Package regression
+    name: Free package regression
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -60,26 +60,62 @@ jobs:
           coverage: none
           tools: composer:v2
       - run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
-      - name: Assemble package
+      - name: Assemble Free package
         run: |
           mkdir -p build/assesscraft
-          rsync -a --exclude '.git' --exclude '.gitignore' --exclude '.editorconfig' --exclude '.github/' --exclude '.wordpress-org/' --exclude 'build/' --exclude 'docs/' --exclude 'tests/' --exclude 'composer.*' --exclude 'README.md' --exclude 'RELEASE_NOTES.md' --exclude 'CHECKSUMS.txt' --exclude 'php*.xml*' --exclude '*.zip' ./ build/assesscraft/
+          rsync -a --exclude '.git' --exclude '.gitignore' --exclude '.editorconfig' --exclude '.github/' --exclude '.wordpress-org/' --exclude 'assesscraft-pro/' --exclude 'build/' --exclude 'docs/' --exclude 'tests/' --exclude 'composer.*' --exclude 'README.md' --exclude 'RELEASE_NOTES.md' --exclude 'CHECKSUMS.txt' --exclude 'php*.xml*' --exclude '*.zip' ./ build/assesscraft/
           cd build && zip -qr assesscraft-free-0.18.2.zip assesscraft
       - run: unzip -t build/assesscraft-free-0.18.2.zip
-      - name: Ensure development files are excluded
+      - name: Ensure Free package boundaries
         run: |
-          ! unzip -l build/assesscraft-free-0.18.2.zip | grep -E '(/tests/|/docs/|/\\.wordpress-org/|composer\\.json|phpunit\\.xml|phpcs\\.xml|RELEASE_NOTES\\.md|CHECKSUMS\\.txt)'
+          ! unzip -l build/assesscraft-free-0.18.2.zip | grep -E '(assesscraft-pro|/tests/|/docs/|/\.wordpress-org/|composer\.json|phpunit\.xml|phpcs\.xml|RELEASE_NOTES\.md|CHECKSUMS\.txt)'
 
   plugin-check:
-    name: WordPress Plugin Check
+    name: WordPress Plugin Check — Free
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Assemble exact release contents
+      - name: Assemble exact Free release contents
         run: |
           mkdir -p build/assesscraft
-          rsync -a --exclude '.git' --exclude '.gitignore' --exclude '.editorconfig' --exclude '.github/' --exclude '.wordpress-org/' --exclude 'build/' --exclude 'docs/' --exclude 'tests/' --exclude 'composer.*' --exclude 'README.md' --exclude 'RELEASE_NOTES.md' --exclude 'CHECKSUMS.txt' --exclude 'php*.xml*' --exclude '*.zip' ./ build/assesscraft/
+          rsync -a --exclude '.git' --exclude '.gitignore' --exclude '.editorconfig' --exclude '.github/' --exclude '.wordpress-org/' --exclude 'assesscraft-pro/' --exclude 'build/' --exclude 'docs/' --exclude 'tests/' --exclude 'composer.*' --exclude 'README.md' --exclude 'RELEASE_NOTES.md' --exclude 'CHECKSUMS.txt' --exclude 'php*.xml*' --exclude '*.zip' ./ build/assesscraft/
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
           build-dir: './build/assesscraft'
+
+  pro-package:
+    name: Pro package regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble Pro package
+        run: |
+          mkdir -p build/assesscraft-pro
+          rsync -a --exclude '.git' --exclude '.DS_Store' --exclude '*.zip' assesscraft-pro/ build/assesscraft-pro/
+          cd build && zip -qr assesscraft-pro-0.1.0-alpha.1.zip assesscraft-pro
+      - name: Verify Pro package
+        run: |
+          unzip -t build/assesscraft-pro-0.1.0-alpha.1.zip
+          unzip -p build/assesscraft-pro-0.1.0-alpha.1.zip assesscraft-pro/assesscraft-pro.php | grep -Eq '^ \* Version:[[:space:]]+0\.1\.0-alpha\.1$'
+          unzip -p build/assesscraft-pro-0.1.0-alpha.1.zip assesscraft-pro/assesscraft-pro.php | grep -Fq 'Requires Plugins: assesscraft'
+          ! unzip -l build/assesscraft-pro-0.1.0-alpha.1.zip | grep -E '(/tests/|/docs/|composer\.(json|lock)|phpunit\.xml|phpcs\.xml)'
+
+  pro-plugin-check:
+    name: WordPress Plugin Check — Pro
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble Pro check copy
+        run: |
+          mkdir -p build/assesscraft-pro
+          rsync -a --exclude '.git' --exclude '.DS_Store' --exclude '*.zip' assesscraft-pro/ build/assesscraft-pro/
+          # Plugin Check automatically installs dependencies from WordPress.org.
+          # AssessCraft Free is distributed directly, so remove only this header
+          # from the temporary check copy. The real Pro package retains it and
+          # the package-regression job verifies that requirement separately.
+          sed -i '/^ \* Requires Plugins: assesscraft$/d' build/assesscraft-pro/assesscraft-pro.php
+      - name: Run WordPress Plugin Check
+        uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: './build/assesscraft-pro'

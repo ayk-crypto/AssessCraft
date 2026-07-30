@@ -34,6 +34,7 @@ jobs:
             --exclude '.editorconfig' \
             --exclude '.github/' \
             --exclude '.wordpress-org/' \
+            --exclude 'assesscraft-pro/' \
             --exclude 'build/' \
             --exclude 'docs/' \
             --exclude 'tests/' \
@@ -49,7 +50,9 @@ jobs:
         run: cd build && zip -qr assesscraft-free-0.18.2.zip assesscraft
 
       - name: Verify ZIP
-        run: unzip -t build/assesscraft-free-0.18.2.zip
+        run: |
+          unzip -t build/assesscraft-free-0.18.2.zip
+          ! unzip -l build/assesscraft-free-0.18.2.zip | grep -E 'assesscraft-pro|/tests/|/docs/|composer\.json|phpunit\.xml|phpcs\.xml'
 
       - name: Create checksum
         run: cd build && sha256sum assesscraft-free-0.18.2.zip > assesscraft-free-0.18.2.zip.sha256
