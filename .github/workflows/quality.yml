@@ -60,15 +60,37 @@ jobs:
           coverage: none
           tools: composer:v2
       - run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+      - name: Read Free version
+        run: |
+          FREE_VERSION="$(sed -n 's/^ \* Version:[[:space:]]*//p' assesscraft.php | head -n1)"
+          test -n "$FREE_VERSION"
+          echo "FREE_VERSION=$FREE_VERSION" >> "$GITHUB_ENV"
+          echo "FREE_ZIP=assesscraft-free-$FREE_VERSION.zip" >> "$GITHUB_ENV"
       - name: Assemble Free package
         run: |
           mkdir -p build/assesscraft
           rsync -a --exclude '.git' --exclude '.gitignore' --exclude '.editorconfig' --exclude '.github/' --exclude '.wordpress-org/' --exclude 'assesscraft-pro/' --exclude 'build/' --exclude 'docs/' --exclude 'tests/' --exclude 'composer.*' --exclude 'README.md' --exclude 'RELEASE_NOTES.md' --exclude 'CHECKSUMS.txt' --exclude 'php*.xml*' --exclude '*.zip' ./ build/assesscraft/
-          cd build && zip -qr assesscraft-free-0.18.2.zip assesscraft
-      - run: unzip -t build/assesscraft-free-0.18.2.zip
-      - name: Ensure Free package boundaries
+          cd build && zip -qr "$FREE_ZIP" assesscraft
+      - name: Verify Free package
         run: |
-          ! unzip -l build/assesscraft-free-0.18.2.zip | grep -E '(assesscraft-pro|/tests/|/docs/|/\.wordpress-org/|composer\.json|phpunit\.xml|phpcs\.xml|RELEASE_NOTES\.md|CHECKSUMS\.txt)'
+          unzip -t "build/$FREE_ZIP"
+          PACKAGED_VERSION="$(unzip -p "build/$FREE_ZIP" assesscraft/assesscraft.php | sed -n 's/^ \* Version:[[:space:]]*//p' | head -n1)"
+          test "$PACKAGED_VERSION" = "$FREE_VERSION"
+          unzip -p "build/$FREE_ZIP" assesscraft/readme.txt | grep -Fq "Stable tag: $FREE_VERSION"
+          unzip -p "build/$FREE_ZIP" assesscraft/includes/class-assesscraft-features.php | grep -Fq "AssessCraft_Pro_License::is_active()"
+          unzip -p "build/$FREE_ZIP" assesscraft/admin/assets/import-polish.js | grep -Fq "ac-json-upload-control"
+          ! unzip -l "build/$FREE_ZIP" | grep -E '(assesscraft-pro|/tests/|/docs/|/\.wordpress-org/|composer\.json|phpunit\.xml|phpcs\.xml|RELEASE_NOTES\.md|CHECKSUMS\.txt)'
+      - name: Create Free checksum
+        run: cd build && sha256sum "$FREE_ZIP" > "$FREE_ZIP.sha256"
+      - name: Retain validated Free package
+        uses: actions/upload-artifact@v4
+        with:
+          name: assesscraft-free-plugin
+          path: |
+            build/assesscraft-free-*.zip
+            build/assesscraft-free-*.zip.sha256
+          if-no-files-found: error
+          retention-days: 90
 
   plugin-check:
     name: WordPress Plugin Check — Free
