@@ -16,6 +16,17 @@ function apply_filters( $hook, $value ) {
 	return $value;
 }
 function admin_url( $path = '' ) { return 'https://example.test/wp-admin/' . ltrim( $path, '/' ); }
+
+if ( ! class_exists( 'AssessCraft_Pro_License' ) ) {
+	final class AssessCraft_Pro_License {
+		public static bool $active = false;
+
+		public static function is_active(): bool {
+			return self::$active;
+		}
+	}
+}
+
 require_once dirname( __DIR__ ) . '/includes/class-assesscraft-schema.php';
 require_once dirname( __DIR__ ) . '/includes/class-assesscraft-scoring.php';
 require_once dirname( __DIR__ ) . '/includes/class-assesscraft-features.php';
