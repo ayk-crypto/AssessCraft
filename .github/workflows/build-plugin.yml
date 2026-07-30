@@ -25,6 +25,13 @@ jobs:
 
       - run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
+      - name: Read Free version
+        run: |
+          FREE_VERSION="$(sed -n 's/^ \* Version:[[:space:]]*//p' assesscraft.php | head -n1)"
+          test -n "$FREE_VERSION"
+          echo "FREE_VERSION=$FREE_VERSION" >> "$GITHUB_ENV"
+          echo "FREE_ZIP=assesscraft-free-$FREE_VERSION.zip" >> "$GITHUB_ENV"
+
       - name: Assemble clean plugin directory
         run: |
           mkdir -p build/assesscraft
@@ -47,21 +54,27 @@ jobs:
             ./ build/assesscraft/
 
       - name: Create ZIP
-        run: cd build && zip -qr assesscraft-free-0.18.2.zip assesscraft
+        run: cd build && zip -qr "$FREE_ZIP" assesscraft
 
       - name: Verify ZIP
         run: |
-          unzip -t build/assesscraft-free-0.18.2.zip
-          ! unzip -l build/assesscraft-free-0.18.2.zip | grep -E 'assesscraft-pro|/tests/|/docs/|composer\.json|phpunit\.xml|phpcs\.xml'
+          unzip -t "build/$FREE_ZIP"
+          PACKAGED_VERSION="$(unzip -p "build/$FREE_ZIP" assesscraft/assesscraft.php | sed -n 's/^ \* Version:[[:space:]]*//p' | head -n1)"
+          test "$PACKAGED_VERSION" = "$FREE_VERSION"
+          unzip -p "build/$FREE_ZIP" assesscraft/readme.txt | grep -Fq "Stable tag: $FREE_VERSION"
+          unzip -p "build/$FREE_ZIP" assesscraft/includes/class-assesscraft-features.php | grep -Fq "AssessCraft_Pro_License::is_active()"
+          unzip -p "build/$FREE_ZIP" assesscraft/admin/assets/import-polish.js | grep -Fq "ac-json-upload-control"
+          ! unzip -l "build/$FREE_ZIP" | grep -E 'assesscraft-pro|/tests/|/docs/|composer\.json|phpunit\.xml|phpcs\.xml'
 
       - name: Create checksum
-        run: cd build && sha256sum assesscraft-free-0.18.2.zip > assesscraft-free-0.18.2.zip.sha256
+        run: cd build && sha256sum "$FREE_ZIP" > "$FREE_ZIP.sha256"
 
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
           name: assesscraft-plugin
           path: |
-            build/assesscraft-free-0.18.2.zip
-            build/assesscraft-free-0.18.2.zip.sha256
+            build/assesscraft-free-*.zip
+            build/assesscraft-free-*.zip.sha256
           if-no-files-found: error
+          retention-days: 90
