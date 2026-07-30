@@ -18,6 +18,7 @@ final class AssessCraft_Plugin {
 		( new AssessCraft_Onboarding() )->register();
 		( new AssessCraft_System_Status() )->register();
 		( new AssessCraft_Upgrade() )->register();
+		( new AssessCraft_Maintenance() )->register();
 		( new AssessCraft_Shortcode() )->register();
 		( new AssessCraft_Lead_Endpoint() )->register();
 		( new AssessCraft_Lead_Store() )->register();
