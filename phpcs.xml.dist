@@ -6,6 +6,7 @@
 	<file>admin</file>
 	<file>includes</file>
 	<file>integrations</file>
+	<file>assesscraft-pro</file>
 	<file>uninstall.php</file>
 
 	<exclude-pattern>vendor/*</exclude-pattern>
