@@ -33,15 +33,18 @@ final class AssessCraft_Upgrade {
 		}
 
 		$is_pro         = AssessCraft_Features::is_pro();
+		$can_manage_pro = current_user_can( 'manage_options' );
 		$management_url = (string) apply_filters( 'assesscraft_plan_management_url', self::url() );
 		add_action(
 			'admin_notices',
-			static function () use ( $is_pro, $management_url ): void {
+			static function () use ( $is_pro, $can_manage_pro, $management_url ): void {
 				?>
 				<div class="ac-plan-indicator">
 					<?php if ( $is_pro ) : ?>
 						<span><strong><?php esc_html_e( 'Current plan: Pro', 'assesscraft' ); ?></strong> <?php esc_html_e( 'Advanced capabilities and unlimited Pro limits are enabled.', 'assesscraft' ); ?></span>
-						<a href="<?php echo esc_url( $management_url ); ?>"><?php esc_html_e( 'Manage Pro', 'assesscraft' ); ?></a>
+						<?php if ( $can_manage_pro ) : ?>
+							<a href="<?php echo esc_url( $management_url ); ?>"><?php esc_html_e( 'Manage Pro', 'assesscraft' ); ?></a>
+						<?php endif; ?>
 					<?php else : ?>
 						<span><strong><?php esc_html_e( 'Current plan: Free', 'assesscraft' ); ?></strong> <?php esc_html_e( 'Core assessment building and WordPress lead storage are included.', 'assesscraft' ); ?></span>
 						<a href="<?php echo esc_url( $management_url ); ?>"><?php esc_html_e( 'Explore Pro', 'assesscraft' ); ?></a>
@@ -57,8 +60,12 @@ final class AssessCraft_Upgrade {
 		$management_url = (string) apply_filters( 'assesscraft_plan_management_url', self::url() );
 		$custom         = array(
 			'<a href="' . esc_url( admin_url( 'edit.php?post_type=' . AssessCraft_Post_Type::TYPE ) ) . '">' . esc_html__( 'Assessments', 'assesscraft' ) . '</a>',
-			'<a href="' . esc_url( $management_url ) . '" class="ac-plugin-upgrade-link">' . ( $is_pro ? esc_html__( 'Manage Pro', 'assesscraft' ) : esc_html__( 'Explore Pro', 'assesscraft' ) ) . '</a>',
 		);
+
+		if ( ! $is_pro || current_user_can( 'manage_options' ) ) {
+			$custom[] = '<a href="' . esc_url( $management_url ) . '" class="ac-plugin-upgrade-link">' . ( $is_pro ? esc_html__( 'Manage Pro', 'assesscraft' ) : esc_html__( 'Explore Pro', 'assesscraft' ) ) . '</a>';
+		}
+
 		return array_merge( $custom, $links );
 	}
 
