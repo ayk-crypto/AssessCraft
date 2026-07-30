@@ -106,10 +106,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Assemble exact Pro release contents
+      - name: Assemble Pro check copy
         run: |
           mkdir -p build/assesscraft-pro
           rsync -a --exclude '.git' --exclude '.DS_Store' --exclude '*.zip' assesscraft-pro/ build/assesscraft-pro/
+          # Plugin Check automatically installs dependencies from WordPress.org.
+          # AssessCraft Free is distributed directly, so remove only this header
+          # from the temporary check copy. The real Pro package retains it and
+          # the package-regression job verifies that requirement separately.
+          sed -i '/^ \* Requires Plugins: assesscraft$/d' build/assesscraft-pro/assesscraft-pro.php
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
