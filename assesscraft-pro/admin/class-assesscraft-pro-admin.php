@@ -182,7 +182,7 @@ final class AssessCraft_Pro_Admin {
 		$url = add_query_arg(
 			array(
 				'ac_pro_result'  => ! empty( $result['success'] ) ? 'success' : 'error',
-				'ac_pro_message' => rawurlencode( sanitize_text_field( (string) ( $result['message'] ?? '' ) ) ),
+				'ac_pro_message' => sanitize_text_field( (string) ( $result['message'] ?? '' ) ),
 			),
 			self::url()
 		);
@@ -196,7 +196,7 @@ final class AssessCraft_Pro_Admin {
 			return;
 		}
 
-		$message = sanitize_text_field( rawurldecode( wp_unslash( (string) ( $_GET['ac_pro_message'] ?? '' ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$message = sanitize_text_field( wp_unslash( (string) ( $_GET['ac_pro_message'] ?? '' ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$class   = 'success' === $result ? 'notice-success' : 'notice-error';
 		?>
 		<div class="notice <?php echo esc_attr( $class ); ?> is-dismissible"><p><?php echo esc_html( $message ); ?></p></div>
