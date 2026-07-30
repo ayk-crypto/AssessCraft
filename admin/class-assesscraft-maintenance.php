@@ -81,20 +81,18 @@ final class AssessCraft_Maintenance {
 		}
 		?>
 		<div class="misc-pub-section assesscraft-direct-publish">
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<input type="hidden" name="action" value="assesscraft_publish_assessment">
-				<input type="hidden" name="assessment_id" value="<?php echo absint( $post->ID ); ?>">
-				<?php wp_nonce_field( 'assesscraft_publish_assessment_' . $post->ID ); ?>
-				<button class="button button-secondary" type="submit"><?php esc_html_e( 'Publish through AssessCraft', 'assesscraft' ); ?></button>
-			</form>
+			<a class="button button-secondary" href="<?php echo esc_url( self::direct_publish_url( $post->ID ) ); ?>"><?php esc_html_e( 'Publish through AssessCraft', 'assesscraft' ); ?></a>
 			<p class="description"><?php esc_html_e( 'Server-confirmed fallback if the standard WordPress button is intercepted.', 'assesscraft' ); ?></p>
 		</div>
 		<?php
 	}
 
 	public function handle_direct_publish(): void {
-		check_admin_referer( 'assesscraft_publish_assessment_' . absint( $_POST['assessment_id'] ?? 0 ) );
-		$post_id = isset( $_POST['assessment_id'] ) ? absint( wp_unslash( $_POST['assessment_id'] ) ) : 0;
+		// The nonce below protects this state-changing admin action.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$post_id = isset( $_GET['assessment_id'] ) ? absint( wp_unslash( $_GET['assessment_id'] ) ) : 0;
+		check_admin_referer( 'assesscraft_publish_assessment_' . $post_id );
+
 		if ( ! $post_id || AssessCraft_Post_Type::TYPE !== get_post_type( $post_id ) ) {
 			wp_die( esc_html__( 'The requested assessment could not be found.', 'assesscraft' ) );
 		}
@@ -117,7 +115,11 @@ final class AssessCraft_Maintenance {
 			$this->set_publish_notice( 'failed' );
 		}
 
-		wp_safe_redirect( get_edit_post_link( $post_id, 'url' ) );
+		$redirect = get_edit_post_link( $post_id, 'url' );
+		if ( ! $redirect ) {
+			$redirect = admin_url( 'edit.php?post_type=' . AssessCraft_Post_Type::TYPE );
+		}
+		wp_safe_redirect( $redirect );
 		exit;
 	}
 
@@ -138,6 +140,13 @@ final class AssessCraft_Maintenance {
 		?>
 		<div class="notice notice-error is-dismissible"><p><strong><?php esc_html_e( 'WordPress did not publish the assessment.', 'assesscraft' ); ?></strong> <?php esc_html_e( 'The request reached the server, but the final status remained Draft. Review the current plan and WordPress error log.', 'assesscraft' ); ?></p></div>
 		<?php
+	}
+
+	private static function direct_publish_url( int $post_id ): string {
+		return wp_nonce_url(
+			admin_url( 'admin-post.php?action=assesscraft_publish_assessment&assessment_id=' . absint( $post_id ) ),
+			'assesscraft_publish_assessment_' . absint( $post_id )
+		);
 	}
 
 	private function set_publish_notice( string $notice ): void {
