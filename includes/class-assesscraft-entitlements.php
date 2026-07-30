@@ -57,10 +57,9 @@ final class AssessCraft_Entitlements {
 	}
 
 	public function render_notice(): void {
-		$key          = self::NOTICE_KEY . get_current_user_id();
-		$notice       = get_transient( $key );
-		$query_notice = sanitize_key( wp_unslash( $_GET['assesscraft_publish'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( 'publish-limit' !== $notice && 'limit' !== $query_notice ) {
+		$key    = self::NOTICE_KEY . get_current_user_id();
+		$notice = get_transient( $key );
+		if ( 'publish-limit' !== $notice ) {
 			return;
 		}
 		delete_transient( $key );
