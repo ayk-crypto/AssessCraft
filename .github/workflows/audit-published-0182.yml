@@ -1,0 +1,76 @@
+name: Audit published AssessCraft Free 0.18.2
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/audit-published-0182.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Verify live release assets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Download and verify public release
+        id: audit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v0.18.2
+          ZIP: assesscraft-free-0.18.2.zip
+          SIDECAR: assesscraft-free-0.18.2.zip.sha256
+        run: |
+          set -euo pipefail
+
+          release_json="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json tagName,isDraft,isPrerelease,url,body,assets)"
+          jq -e '.tagName == "v0.18.2"' <<<"$release_json" >/dev/null
+          jq -e '.isDraft == false and .isPrerelease == false' <<<"$release_json" >/dev/null
+          jq -e '([.assets[].name] | contains(["assesscraft-free-0.18.2.zip", "assesscraft-free-0.18.2.zip.sha256", "CHECKSUMS.txt"]))' <<<"$release_json" >/dev/null
+
+          mkdir -p audit
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern 'assesscraft-free-0.18.2.zip*' --dir audit
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern 'CHECKSUMS.txt' --dir audit
+
+          cd audit
+          test -s "$ZIP"
+          test -s "$SIDECAR"
+          test -s CHECKSUMS.txt
+          sha256sum --check "$SIDECAR"
+          digest="$(sha256sum "$ZIP" | awk '{print $1}')"
+          grep -Fxq "$digest  $ZIP" CHECKSUMS.txt
+          jq -e --arg digest "$digest" '.body | contains($digest)' <<<"$release_json" >/dev/null
+          unzip -t "$ZIP"
+          unzip -p "$ZIP" assesscraft/assesscraft.php | grep -Eq '^ \* Version:[[:space:]]+0\.18\.2$'
+          ! unzip -l "$ZIP" | grep -E '(/tests/|/docs/|/vendor/|/node_modules/|/\.github/|/\.wordpress-org/|composer\.(json|lock)|phpunit\.xml|phpcs\.xml|RELEASE_NOTES\.md|\.phpunit\.result\.cache|/\.phpunit\.cache/|\.phpcs-cache|/coverage/)'
+
+          release_url="$(jq -r '.url' <<<"$release_json")"
+          zip_size="$(stat -c '%s' "$ZIP")"
+          {
+            echo 'status=PASS'
+            echo "tag=$TAG"
+            echo "version=0.18.2"
+            echo "sha256=$digest"
+            echo "zip_bytes=$zip_size"
+            echo "release_url=$release_url"
+            echo 'assets=assesscraft-free-0.18.2.zip,assesscraft-free-0.18.2.zip.sha256,CHECKSUMS.txt'
+            echo 'archive_integrity=PASS'
+            echo 'checksum_sidecar=PASS'
+            echo 'checksums_txt=PASS'
+            echo 'release_notes_digest=PASS'
+            echo 'development_cache_exclusion=PASS'
+          } > release-audit.txt
+
+      - name: Upload audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: assesscraft-0.18.2-public-release-audit
+          path: audit/release-audit.txt
+          if-no-files-found: error
+          retention-days: 90
