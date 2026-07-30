@@ -15,6 +15,7 @@ final class AssessCraft_Pro_Admin {
 		add_action( 'admin_menu', array( $this, 'menu' ), 30 );
 		add_action( 'admin_menu', array( $this, 'adjust_free_menu' ), 99 );
 		add_action( 'admin_notices', array( $this, 'license_notice' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_post_assesscraft_pro_activate_license', array( $this, 'activate_license' ) );
 		add_action( 'admin_post_assesscraft_pro_deactivate_license', array( $this, 'deactivate_license' ) );
 		add_action( 'admin_post_assesscraft_pro_refresh_license', array( $this, 'refresh_license' ) );
@@ -43,6 +44,27 @@ final class AssessCraft_Pro_Admin {
 				AssessCraft_Upgrade::PAGE_SLUG
 			);
 		}
+	}
+
+	public function enqueue_assets(): void {
+		$screen = get_current_screen();
+		if ( ! $screen || false === strpos( (string) $screen->id, self::PAGE_SLUG ) ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'assesscraft-pro-admin',
+			ASSESSCRAFT_PRO_URL . 'assets/admin.css',
+			array(),
+			ASSESSCRAFT_PRO_VERSION
+		);
+		wp_enqueue_script(
+			'assesscraft-pro-admin',
+			ASSESSCRAFT_PRO_URL . 'assets/admin.js',
+			array(),
+			ASSESSCRAFT_PRO_VERSION,
+			true
+		);
 	}
 
 	public function plugin_links( array $links ): array {
@@ -100,74 +122,116 @@ final class AssessCraft_Pro_Admin {
 
 		$status       = AssessCraft_Pro_License::status();
 		$is_active    = AssessCraft_Pro_License::is_active();
+		$is_test      = AssessCraft_Pro_License::is_test_license();
 		$masked_key   = AssessCraft_Pro_License::masked_key();
 		$expires_at   = AssessCraft_Pro_License::expires_at();
 		$last_checked = AssessCraft_Pro_License::last_checked();
 		$message      = AssessCraft_Pro_License::message();
 		$capabilities = $this->pro_capabilities();
 		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'AssessCraft Pro', 'assesscraft-pro' ); ?></h1>
-			<p><?php esc_html_e( 'Manage the add-on license and confirm which Pro capabilities are available on this site.', 'assesscraft-pro' ); ?></p>
+		<div class="wrap ac-pro-page">
+			<div class="ac-pro-hero">
+				<div class="ac-pro-brandmark" aria-hidden="true">AC</div>
+				<div class="ac-pro-hero-copy">
+					<span class="ac-pro-eyebrow"><?php esc_html_e( 'Internal beta', 'assesscraft-pro' ); ?></span>
+					<h1><?php esc_html_e( 'AssessCraft Pro', 'assesscraft-pro' ); ?></h1>
+					<p><?php esc_html_e( 'Manage your license, confirm product readiness, and review the Pro capabilities enabled for this WordPress site.', 'assesscraft-pro' ); ?></p>
+				</div>
+				<div class="ac-pro-hero-status">
+					<span class="ac-pro-status-dot <?php echo esc_attr( $is_active ? 'is-active' : 'is-locked' ); ?>" aria-hidden="true"></span>
+					<div>
+						<strong><?php echo $is_active ? esc_html__( 'Pro enabled', 'assesscraft-pro' ) : esc_html__( 'Pro locked', 'assesscraft-pro' ); ?></strong>
+						<span><?php echo esc_html( $this->status_label( $status ) ); ?></span>
+					</div>
+				</div>
+			</div>
 
 			<?php $this->render_action_notice(); ?>
 
-			<div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:20px;max-width:1100px;margin-top:20px;">
-				<section style="padding:24px;border:1px solid #dcdcde;border-radius:10px;background:#fff;">
-					<h2 style="margin-top:0;"><?php esc_html_e( 'License status', 'assesscraft-pro' ); ?></h2>
-					<table class="widefat striped" style="margin-bottom:20px;">
-						<tbody>
-							<tr><th scope="row"><?php esc_html_e( 'Status', 'assesscraft-pro' ); ?></th><td><strong><?php echo esc_html( $this->status_label( $status ) ); ?></strong></td></tr>
-							<tr><th scope="row"><?php esc_html_e( 'AssessCraft Free', 'assesscraft-pro' ); ?></th><td><?php echo esc_html( ASSESSCRAFT_VERSION ); ?></td></tr>
-							<tr><th scope="row"><?php esc_html_e( 'AssessCraft Pro', 'assesscraft-pro' ); ?></th><td><?php echo esc_html( ASSESSCRAFT_PRO_VERSION ); ?></td></tr>
-							<tr><th scope="row"><?php esc_html_e( 'Connected key', 'assesscraft-pro' ); ?></th><td><?php echo '' !== $masked_key ? esc_html( $masked_key ) : esc_html__( 'None', 'assesscraft-pro' ); ?></td></tr>
-							<tr><th scope="row"><?php esc_html_e( 'Expires', 'assesscraft-pro' ); ?></th><td><?php echo '' !== $expires_at ? esc_html( $expires_at ) : esc_html__( 'Not provided', 'assesscraft-pro' ); ?></td></tr>
-							<tr><th scope="row"><?php esc_html_e( 'Last checked', 'assesscraft-pro' ); ?></th><td><?php echo $last_checked ? esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $last_checked ) ) : esc_html__( 'Not checked yet', 'assesscraft-pro' ); ?></td></tr>
-						</tbody>
-					</table>
+			<div class="ac-pro-summary-grid">
+				<?php $this->summary_card( __( 'Plan', 'assesscraft-pro' ), $is_active ? __( 'Pro', 'assesscraft-pro' ) : __( 'Free', 'assesscraft-pro' ), $is_active ? __( 'Advanced limits active', 'assesscraft-pro' ) : __( 'Free limits remain active', 'assesscraft-pro' ) ); ?>
+				<?php $this->summary_card( __( 'AssessCraft Free', 'assesscraft-pro' ), ASSESSCRAFT_VERSION, __( 'Required core plugin', 'assesscraft-pro' ) ); ?>
+				<?php $this->summary_card( __( 'AssessCraft Pro', 'assesscraft-pro' ), ASSESSCRAFT_PRO_VERSION, __( 'Internal beta package', 'assesscraft-pro' ) ); ?>
+				<?php $this->summary_card( __( 'Last checked', 'assesscraft-pro' ), $last_checked ? wp_date( get_option( 'date_format' ), $last_checked ) : __( 'Not yet', 'assesscraft-pro' ), $last_checked ? wp_date( get_option( 'time_format' ), $last_checked ) : __( 'Connect a key to begin', 'assesscraft-pro' ) ); ?>
+			</div>
+
+			<div class="ac-pro-layout">
+				<section class="ac-pro-card ac-pro-license-card">
+					<div class="ac-pro-card-heading">
+						<div>
+							<span class="ac-pro-section-kicker"><?php esc_html_e( 'License', 'assesscraft-pro' ); ?></span>
+							<h2><?php esc_html_e( 'Activation and status', 'assesscraft-pro' ); ?></h2>
+						</div>
+						<span class="ac-pro-status-badge <?php echo esc_attr( $this->status_class( $status ) ); ?>"><?php echo esc_html( $this->status_label( $status ) ); ?></span>
+					</div>
+
+					<div class="ac-pro-detail-list">
+						<div><span><?php esc_html_e( 'License type', 'assesscraft-pro' ); ?></span><strong><?php echo '' === $masked_key ? esc_html__( 'Not connected', 'assesscraft-pro' ) : ( $is_test ? esc_html__( 'Internal testing key', 'assesscraft-pro' ) : esc_html__( 'Commercial / remote', 'assesscraft-pro' ) ); ?></strong></div>
+						<div><span><?php esc_html_e( 'Connected key', 'assesscraft-pro' ); ?></span><strong class="ac-pro-key-value"><?php echo '' !== $masked_key ? esc_html( $masked_key ) : esc_html__( 'None', 'assesscraft-pro' ); ?></strong></div>
+						<div><span><?php esc_html_e( 'Expires', 'assesscraft-pro' ); ?></span><strong><?php echo '' !== $expires_at ? esc_html( $expires_at ) : esc_html__( 'No date provided', 'assesscraft-pro' ); ?></strong></div>
+					</div>
 
 					<?php if ( defined( 'ASSESSCRAFT_PRO_DEV_MODE' ) && ASSESSCRAFT_PRO_DEV_MODE ) : ?>
-						<div class="notice notice-info inline"><p><?php esc_html_e( 'Development mode is enabled. Pro entitlements are active without contacting the licensing service.', 'assesscraft-pro' ); ?></p></div>
+						<div class="ac-pro-inline-message is-info"><span class="dashicons dashicons-admin-tools" aria-hidden="true"></span><p><?php esc_html_e( 'Development mode is enabled. Pro entitlements are active without a stored license.', 'assesscraft-pro' ); ?></p></div>
 					<?php elseif ( $is_active ) : ?>
-						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-							<input type="hidden" name="action" value="assesscraft_pro_refresh_license">
-							<?php wp_nonce_field( 'assesscraft_pro_refresh_license' ); ?>
-							<button type="submit" class="button"><?php esc_html_e( 'Check license now', 'assesscraft-pro' ); ?></button>
-						</form>
-						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top:10px;">
-							<input type="hidden" name="action" value="assesscraft_pro_deactivate_license">
-							<?php wp_nonce_field( 'assesscraft_pro_deactivate_license' ); ?>
-							<button type="submit" class="button button-link-delete"><?php esc_html_e( 'Disconnect license from this site', 'assesscraft-pro' ); ?></button>
-						</form>
+						<?php if ( $is_test ) : ?>
+							<div class="ac-pro-inline-message is-warning"><span class="dashicons dashicons-warning" aria-hidden="true"></span><p><?php esc_html_e( 'This build is using an offline internal testing key. It is suitable for staging only and will be removed before the commercial 1.0.0 release.', 'assesscraft-pro' ); ?></p></div>
+						<?php endif; ?>
+						<div class="ac-pro-actions">
+							<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+								<input type="hidden" name="action" value="assesscraft_pro_refresh_license">
+								<?php wp_nonce_field( 'assesscraft_pro_refresh_license' ); ?>
+								<button type="submit" class="button button-primary"><?php esc_html_e( 'Check license now', 'assesscraft-pro' ); ?></button>
+							</form>
+							<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+								<input type="hidden" name="action" value="assesscraft_pro_deactivate_license">
+								<?php wp_nonce_field( 'assesscraft_pro_deactivate_license' ); ?>
+								<button type="submit" class="button button-link-delete"><?php esc_html_e( 'Disconnect license', 'assesscraft-pro' ); ?></button>
+							</form>
+						</div>
 					<?php else : ?>
-						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<form class="ac-pro-activation-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 							<input type="hidden" name="action" value="assesscraft_pro_activate_license">
 							<?php wp_nonce_field( 'assesscraft_pro_activate_license' ); ?>
-							<label for="assesscraft-pro-license-key"><strong><?php esc_html_e( 'License key', 'assesscraft-pro' ); ?></strong></label>
-							<div style="display:flex;gap:8px;margin-top:8px;max-width:650px;">
-								<input id="assesscraft-pro-license-key" class="regular-text" type="password" name="license_key" autocomplete="off" required>
-								<button type="submit" class="button button-primary"><?php esc_html_e( 'Activate license', 'assesscraft-pro' ); ?></button>
+							<label for="assesscraft-pro-license-key"><?php esc_html_e( 'License key', 'assesscraft-pro' ); ?></label>
+							<div class="ac-pro-license-field">
+								<input id="assesscraft-pro-license-key" type="password" name="license_key" autocomplete="off" placeholder="ACPRO-…" required>
+								<button type="button" class="button ac-pro-toggle-key" data-show-label="<?php esc_attr_e( 'Show', 'assesscraft-pro' ); ?>" data-hide-label="<?php esc_attr_e( 'Hide', 'assesscraft-pro' ); ?>"><?php esc_html_e( 'Show', 'assesscraft-pro' ); ?></button>
+								<button type="submit" class="button button-primary"><?php esc_html_e( 'Activate Pro', 'assesscraft-pro' ); ?></button>
 							</div>
-							<p class="description"><?php esc_html_e( 'The key is verified against the AssessCraft licensing endpoint and bound to this WordPress site.', 'assesscraft-pro' ); ?></p>
+							<p class="description"><?php esc_html_e( 'For this beta, the five supplied internal testing keys are validated locally. Future commercial keys will use the AssessCraft licensing service.', 'assesscraft-pro' ); ?></p>
 						</form>
 					<?php endif; ?>
 
 					<?php if ( '' !== $message ) : ?>
-						<p style="margin-bottom:0;"><strong><?php esc_html_e( 'Last response:', 'assesscraft-pro' ); ?></strong> <?php echo esc_html( $message ); ?></p>
+						<div class="ac-pro-last-response"><span><?php esc_html_e( 'Last response', 'assesscraft-pro' ); ?></span><p><?php echo esc_html( $message ); ?></p></div>
 					<?php endif; ?>
 				</section>
 
-				<aside style="padding:24px;border:1px solid #dcdcde;border-radius:10px;background:#fff;">
-					<h2 style="margin-top:0;"><?php esc_html_e( 'Pro entitlement', 'assesscraft-pro' ); ?></h2>
-					<p><strong><?php echo $is_active ? esc_html__( 'Active', 'assesscraft-pro' ) : esc_html__( 'Locked', 'assesscraft-pro' ); ?></strong></p>
-					<p><?php echo $is_active ? esc_html__( 'The shared AssessCraft data model is operating with Pro limits and capabilities.', 'assesscraft-pro' ) : esc_html__( 'AssessCraft continues using Free limits until the license is active.', 'assesscraft-pro' ); ?></p>
-					<ul style="list-style:disc;padding-left:20px;">
+				<aside class="ac-pro-card ac-pro-capabilities-card">
+					<span class="ac-pro-section-kicker"><?php esc_html_e( 'Entitlement', 'assesscraft-pro' ); ?></span>
+					<h2><?php esc_html_e( 'Pro capabilities', 'assesscraft-pro' ); ?></h2>
+					<p><?php echo $is_active ? esc_html__( 'The shared AssessCraft data model is operating with Pro limits and capabilities.', 'assesscraft-pro' ) : esc_html__( 'Activate a valid key to switch the shared AssessCraft feature matrix from Free to Pro.', 'assesscraft-pro' ); ?></p>
+					<ul class="ac-pro-capability-list">
 						<?php foreach ( $capabilities as $capability ) : ?>
-							<li><?php echo esc_html( $capability ); ?></li>
+							<li><span class="dashicons dashicons-yes-alt" aria-hidden="true"></span><span><?php echo esc_html( $capability ); ?></span></li>
 						<?php endforeach; ?>
 					</ul>
 				</aside>
 			</div>
+
+			<section class="ac-pro-card ac-pro-release-card">
+				<div>
+					<span class="ac-pro-section-kicker"><?php esc_html_e( 'Release package', 'assesscraft-pro' ); ?></span>
+					<h2><?php esc_html_e( '0.9.0-beta.1 readiness', 'assesscraft-pro' ); ?></h2>
+					<p><?php esc_html_e( 'This package is versioned and built for controlled staging validation. The commercial licensing backend and automatic update delivery remain intentionally deferred until the 1.0.0 release phase.', 'assesscraft-pro' ); ?></p>
+				</div>
+				<div class="ac-pro-release-badges">
+					<span><span class="dashicons dashicons-shield-alt" aria-hidden="true"></span><?php esc_html_e( 'Package integrity checked', 'assesscraft-pro' ); ?></span>
+					<span><span class="dashicons dashicons-wordpress-alt" aria-hidden="true"></span><?php esc_html_e( 'WordPress Plugin Check', 'assesscraft-pro' ); ?></span>
+					<span><span class="dashicons dashicons-editor-code" aria-hidden="true"></span><?php esc_html_e( 'PHP 8.0–8.4', 'assesscraft-pro' ); ?></span>
+				</div>
+			</section>
 		</div>
 		<?php
 	}
@@ -203,6 +267,16 @@ final class AssessCraft_Pro_Admin {
 		<?php
 	}
 
+	private function summary_card( string $label, string $value, string $meta ): void {
+		?>
+		<div class="ac-pro-summary-card">
+			<span><?php echo esc_html( $label ); ?></span>
+			<strong><?php echo esc_html( $value ); ?></strong>
+			<small><?php echo esc_html( $meta ); ?></small>
+		</div>
+		<?php
+	}
+
 	private function status_label( string $status ): string {
 		$labels = array(
 			'active'      => __( 'Active', 'assesscraft-pro' ),
@@ -212,6 +286,10 @@ final class AssessCraft_Pro_Admin {
 			'inactive'    => __( 'Inactive', 'assesscraft-pro' ),
 		);
 		return $labels[ $status ] ?? $labels['inactive'];
+	}
+
+	private function status_class( string $status ): string {
+		return in_array( $status, array( 'active', 'development', 'expired', 'invalid' ), true ) ? 'is-' . $status : 'is-inactive';
 	}
 
 	private function pro_capabilities(): array {

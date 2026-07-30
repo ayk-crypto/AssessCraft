@@ -10,11 +10,28 @@ final class AssessCraft_Pro_License {
 	private const OPTION_EXPIRES      = 'assesscraft_pro_license_expires_at';
 	private const OPTION_LAST_CHECKED = 'assesscraft_pro_license_last_checked';
 	private const OPTION_MESSAGE      = 'assesscraft_pro_license_message';
+	private const OPTION_TYPE         = 'assesscraft_pro_license_type';
 
 	private const STATUS_ACTIVE   = 'active';
 	private const STATUS_EXPIRED  = 'expired';
 	private const STATUS_INACTIVE = 'inactive';
 	private const STATUS_INVALID  = 'invalid';
+
+	private const TYPE_REMOTE = 'remote';
+	private const TYPE_TEST   = 'test';
+
+	/**
+	 * Internal beta keys are stored only as hashes and must be removed before 1.0.0.
+	 *
+	 * @var string[]
+	 */
+	private const TEST_KEY_HASHES = array(
+		'90dc9df5a5f482e01d8f6bec33dadc58e05f9eeffd97130e4fa87f80cd7e5310',
+		'129ed2250a7062309930c9aa15fc969af0710488fd59cb9dbb4bfbf9ae8b9fbb',
+		'31d4b5025298395b38d9153ff4153a04c9f82b4088ef37c3d7984da45fcba8f5',
+		'beddcbff518d8e27ec05d6d3f2fdcfa3f32cfd29efb800d95a9455030ac565f5',
+		'c23b74dbe0053e4adc5e2c8dda8c2a95e6994396e15271fbcf7114a66a3977dd',
+	);
 
 	public function register(): void {
 		add_action( self::CRON_HOOK, array( $this, 'refresh' ) );
@@ -53,6 +70,16 @@ final class AssessCraft_Pro_License {
 		return in_array( $status, $allowed, true ) ? $status : self::STATUS_INACTIVE;
 	}
 
+	public static function license_type(): string {
+		$type    = sanitize_key( (string) get_option( self::OPTION_TYPE, '' ) );
+		$allowed = array( self::TYPE_REMOTE, self::TYPE_TEST );
+		return in_array( $type, $allowed, true ) ? $type : '';
+	}
+
+	public static function is_test_license(): bool {
+		return self::TYPE_TEST === self::license_type();
+	}
+
 	public static function key(): string {
 		return sanitize_text_field( (string) get_option( self::OPTION_KEY, '' ) );
 	}
@@ -85,6 +112,18 @@ final class AssessCraft_Pro_License {
 			return $this->store_result( self::STATUS_INVALID, '', __( 'Enter a license key before activating.', 'assesscraft-pro' ), false );
 		}
 
+		if ( self::is_test_key( $license_key ) ) {
+			$license_key = strtoupper( $license_key );
+			return $this->store_result(
+				self::STATUS_ACTIVE,
+				'',
+				__( 'Internal testing license activated. No licensing server was contacted.', 'assesscraft-pro' ),
+				true,
+				$license_key,
+				self::TYPE_TEST
+			);
+		}
+
 		$response = $this->request(
 			'activate',
 			array(
@@ -93,19 +132,19 @@ final class AssessCraft_Pro_License {
 		);
 
 		if ( ! $response['success'] ) {
-			return $this->store_result( self::STATUS_INVALID, '', $response['message'], false, $license_key );
+			return $this->store_result( self::STATUS_INVALID, '', $response['message'], false, $license_key, self::TYPE_REMOTE );
 		}
 
 		$status     = self::normalize_remote_status( $response['status'] );
 		$expires_at = sanitize_text_field( $response['expires_at'] );
 		$is_active  = self::STATUS_ACTIVE === $status;
 
-		return $this->store_result( $status, $expires_at, $response['message'], $is_active, $license_key );
+		return $this->store_result( $status, $expires_at, $response['message'], $is_active, $license_key, self::TYPE_REMOTE );
 	}
 
 	public function deactivate(): array {
 		$key = self::key();
-		if ( '' !== $key ) {
+		if ( '' !== $key && ! self::is_test_license() ) {
 			$response = $this->request(
 				'deactivate',
 				array(
@@ -123,11 +162,7 @@ final class AssessCraft_Pro_License {
 			}
 		}
 
-		delete_option( self::OPTION_KEY );
-		delete_option( self::OPTION_EXPIRES );
-		update_option( self::OPTION_STATUS, self::STATUS_INACTIVE, false );
-		update_option( self::OPTION_LAST_CHECKED, time(), false );
-		update_option( self::OPTION_MESSAGE, __( 'License disconnected from this site.', 'assesscraft-pro' ), false );
+		$this->clear_local_license();
 
 		return array(
 			'success' => true,
@@ -139,6 +174,20 @@ final class AssessCraft_Pro_License {
 		$key = self::key();
 		if ( '' === $key ) {
 			return $this->store_result( self::STATUS_INACTIVE, '', __( 'No license key is connected.', 'assesscraft-pro' ), false );
+		}
+
+		if ( self::is_test_license() ) {
+			$is_valid = self::is_test_key( $key );
+			return $this->store_result(
+				$is_valid ? self::STATUS_ACTIVE : self::STATUS_INVALID,
+				'',
+				$is_valid
+					? __( 'Internal testing license verified locally.', 'assesscraft-pro' )
+					: __( 'This internal testing license is no longer valid.', 'assesscraft-pro' ),
+				$is_valid,
+				$key,
+				self::TYPE_TEST
+			);
 		}
 
 		$response = $this->request(
@@ -161,7 +210,7 @@ final class AssessCraft_Pro_License {
 		$expires_at = sanitize_text_field( $response['expires_at'] );
 		$is_active  = self::STATUS_ACTIVE === $status;
 
-		return $this->store_result( $status, $expires_at, $response['message'], $is_active, $key );
+		return $this->store_result( $status, $expires_at, $response['message'], $is_active, $key, self::TYPE_REMOTE );
 	}
 
 	private function request( string $action, array $additional_body ): array {
@@ -237,9 +286,12 @@ final class AssessCraft_Pro_License {
 		return $base . '/' . sanitize_key( $action );
 	}
 
-	private function store_result( string $status, string $expires_at, string $message, bool $success, string $license_key = '' ): array {
+	private function store_result( string $status, string $expires_at, string $message, bool $success, string $license_key = '', string $license_type = '' ): array {
 		if ( '' !== $license_key ) {
 			update_option( self::OPTION_KEY, $license_key, false );
+		}
+		if ( '' !== $license_type ) {
+			update_option( self::OPTION_TYPE, $license_type, false );
 		}
 		update_option( self::OPTION_STATUS, $status, false );
 		update_option( self::OPTION_EXPIRES, $expires_at, false );
@@ -250,6 +302,25 @@ final class AssessCraft_Pro_License {
 			'success' => $success,
 			'message' => $message,
 		);
+	}
+
+	private function clear_local_license(): void {
+		delete_option( self::OPTION_KEY );
+		delete_option( self::OPTION_EXPIRES );
+		delete_option( self::OPTION_TYPE );
+		update_option( self::OPTION_STATUS, self::STATUS_INACTIVE, false );
+		update_option( self::OPTION_LAST_CHECKED, time(), false );
+		update_option( self::OPTION_MESSAGE, __( 'License disconnected from this site.', 'assesscraft-pro' ), false );
+	}
+
+	private static function is_test_key( string $license_key ): bool {
+		$hash = hash( 'sha256', strtoupper( trim( $license_key ) ) );
+		foreach ( self::TEST_KEY_HASHES as $allowed_hash ) {
+			if ( hash_equals( $allowed_hash, $hash ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static function normalize_remote_status( string $status ): string {
