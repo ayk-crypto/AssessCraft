@@ -9,6 +9,7 @@ foreach (
 		'assesscraft_pro_license_expires_at',
 		'assesscraft_pro_license_last_checked',
 		'assesscraft_pro_license_message',
+		'assesscraft_pro_license_type',
 	) as $option
 ) {
 	delete_option( $option );
