@@ -1,0 +1,116 @@
+.ac-unified-import form {
+	display: grid;
+	grid-template-columns: minmax(320px, 1fr) auto;
+	gap: 12px;
+	align-items: center;
+	width: min(100%, 720px);
+}
+
+.ac-json-upload-control {
+	display: flex;
+	min-width: 0;
+	min-height: 44px;
+	align-items: center;
+	overflow: hidden;
+	border: 1px solid #c9c4d8;
+	border-radius: 9px;
+	background: #fff;
+	box-shadow: 0 1px 2px rgba(26, 18, 52, 0.04);
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ac-json-upload-control:focus-within {
+	border-color: #4f46e5;
+	box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.14);
+}
+
+.ac-json-upload-control.has-file {
+	border-color: #8b7ad0;
+	background: #fbfaff;
+}
+
+.ac-json-native-input {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	clip-path: inset(50%) !important;
+	white-space: nowrap !important;
+}
+
+.ac-json-file-button {
+	display: inline-flex;
+	min-height: 44px;
+	gap: 8px;
+	align-items: center;
+	padding: 0 16px;
+	border-right: 1px solid #ded9ea;
+	background: #f5f3ff;
+	color: #35256f;
+	font-weight: 650;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ac-json-file-button:hover {
+	background: #ece8ff;
+	color: #281b5e;
+}
+
+.ac-json-file-button .dashicons {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+}
+
+.ac-json-file-name {
+	min-width: 0;
+	overflow: hidden;
+	padding: 0 14px;
+	color: #696375;
+	font-size: 13px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.ac-json-upload-control.has-file .ac-json-file-name {
+	color: #2f2850;
+	font-weight: 600;
+}
+
+.ac-unified-import form > .button {
+	min-height: 44px;
+	padding-inline: 18px;
+	border-radius: 8px;
+}
+
+@media screen and (max-width: 782px) {
+	.ac-unified-import form {
+		grid-template-columns: 1fr;
+		width: 100%;
+	}
+
+	.ac-unified-import form > .button {
+		width: 100%;
+	}
+}
+
+@media screen and (max-width: 480px) {
+	.ac-json-upload-control {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.ac-json-file-button {
+		justify-content: center;
+		border-right: 0;
+		border-bottom: 1px solid #ded9ea;
+	}
+
+	.ac-json-file-name {
+		padding-block: 12px;
+		text-align: center;
+	}
+}
