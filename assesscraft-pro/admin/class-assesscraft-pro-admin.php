@@ -59,7 +59,7 @@ final class AssessCraft_Pro_Admin {
 		}
 
 		$screen = get_current_screen();
-		if ( $screen && self::PAGE_SLUG === sanitize_key( (string) ( $_GET['page'] ?? '' ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( $screen && false !== strpos( (string) $screen->id, self::PAGE_SLUG ) ) {
 			return;
 		}
 		?>
@@ -74,19 +74,22 @@ final class AssessCraft_Pro_Admin {
 	}
 
 	public function activate_license(): void {
-		$this->authorize_request( 'assesscraft_pro_activate_license' );
+		$this->authorize_request();
+		check_admin_referer( 'assesscraft_pro_activate_license' );
 		$key    = sanitize_text_field( wp_unslash( $_POST['license_key'] ?? '' ) );
 		$result = $this->license->activate( $key );
 		$this->redirect_with_result( $result );
 	}
 
 	public function deactivate_license(): void {
-		$this->authorize_request( 'assesscraft_pro_deactivate_license' );
+		$this->authorize_request();
+		check_admin_referer( 'assesscraft_pro_deactivate_license' );
 		$this->redirect_with_result( $this->license->deactivate() );
 	}
 
 	public function refresh_license(): void {
-		$this->authorize_request( 'assesscraft_pro_refresh_license' );
+		$this->authorize_request();
+		check_admin_referer( 'assesscraft_pro_refresh_license' );
 		$this->redirect_with_result( $this->license->refresh() );
 	}
 
@@ -169,11 +172,10 @@ final class AssessCraft_Pro_Admin {
 		<?php
 	}
 
-	private function authorize_request( string $action ): void {
+	private function authorize_request(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have permission to manage the AssessCraft Pro license.', 'assesscraft-pro' ) );
 		}
-		check_admin_referer( $action );
 	}
 
 	private function redirect_with_result( array $result ): void {
@@ -194,7 +196,7 @@ final class AssessCraft_Pro_Admin {
 			return;
 		}
 
-		$message = sanitize_text_field( rawurldecode( (string) ( $_GET['ac_pro_message'] ?? '' ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$message = sanitize_text_field( rawurldecode( wp_unslash( (string) ( $_GET['ac_pro_message'] ?? '' ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$class   = 'success' === $result ? 'notice-success' : 'notice-error';
 		?>
 		<div class="notice <?php echo esc_attr( $class ); ?> is-dismissible"><p><?php echo esc_html( $message ); ?></p></div>
