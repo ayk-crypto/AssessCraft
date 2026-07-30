@@ -4,6 +4,7 @@ use PHPUnit\Framework\TestCase;
 final class EntitlementsTest extends TestCase {
 	protected function tearDown(): void {
 		unset( $GLOBALS['assesscraft_test_plan'] );
+		AssessCraft_Pro_License::$active = false;
 	}
 
 	public function test_free_matrix_matches_product_decision(): void {
@@ -20,6 +21,15 @@ final class EntitlementsTest extends TestCase {
 		$this->assertSame( -1, AssessCraft_Features::limit( 'profiles' ) );
 		$this->assertTrue( AssessCraft_Features::available( 'consultation_email' ) );
 		$this->assertTrue( AssessCraft_Features::available( 'elementor' ) );
+	}
+
+	public function test_active_pro_license_fallback_unlocks_publishing(): void {
+		AssessCraft_Pro_License::$active = true;
+
+		$this->assertSame( AssessCraft_Features::PLAN_PRO, AssessCraft_Features::plan() );
+		$this->assertSame( -1, AssessCraft_Features::limit( 'published_assessments' ) );
+		$this->assertSame( -1, AssessCraft_Features::limit( 'profiles' ) );
+		$this->assertTrue( AssessCraft_Features::available( 'json_portability' ) );
 	}
 
 	public function test_downgrade_preserves_locked_configuration(): void {

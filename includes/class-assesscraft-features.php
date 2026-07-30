@@ -26,7 +26,25 @@ final class AssessCraft_Features {
 
 	public static function plan(): string {
 		$plan = sanitize_key( (string) apply_filters( 'assesscraft_current_plan', self::PLAN_FREE ) );
-		return self::PLAN_PRO === $plan ? self::PLAN_PRO : self::PLAN_FREE;
+		if ( self::PLAN_PRO === $plan ) {
+			return self::PLAN_PRO;
+		}
+
+		/*
+		 * Compatibility fallback for add-on builds that loaded correctly but
+		 * registered their plan filter after another admin component evaluated
+		 * the feature matrix. The Pro class is optional and is never required by
+		 * the Free plugin.
+		 */
+		if (
+			class_exists( 'AssessCraft_Pro_License' )
+			&& is_callable( array( 'AssessCraft_Pro_License', 'is_active' ) )
+			&& AssessCraft_Pro_License::is_active()
+		) {
+			return self::PLAN_PRO;
+		}
+
+		return self::PLAN_FREE;
 	}
 
 	public static function value( string $feature ) {

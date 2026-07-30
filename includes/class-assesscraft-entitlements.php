@@ -6,6 +6,7 @@ final class AssessCraft_Entitlements {
 
 	public function register(): void {
 		add_filter( 'wp_insert_post_data', array( $this, 'enforce_publish_limit' ), 20, 2 );
+		add_filter( 'redirect_post_location', array( $this, 'append_publish_notice' ), 20, 2 );
 		add_action( 'admin_notices', array( $this, 'render_notice' ) );
 	}
 
@@ -42,19 +43,35 @@ final class AssessCraft_Entitlements {
 		return $data;
 	}
 
+	public function append_publish_notice( string $location, int $post_id ): string {
+		if ( AssessCraft_Post_Type::TYPE !== get_post_type( $post_id ) ) {
+			return $location;
+		}
+
+		$notice = get_transient( self::NOTICE_KEY . get_current_user_id() );
+		if ( 'publish-limit' !== $notice ) {
+			return $location;
+		}
+
+		return add_query_arg( 'assesscraft_publish', 'limit', $location );
+	}
+
 	public function render_notice(): void {
 		$key    = self::NOTICE_KEY . get_current_user_id();
 		$notice = get_transient( $key );
-		if ( ! $notice ) {
+		if ( 'publish-limit' !== $notice ) {
 			return;
 		}
 		delete_transient( $key );
-		printf(
-			'<div class="notice notice-warning is-dismissible"><p>%1$s <a href="%2$s" target="_blank" rel="noopener noreferrer">%3$s</a></p></div>',
-			esc_html__( 'AssessCraft Free supports one published assessment. This assessment was saved as a draft.', 'assesscraft' ),
-			esc_url( AssessCraft_Features::upgrade_url() ),
-			esc_html__( 'Explore AssessCraft Pro.', 'assesscraft' )
-		);
+		?>
+		<div class="notice notice-warning is-dismissible">
+			<p>
+				<strong><?php esc_html_e( 'This assessment remains a draft.', 'assesscraft' ); ?></strong>
+				<?php esc_html_e( 'AssessCraft Free supports one published assessment. Unpublish the existing assessment or activate AssessCraft Pro, then publish again.', 'assesscraft' ); ?>
+				<a href="<?php echo esc_url( AssessCraft_Features::upgrade_url() ); ?>"><?php esc_html_e( 'Review your plan', 'assesscraft' ); ?></a>
+			</p>
+		</div>
+		<?php
 	}
 
 	public static function publish_limit_reached( int $post_id = 0 ): bool {
