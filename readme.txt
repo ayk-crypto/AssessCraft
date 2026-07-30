@@ -3,7 +3,7 @@ Contributors: asfandyr
 Tags: assessment, questionnaire, lead generation, scoring, reports
 Requires at least: 6.5
 Tested up to: 7.0
-Stable tag: 0.18.4
+Stable tag: 0.18.5
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -108,6 +108,13 @@ Review the [documentation](https://assesscraft.com/documentation/) and [troubles
 
 == Changelog ==
 
+= 0.18.5 =
+
+* Prevents hidden-tab browser validation and delayed admin scripts from leaving Publish unresponsive.
+* Rechecks and restores the native WordPress Publish action after deferred script execution.
+* Adds a separate server-confirmed Publish through AssessCraft fallback action.
+* Displays an explicit success or server-side failure result after fallback publication.
+
 = 0.18.4 =
 
 * Keeps the native WordPress Publish button responsive when the Free publication limit is detected.
@@ -130,6 +137,6 @@ Review the [documentation](https://assesscraft.com/documentation/) and [troubles
 
 == Upgrade Notice ==
 
-= 0.18.4 =
+= 0.18.5 =
 
-Recommended for sites where the assessment Publish button appears unresponsive while plan limits are being evaluated.
+Required update for sites where the assessment Publish button appears unresponsive.
