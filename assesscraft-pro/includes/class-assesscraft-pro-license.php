@@ -107,12 +107,13 @@ final class AssessCraft_Pro_License {
 	}
 
 	public function activate( string $license_key ): array {
-		$license_key = strtoupper( sanitize_text_field( $license_key ) );
+		$license_key = sanitize_text_field( $license_key );
 		if ( '' === $license_key ) {
 			return $this->store_result( self::STATUS_INVALID, '', __( 'Enter a license key before activating.', 'assesscraft-pro' ), false );
 		}
 
 		if ( self::is_test_key( $license_key ) ) {
+			$license_key = strtoupper( $license_key );
 			return $this->store_result(
 				self::STATUS_ACTIVE,
 				'',
