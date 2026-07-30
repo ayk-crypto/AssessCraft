@@ -76,27 +76,32 @@ final class AssessCraft_Maintenance {
 		if ( ! $post instanceof WP_Post || AssessCraft_Post_Type::TYPE !== $post->post_type || 'publish' === $post->post_status ) {
 			return;
 		}
-		if ( ! current_user_can( 'publish_post', $post->ID ) ) {
+		if ( ! current_user_can( 'publish_posts' ) ) {
 			return;
 		}
 		?>
 		<div class="misc-pub-section assesscraft-direct-publish">
-			<a class="button button-secondary" href="<?php echo esc_url( self::direct_publish_url( $post->ID ) ); ?>"><?php esc_html_e( 'Publish through AssessCraft', 'assesscraft' ); ?></a>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="assesscraft_publish_assessment">
+				<input type="hidden" name="assessment_id" value="<?php echo absint( $post->ID ); ?>">
+				<?php wp_nonce_field( 'assesscraft_publish_assessment_' . $post->ID ); ?>
+				<button class="button button-secondary" type="submit"><?php esc_html_e( 'Publish through AssessCraft', 'assesscraft' ); ?></button>
+			</form>
 			<p class="description"><?php esc_html_e( 'Server-confirmed fallback if the standard WordPress button is intercepted.', 'assesscraft' ); ?></p>
 		</div>
 		<?php
 	}
 
 	public function handle_direct_publish(): void {
-		$post_id = isset( $_GET['assessment_id'] ) ? absint( $_GET['assessment_id'] ) : 0;
+		check_admin_referer( 'assesscraft_publish_assessment_' . absint( $_POST['assessment_id'] ?? 0 ) );
+		$post_id = isset( $_POST['assessment_id'] ) ? absint( wp_unslash( $_POST['assessment_id'] ) ) : 0;
 		if ( ! $post_id || AssessCraft_Post_Type::TYPE !== get_post_type( $post_id ) ) {
 			wp_die( esc_html__( 'The requested assessment could not be found.', 'assesscraft' ) );
 		}
-		if ( ! current_user_can( 'publish_post', $post_id ) ) {
+		if ( ! current_user_can( 'publish_posts' ) ) {
 			wp_die( esc_html__( 'You do not have permission to publish this assessment.', 'assesscraft' ) );
 		}
 
-		check_admin_referer( 'assesscraft_publish_assessment_' . $post_id );
 		$result = wp_update_post(
 			array(
 				'ID'          => $post_id,
@@ -133,13 +138,6 @@ final class AssessCraft_Maintenance {
 		?>
 		<div class="notice notice-error is-dismissible"><p><strong><?php esc_html_e( 'WordPress did not publish the assessment.', 'assesscraft' ); ?></strong> <?php esc_html_e( 'The request reached the server, but the final status remained Draft. Review the current plan and WordPress error log.', 'assesscraft' ); ?></p></div>
 		<?php
-	}
-
-	private static function direct_publish_url( int $post_id ): string {
-		return wp_nonce_url(
-			admin_url( 'admin-post.php?action=assesscraft_publish_assessment&assessment_id=' . absint( $post_id ) ),
-			'assesscraft_publish_assessment_' . absint( $post_id )
-		);
 	}
 
 	private function set_publish_notice( string $notice ): void {
