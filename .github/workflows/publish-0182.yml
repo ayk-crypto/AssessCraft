@@ -1,0 +1,171 @@
+name: Publish AssessCraft Free 0.18.2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/publish-0182.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-assesscraft-free-0.18.2
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Validate, package and publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out protected release source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          tools: composer:v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify release metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq '^ \* Version:[[:space:]]+0\.18\.2$' assesscraft.php
+          grep -Fq "define( 'ASSESSCRAFT_VERSION', '0.18.2' );" assesscraft.php
+          grep -Fq 'Current stable version: `0.18.2`.' README.md
+          grep -Fq '# AssessCraft Free 0.18.2' RELEASE_NOTES.md
+          grep -Fq 'Stable tag: 0.18.2' readme.txt
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -type f -name '*.php' \
+            -not -path './vendor/*' \
+            -not -path './build/*' \
+            -print0 | xargs -0 -n1 php -l
+
+      - name: Validate JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find . -type f -name '*.js' \
+            -not -path './vendor/*' \
+            -not -path './node_modules/*' \
+            -not -path './build/*' \
+            -print0)
+
+      - name: Validate JSON files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          excluded = {'.git', 'vendor', 'node_modules', 'build'}
+          for path in Path('.').rglob('*.json'):
+              if excluded.intersection(path.parts):
+                  continue
+              with path.open(encoding='utf-8') as handle:
+                  json.load(handle)
+              print(f'Valid JSON: {path}')
+          PY
+
+      - name: Run repository PHP quality checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f composer.json ]]; then
+            composer install --no-interaction --prefer-dist --no-progress
+            if [[ -x vendor/bin/phpunit ]]; then
+              vendor/bin/phpunit
+            fi
+            if [[ -x vendor/bin/phpcs ]]; then
+              vendor/bin/phpcs
+            fi
+          fi
+
+      - name: Build clean release package
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build
+          mkdir -p build/assesscraft
+          rsync -a \
+            --exclude '.git' \
+            --exclude '.gitignore' \
+            --exclude '.editorconfig' \
+            --exclude '.github/' \
+            --exclude '.wordpress-org/' \
+            --exclude 'build/' \
+            --exclude 'docs/' \
+            --exclude 'tests/' \
+            --exclude 'vendor/' \
+            --exclude 'node_modules/' \
+            --exclude 'composer.*' \
+            --exclude 'README.md' \
+            --exclude 'RELEASE_NOTES.md' \
+            --exclude 'CHECKSUMS.txt' \
+            --exclude 'php*.xml*' \
+            --exclude '*.zip' \
+            ./ build/assesscraft/
+          cd build
+          zip -qr assesscraft-free-0.18.2.zip assesscraft
+          sha256sum assesscraft-free-0.18.2.zip > assesscraft-free-0.18.2.zip.sha256
+
+      - name: Verify package integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -t build/assesscraft-free-0.18.2.zip
+          cd build
+          sha256sum --check assesscraft-free-0.18.2.zip.sha256
+          ! unzip -l assesscraft-free-0.18.2.zip | grep -E '(/tests/|/docs/|/vendor/|/node_modules/|/\.github/|/\.wordpress-org/|composer\.(json|lock)|phpunit\.xml|phpcs\.xml|RELEASE_NOTES\.md|CHECKSUMS\.txt)'
+          unzip -l assesscraft-free-0.18.2.zip | grep -F 'assesscraft/assesscraft.php'
+
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v0.18.2
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" \
+              build/assesscraft-free-0.18.2.zip \
+              build/assesscraft-free-0.18.2.zip.sha256 \
+              --clobber
+          else
+            gh release create "$TAG" \
+              build/assesscraft-free-0.18.2.zip \
+              build/assesscraft-free-0.18.2.zip.sha256 \
+              --target "$GITHUB_SHA" \
+              --title 'AssessCraft Free 0.18.2' \
+              --notes-file RELEASE_NOTES.md \
+              --latest
+          fi
+
+      - name: Verify published release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release view v0.18.2 --json tagName,isDraft,isPrerelease,url,assets \
+            --jq '.tagName == "v0.18.2" and (.isDraft | not) and (.isPrerelease | not) and ([.assets[].name] | contains(["assesscraft-free-0.18.2.zip", "assesscraft-free-0.18.2.zip.sha256"]))'
