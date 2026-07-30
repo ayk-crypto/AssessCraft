@@ -89,26 +89,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Read Pro version
+        run: |
+          PRO_VERSION="$(sed -n 's/^ \* Version:[[:space:]]*//p' assesscraft-pro/assesscraft-pro.php | head -n1)"
+          test -n "$PRO_VERSION"
+          echo "PRO_VERSION=$PRO_VERSION" >> "$GITHUB_ENV"
+          echo "PRO_ZIP=assesscraft-pro-$PRO_VERSION.zip" >> "$GITHUB_ENV"
       - name: Assemble Pro package
         run: |
           mkdir -p build/assesscraft-pro
           rsync -a --exclude '.git' --exclude '.DS_Store' --exclude '*.zip' assesscraft-pro/ build/assesscraft-pro/
-          cd build && zip -qr assesscraft-pro-0.1.0-alpha.1.zip assesscraft-pro
+          cd build && zip -qr "$PRO_ZIP" assesscraft-pro
       - name: Verify Pro package
         run: |
-          unzip -t build/assesscraft-pro-0.1.0-alpha.1.zip
-          unzip -p build/assesscraft-pro-0.1.0-alpha.1.zip assesscraft-pro/assesscraft-pro.php | grep -Eq '^ \* Version:[[:space:]]+0\.1\.0-alpha\.1$'
-          unzip -p build/assesscraft-pro-0.1.0-alpha.1.zip assesscraft-pro/assesscraft-pro.php | grep -Fq 'Requires Plugins: assesscraft'
-          ! unzip -l build/assesscraft-pro-0.1.0-alpha.1.zip | grep -E '(/tests/|/docs/|composer\.(json|lock)|phpunit\.xml|phpcs\.xml)'
+          unzip -t "build/$PRO_ZIP"
+          PACKAGED_VERSION="$(unzip -p "build/$PRO_ZIP" assesscraft-pro/assesscraft-pro.php | sed -n 's/^ \* Version:[[:space:]]*//p' | head -n1)"
+          test "$PACKAGED_VERSION" = "$PRO_VERSION"
+          unzip -p "build/$PRO_ZIP" assesscraft-pro/assesscraft-pro.php | grep -Fq 'Requires Plugins: assesscraft'
+          unzip -p "build/$PRO_ZIP" assesscraft-pro/readme.txt | grep -Fq "Stable tag: $PRO_VERSION"
+          ! unzip -l "build/$PRO_ZIP" | grep -E '(/tests/|/docs/|composer\.(json|lock)|phpunit\.xml|phpcs\.xml|\.DS_Store)'
       - name: Create Pro checksum
-        run: cd build && sha256sum assesscraft-pro-0.1.0-alpha.1.zip > assesscraft-pro-0.1.0-alpha.1.zip.sha256
+        run: cd build && sha256sum "$PRO_ZIP" > "$PRO_ZIP.sha256"
       - name: Retain validated Pro package
         uses: actions/upload-artifact@v4
         with:
           name: assesscraft-pro-plugin
           path: |
-            build/assesscraft-pro-0.1.0-alpha.1.zip
-            build/assesscraft-pro-0.1.0-alpha.1.zip.sha256
+            build/assesscraft-pro-*.zip
+            build/assesscraft-pro-*.zip.sha256
           if-no-files-found: error
           retention-days: 90
 
