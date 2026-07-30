@@ -3,7 +3,7 @@ Contributors: asfandyr
 Tags: assessment, questionnaire, lead generation, scoring, reports
 Requires at least: 6.5
 Tested up to: 7.0
-Stable tag: 0.18.6
+Stable tag: 0.18.7
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -108,6 +108,14 @@ Review the [documentation](https://assesscraft.com/documentation/) and [troubles
 
 == Changelog ==
 
+= 0.18.7 =
+
+* Adds an email-delivery diagnostic panel to AssessCraft System Status.
+* Records whether WordPress accepted or rejected the latest consultation notification.
+* Captures the WordPress mail transport error when available.
+* Adds a nonce-protected test-email action for validating SMTP and WordPress mail configuration.
+* Clarifies that WordPress acceptance does not guarantee inbox placement.
+
 = 0.18.6 =
 
 * Removes a self-triggering Publish-button attribute observer that could keep assessment editor pages loading indefinitely.
@@ -143,6 +151,6 @@ Review the [documentation](https://assesscraft.com/documentation/) and [troubles
 
 == Upgrade Notice ==
 
-= 0.18.6 =
+= 0.18.7 =
 
-Required hotfix for sites where opening an assessment editor leaves the browser loading continuously.
+Adds visible consultation-email diagnostics and a test-email action for troubleshooting SMTP and WordPress mail delivery.

@@ -66,6 +66,8 @@ jobs:
           unzip -p "build/$FREE_ZIP" assesscraft/admin/assets/import-polish.js | grep -Fq "ac-json-upload-control"
           ! unzip -p "build/$FREE_ZIP" assesscraft/admin/assets/publish-feedback.js | grep -Fq "new MutationObserver"
           unzip -p "build/$FREE_ZIP" assesscraft/admin/assets/publish-feedback.js | grep -Fq "finite set of rechecks"
+          unzip -p "build/$FREE_ZIP" assesscraft/includes/class-assesscraft-mail-diagnostics.php | grep -Fq "admin_post_assesscraft_send_test_email"
+          unzip -p "build/$FREE_ZIP" assesscraft/includes/class-assesscraft-lead-endpoint.php | grep -Fq "AssessCraft_Mail_Diagnostics::send"
           ! unzip -l "build/$FREE_ZIP" | grep -E 'assesscraft-pro|/tests/|/docs/|composer\.json|phpunit\.xml|phpcs\.xml'
 
       - name: Create checksum

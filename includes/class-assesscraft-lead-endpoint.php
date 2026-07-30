@@ -66,7 +66,14 @@ final class AssessCraft_Lead_Endpoint {
 			$subject   = sanitize_text_field( $config['lead_form']['subject'] ?: __( 'New AssessCraft consultation request', 'assesscraft' ) );
 			$body      = $this->build_email( $assessment_id, compact( 'name', 'email', 'company', 'phone', 'message' ), $result );
 			$headers   = array( 'Content-Type: text/plain; charset=UTF-8', 'Reply-To: ' . $name . ' <' . $email . '>' );
-			if ( ! $recipient || ! wp_mail( $recipient, $subject, $body, $headers ) ) {
+			$mail_sent = AssessCraft_Mail_Diagnostics::send(
+				$recipient,
+				$subject,
+				$body,
+				$headers,
+				array( 'assessment_id' => $assessment_id, 'operation' => 'consultation_notification' )
+			);
+			if ( ! $mail_sent ) {
 				AssessCraft_Logger::error( 'consultation_email_failed', 'A consultation notification email could not be delivered.', array( 'assessment_id' => $assessment_id, 'operation' => 'lead_submit' ) );
 				if ( ! $stored ) {
 					return new WP_Error( 'assesscraft_mail_failed', __( 'The request could not be sent. Please try again or contact the website directly.', 'assesscraft' ), array( 'status' => 500 ) );
