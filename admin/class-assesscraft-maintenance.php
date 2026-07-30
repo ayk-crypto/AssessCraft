@@ -97,6 +97,8 @@ final class AssessCraft_Maintenance {
 	}
 
 	public function handle_direct_publish(): void {
+		// The action-specific nonce is verified immediately after resolving the assessment ID.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$post_id = isset( $_POST['assessment_id'] ) ? absint( wp_unslash( $_POST['assessment_id'] ) ) : 0;
 		check_admin_referer( 'assesscraft_publish_assessment_' . $post_id );
 
@@ -138,8 +140,8 @@ final class AssessCraft_Maintenance {
 			$post_update['post_title'] = sanitize_text_field( wp_unslash( $_POST['post_title'] ) );
 		}
 
-		$result = wp_update_post( $post_update, true );
-		$status = get_post_status( $post_id );
+		$result   = wp_update_post( $post_update, true );
+		$status   = get_post_status( $post_id );
 		$redirect = get_edit_post_link( $post_id, 'url' );
 		if ( ! $redirect ) {
 			$redirect = admin_url( 'edit.php?post_type=' . AssessCraft_Post_Type::TYPE );
