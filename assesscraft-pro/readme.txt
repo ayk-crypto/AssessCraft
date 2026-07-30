@@ -4,8 +4,7 @@ Tags: assessment, quiz, scoring, reports, elementor
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Requires Plugins: assesscraft
-Stable tag: 0.9.0-beta.1
+Stable tag: 0.9.0-beta.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,6 +17,7 @@ AssessCraft Pro is a separate add-on for AssessCraft Free. It uses the same asse
 This internal beta includes:
 
 * Dependency checks for AssessCraft Free 0.18.2 or newer.
+* Graceful setup guidance when Free is missing, inactive, outdated or unable to load.
 * License-gated Pro entitlements.
 * Five offline internal testing keys for controlled staging validation.
 * Unlimited assessment and profile limits when licensed.
@@ -32,15 +32,25 @@ Important: the offline test-key mechanism is included only for this controlled b
 
 == Installation ==
 
-1. Install and activate AssessCraft Free 0.18.2 or newer.
-2. Upload the AssessCraft Pro ZIP through Plugins > Add New > Upload Plugin.
-3. Activate AssessCraft Pro.
+1. Upload and activate the AssessCraft Pro ZIP.
+2. If AssessCraft Free is missing or inactive, follow the guided setup notice shown on the Plugins screen.
+3. Ensure AssessCraft Free 0.18.2 or newer is active.
 4. Open AssessCraft > Pro License.
 5. Enter one of the supplied internal beta keys.
+
+AssessCraft Pro remains safely paused while its Free dependency is unavailable. Activating Free starts Pro automatically without reinstalling the add-on.
 
 For internal development only, define `ASSESSCRAFT_PRO_DEV_MODE` as `true` in `wp-config.php` to enable Pro entitlements without a stored license.
 
 == Changelog ==
+
+= 0.9.0-beta.2 =
+* Replaced the abrupt WordPress dependency activation error with AssessCraft-owned setup handling.
+* Added distinct recovery guidance for missing, inactive, outdated and unavailable Free installations.
+* Added a one-click activation action when AssessCraft Free is already installed.
+* Added direct download, upload and plugin-management recovery actions.
+* Added a responsive branded dependency notice and setup-required plugin action.
+* Kept Pro active but safely paused until its dependency is ready.
 
 = 0.9.0-beta.1 =
 * Promoted the add-on from foundation alpha to internal beta packaging.
