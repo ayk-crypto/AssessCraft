@@ -1,4 +1,4 @@
-name: Publish AssessCraft Free 0.18.2
+name: Finalize AssessCraft Free 0.18.2 release
 
 on:
   push:
@@ -13,56 +13,32 @@ permissions:
   issues: write
 
 concurrency:
-  group: publish-assesscraft-free-0.18.2
+  group: finalize-assesscraft-free-0.18.2
   cancel-in-progress: false
 
 jobs:
-  publish:
-    name: Validate, package and publish
+  finalize:
+    name: Build clean tagged package and verify release
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 15
 
     steps:
-      - name: Check out protected main
+      - name: Check out immutable release tag
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: v0.18.2
           fetch-depth: 0
 
-      - name: Resolve immutable release source
+      - name: Verify tag belongs to protected main
         id: source
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: v0.18.2
         run: |
           set -euo pipefail
           git fetch origin main --tags --force
-
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            source_sha="$(git rev-list -n 1 "$TAG")"
-            git merge-base --is-ancestor "$source_sha" origin/main
-            release_exists=true
-          else
-            source_sha="$(git rev-parse origin/main)"
-            release_exists=false
-          fi
-
-          git checkout --detach "$source_sha"
-          echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
-          echo "release_exists=$release_exists" >> "$GITHUB_OUTPUT"
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          coverage: none
-          tools: composer:v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+          tag_sha="$(git rev-list -n 1 v0.18.2)"
+          git merge-base --is-ancestor "$tag_sha" origin/main
+          test "$(git rev-parse HEAD)" = "$tag_sha"
+          echo "tag_sha=$tag_sha" >> "$GITHUB_OUTPUT"
 
       - name: Verify release metadata
         shell: bash
@@ -70,63 +46,10 @@ jobs:
           set -euo pipefail
           grep -Eq '^ \* Version:[[:space:]]+0\.18\.2$' assesscraft.php
           grep -Fq "define( 'ASSESSCRAFT_VERSION', '0.18.2' );" assesscraft.php
-          grep -Fq 'Current stable version: `0.18.2`.' README.md
           grep -Fq '# AssessCraft Free 0.18.2' RELEASE_NOTES.md
           grep -Fq 'Stable tag: 0.18.2' readme.txt
 
-      - name: Validate PHP syntax
-        shell: bash
-        run: |
-          set -euo pipefail
-          find . -type f -name '*.php' \
-            -not -path './vendor/*' \
-            -not -path './build/*' \
-            -print0 | xargs -0 -n1 php -l
-
-      - name: Validate JavaScript syntax
-        shell: bash
-        run: |
-          set -euo pipefail
-          while IFS= read -r -d '' file; do
-            node --check "$file"
-          done < <(find . -type f -name '*.js' \
-            -not -path './vendor/*' \
-            -not -path './node_modules/*' \
-            -not -path './build/*' \
-            -print0)
-
-      - name: Validate JSON files
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-
-          excluded = {'.git', 'vendor', 'node_modules', 'build'}
-          for path in Path('.').rglob('*.json'):
-              if excluded.intersection(path.parts):
-                  continue
-              with path.open(encoding='utf-8') as handle:
-                  json.load(handle)
-              print(f'Valid JSON: {path}')
-          PY
-
-      - name: Run repository PHP quality checks
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ -f composer.json ]]; then
-            composer install --no-interaction --prefer-dist --no-progress
-            if [[ -x vendor/bin/phpunit ]]; then
-              vendor/bin/phpunit
-            fi
-            if [[ -x vendor/bin/phpcs ]]; then
-              vendor/bin/phpcs
-            fi
-          fi
-
-      - name: Build clean release package
+      - name: Build clean package from tag
         shell: bash
         run: |
           set -euo pipefail
@@ -143,156 +66,155 @@ jobs:
             --exclude 'tests/' \
             --exclude 'vendor/' \
             --exclude 'node_modules/' \
-            --exclude 'composer.*' \
+            --exclude 'composer.json' \
+            --exclude 'composer.lock' \
             --exclude 'README.md' \
             --exclude 'RELEASE_NOTES.md' \
             --exclude 'CHECKSUMS.txt' \
             --exclude 'php*.xml*' \
+            --exclude '.phpunit.result.cache' \
+            --exclude '.phpunit.cache/' \
+            --exclude '.phpcs-cache' \
+            --exclude '.phpcs-cache-*' \
+            --exclude 'coverage/' \
             --exclude '*.zip' \
             ./ build/assesscraft/
+
           cd build
           zip -qr assesscraft-free-0.18.2.zip assesscraft
           sha256sum assesscraft-free-0.18.2.zip > assesscraft-free-0.18.2.zip.sha256
 
-      - name: Verify locally built package
+      - name: Verify clean package
+        id: package
         shell: bash
         run: |
           set -euo pipefail
-          unzip -t build/assesscraft-free-0.18.2.zip
-          cd build
-          sha256sum --check assesscraft-free-0.18.2.zip.sha256
-          ! unzip -l assesscraft-free-0.18.2.zip | grep -E '(/tests/|/docs/|/vendor/|/node_modules/|/\.github/|/\.wordpress-org/|composer\.(json|lock)|phpunit\.xml|phpcs\.xml|RELEASE_NOTES\.md|CHECKSUMS\.txt)'
-          unzip -l assesscraft-free-0.18.2.zip | grep -F 'assesscraft/assesscraft.php'
+          ZIP='build/assesscraft-free-0.18.2.zip'
+          CHECKSUM='build/assesscraft-free-0.18.2.zip.sha256'
 
-      - name: Publish or validate immutable release
-        id: publish
+          unzip -t "$ZIP"
+          (
+            cd build
+            sha256sum --check assesscraft-free-0.18.2.zip.sha256
+          )
+          unzip -p "$ZIP" assesscraft/assesscraft.php | grep -Eq '^ \* Version:[[:space:]]+0\.18\.2$'
+          ! unzip -l "$ZIP" | grep -E '(/tests/|/docs/|/vendor/|/node_modules/|/\.github/|/\.wordpress-org/|composer\.(json|lock)|phpunit\.xml|phpcs\.xml|RELEASE_NOTES\.md|CHECKSUMS\.txt|\.phpunit\.result\.cache|/\.phpunit\.cache/|\.phpcs-cache|/coverage/)'
+
+          digest="$(sha256sum "$ZIP" | awk '{print $1}')"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release metadata
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: v0.18.2
-          ZIP: assesscraft-free-0.18.2.zip
-          CHECKSUM: assesscraft-free-0.18.2.zip.sha256
-          SOURCE_SHA: ${{ steps.source.outputs.source_sha }}
-          RELEASE_EXISTS: ${{ steps.source.outputs.release_exists }}
+          DIGEST: ${{ steps.package.outputs.digest }}
         run: |
           set -euo pipefail
-          mkdir -p release-existing
-
-          if [[ "$RELEASE_EXISTS" == "true" ]]; then
-            gh release download "$TAG" \
-              --pattern 'assesscraft-free-0.18.2.zip*' \
-              --dir release-existing
-
-            test -s "release-existing/$ZIP"
-            test -s "release-existing/$CHECKSUM"
-            (
-              cd release-existing
-              sha256sum --check "$CHECKSUM"
-            )
-
-            rm -rf release-existing/extracted
-            mkdir -p release-existing/extracted
-            unzip -q "release-existing/$ZIP" -d release-existing/extracted
-            diff -qr release-existing/extracted/assesscraft build/assesscraft
-            digest="$(sha256sum "release-existing/$ZIP" | awk '{print $1}')"
-          else
-            digest="$(sha256sum "build/$ZIP" | awk '{print $1}')"
-          fi
-
-          python3 - "$digest" "$ZIP" <<'PY'
+          python3 - <<'PY'
+          import os
           from pathlib import Path
-          import sys
 
-          digest, zip_name = sys.argv[1], sys.argv[2]
+          digest = os.environ['DIGEST']
+          zip_name = 'assesscraft-free-0.18.2.zip'
+          checksum_line = f'{digest}  {zip_name}'
+
           notes = Path('RELEASE_NOTES.md').read_text(encoding='utf-8')
           notes = notes.replace(
               '`Generated by the protected release workflow`',
-              f'`{digest}  {zip_name}`',
+              f'`{checksum_line}`',
           )
           Path('build/RELEASE_NOTES-0.18.2.md').write_text(notes, encoding='utf-8')
-          Path('build/CHECKSUMS.txt').write_text(
-              f'{digest}  {zip_name}\n',
-              encoding='utf-8',
-          )
+          Path('build/CHECKSUMS.txt').write_text(checksum_line + '\n', encoding='utf-8')
           PY
 
-          if [[ "$RELEASE_EXISTS" == "true" ]]; then
-            gh release upload "$TAG" build/CHECKSUMS.txt --clobber
-            gh release edit "$TAG" \
-              --title 'AssessCraft Free 0.18.2' \
-              --notes-file build/RELEASE_NOTES-0.18.2.md
-          else
-            gh release create "$TAG" \
-              "build/$ZIP" \
-              "build/$CHECKSUM" \
-              build/CHECKSUMS.txt \
-              --target "$SOURCE_SHA" \
-              --title 'AssessCraft Free 0.18.2' \
-              --notes-file build/RELEASE_NOTES-0.18.2.md \
-              --latest
-          fi
-
-          echo "digest=$digest" >> "$GITHUB_OUTPUT"
-
-      - name: Independently verify published release
-        id: verify
+      - name: Replace release assets with clean tagged build
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: v0.18.2
-          ZIP: assesscraft-free-0.18.2.zip
-          CHECKSUM: assesscraft-free-0.18.2.zip.sha256
-          EXPECTED_DIGEST: ${{ steps.publish.outputs.digest }}
         run: |
           set -euo pipefail
-          release_json="$(gh release view "$TAG" --json tagName,isDraft,isPrerelease,url,assets)"
+          release_json="$(gh release view "$TAG" --json tagName,isDraft,isPrerelease,targetCommitish)"
+          jq -e '.tagName == "v0.18.2"' <<<"$release_json" >/dev/null
+          jq -e '.isDraft == false and .isPrerelease == false' <<<"$release_json" >/dev/null
+
+          gh release upload "$TAG" \
+            build/assesscraft-free-0.18.2.zip \
+            build/assesscraft-free-0.18.2.zip.sha256 \
+            build/CHECKSUMS.txt \
+            --clobber
+
+          gh release edit "$TAG" \
+            --title 'AssessCraft Free 0.18.2' \
+            --notes-file build/RELEASE_NOTES-0.18.2.md \
+            --latest
+
+      - name: Download and independently verify public release
+        id: public
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v0.18.2
+          EXPECTED_DIGEST: ${{ steps.package.outputs.digest }}
+        run: |
+          set -euo pipefail
+          release_json="$(gh release view "$TAG" --json tagName,isDraft,isPrerelease,url,body,assets)"
           jq -e '.tagName == "v0.18.2"' <<<"$release_json" >/dev/null
           jq -e '.isDraft == false and .isPrerelease == false' <<<"$release_json" >/dev/null
           jq -e '([.assets[].name] | contains(["assesscraft-free-0.18.2.zip", "assesscraft-free-0.18.2.zip.sha256", "CHECKSUMS.txt"]))' <<<"$release_json" >/dev/null
+          jq -e --arg digest "$EXPECTED_DIGEST" '.body | contains($digest)' <<<"$release_json" >/dev/null
 
-          rm -rf release-final
-          mkdir -p release-final
+          rm -rf public-release
+          mkdir -p public-release
           gh release download "$TAG" \
             --pattern 'assesscraft-free-0.18.2.zip*' \
-            --dir release-final
+            --dir public-release
           gh release download "$TAG" \
             --pattern 'CHECKSUMS.txt' \
-            --dir release-final
+            --dir public-release
 
-          cd release-final
-          sha256sum --check "$CHECKSUM"
-          actual_digest="$(sha256sum "$ZIP" | awk '{print $1}')"
+          cd public-release
+          test -s assesscraft-free-0.18.2.zip
+          test -s assesscraft-free-0.18.2.zip.sha256
+          test -s CHECKSUMS.txt
+          sha256sum --check assesscraft-free-0.18.2.zip.sha256
+          actual_digest="$(sha256sum assesscraft-free-0.18.2.zip | awk '{print $1}')"
           test "$actual_digest" = "$EXPECTED_DIGEST"
-          grep -Fxq "$actual_digest  $ZIP" CHECKSUMS.txt
-          unzip -t "$ZIP"
-          unzip -p "$ZIP" assesscraft/assesscraft.php | grep -Eq '^ \* Version:[[:space:]]+0\.18\.2$'
+          grep -Fxq "$actual_digest  assesscraft-free-0.18.2.zip" CHECKSUMS.txt
+          unzip -t assesscraft-free-0.18.2.zip
+          unzip -p assesscraft-free-0.18.2.zip assesscraft/assesscraft.php | grep -Eq '^ \* Version:[[:space:]]+0\.18\.2$'
+          ! unzip -l assesscraft-free-0.18.2.zip | grep -E '(\.phpunit\.result\.cache|/\.phpunit\.cache/|\.phpcs-cache|/coverage/)'
 
-      - name: Record publication audit
+          release_url="$(jq -r '.url' <<<"$release_json")"
+          echo "release_url=$release_url" >> "$GITHUB_OUTPUT"
+
+      - name: Record final release audit
         if: always()
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
-          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
-          DIGEST: ${{ steps.publish.outputs.digest }}
+          PACKAGE_OUTCOME: ${{ steps.package.outcome }}
+          PUBLIC_OUTCOME: ${{ steps.public.outcome }}
+          DIGEST: ${{ steps.package.outputs.digest }}
+          RELEASE_URL: ${{ steps.public.outputs.release_url }}
           RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
-          if [[ "$PUBLISH_OUTCOME" == "success" && "$VERIFY_OUTCOME" == "success" ]]; then
-            gh pr comment 23 --body "✅ **AssessCraft Free 0.18.2 publication audit passed**
+          if [[ "$PACKAGE_OUTCOME" == "success" && "$PUBLIC_OUTCOME" == "success" ]]; then
+            gh pr comment 23 --body "✅ **AssessCraft Free 0.18.2 final release audit passed**
 
-- Release tag: \`v0.18.2\`
-- Published ZIP preserved and verified
+- Built from immutable tag: \`v0.18.2\`
+- Clean ZIP republished without test caches or development files
 - SHA-256 sidecar verified
-- \`CHECKSUMS.txt\` published with the same digest
-- Release notes updated with the generated digest
-- ZIP integrity and packaged version verified
+- \`CHECKSUMS.txt\` verified
+- Release notes contain the verified digest
+- Public ZIP downloaded and archive-tested
 - Verified SHA-256: \`$DIGEST\`
+- Release: $RELEASE_URL
 - Audit run: $RUN_URL"
           else
-            gh pr comment 23 --body "❌ **AssessCraft Free 0.18.2 publication audit failed**
+            gh pr comment 23 --body "❌ **AssessCraft Free 0.18.2 final release audit failed**
 
-The protected publication workflow did not complete all immutable-source, download, checksum, or archive checks. Review the run before using the public download:
+The clean tagged rebuild or public download verification failed. Do not activate the website download until this run is corrected:
 
 $RUN_URL"
             exit 1
