@@ -3,7 +3,7 @@ Contributors: asfandyr
 Tags: assessment, questionnaire, lead generation, scoring, reports
 Requires at least: 6.5
 Tested up to: 7.0
-Stable tag: 0.18.3
+Stable tag: 0.18.4
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -108,6 +108,12 @@ Review the [documentation](https://assesscraft.com/documentation/) and [troubles
 
 == Changelog ==
 
+= 0.18.4 =
+
+* Keeps the native WordPress Publish button responsive when the Free publication limit is detected.
+* Replaces the dead-button experience with clear publication and plan feedback.
+* Allows WordPress to verify the active Pro entitlement during the actual publish request.
+
 = 0.18.3 =
 
 * Correctly recognizes an active AssessCraft Pro license before applying Free publication and profile limits.
@@ -124,6 +130,6 @@ Review the [documentation](https://assesscraft.com/documentation/) and [troubles
 
 == Upgrade Notice ==
 
-= 0.18.3 =
+= 0.18.4 =
 
-Recommended for all Pro beta testers and sites importing assessment JSON files.
+Recommended for sites where the assessment Publish button appears unresponsive while plan limits are being evaluated.
