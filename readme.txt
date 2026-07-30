@@ -3,7 +3,7 @@ Contributors: asfandyr
 Tags: assessment, questionnaire, lead generation, scoring, reports
 Requires at least: 6.5
 Tested up to: 7.0
-Stable tag: 0.18.5
+Stable tag: 0.18.6
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -108,6 +108,12 @@ Review the [documentation](https://assesscraft.com/documentation/) and [troubles
 
 == Changelog ==
 
+= 0.18.6 =
+
+* Removes a self-triggering Publish-button attribute observer that could keep assessment editor pages loading indefinitely.
+* Uses guarded, finite Publish-button rechecks instead of continuous DOM observation.
+* Retains the server-confirmed Save and Publish through AssessCraft fallback.
+
 = 0.18.5 =
 
 * Prevents hidden-tab browser validation and delayed admin scripts from leaving Publish unresponsive.
@@ -137,6 +143,6 @@ Review the [documentation](https://assesscraft.com/documentation/) and [troubles
 
 == Upgrade Notice ==
 
-= 0.18.5 =
+= 0.18.6 =
 
-Required update for sites where the assessment Publish button appears unresponsive.
+Required hotfix for sites where opening an assessment editor leaves the browser loading continuously.

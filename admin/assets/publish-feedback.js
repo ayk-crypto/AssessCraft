@@ -4,24 +4,25 @@
   var settings = window.assessCraftAdmin || {};
   var features = settings.features || {};
   var feedback = window.assessCraftPublishFeedback || {};
-  var observer = null;
 
   function unlockPublishAction() {
     var postForm = document.getElementById('post');
     var publishButton = document.getElementById('publish');
     var publishActions = document.getElementById('major-publishing-actions');
 
-    if (postForm) {
+    if (postForm && !postForm.noValidate) {
       postForm.noValidate = true;
       postForm.setAttribute('novalidate', 'novalidate');
     }
 
     if (publishButton) {
-      publishButton.disabled = false;
-      publishButton.removeAttribute('disabled');
-      publishButton.classList.remove('disabled');
-      publishButton.removeAttribute('aria-disabled');
-      publishButton.setAttribute('aria-describedby', 'ac-publish-limit-message');
+      if (publishButton.disabled) publishButton.disabled = false;
+      if (publishButton.hasAttribute('disabled')) publishButton.removeAttribute('disabled');
+      if (publishButton.classList.contains('disabled')) publishButton.classList.remove('disabled');
+      if (publishButton.hasAttribute('aria-disabled')) publishButton.removeAttribute('aria-disabled');
+      if (publishButton.getAttribute('aria-describedby') !== 'ac-publish-limit-message') {
+        publishButton.setAttribute('aria-describedby', 'ac-publish-limit-message');
+      }
     }
 
     if (!features.publishLimitReached || !publishActions) return;
@@ -32,14 +33,16 @@
       notice.id = 'ac-publish-limit-message';
       notice.className = 'ac-editor-publish-limit';
       notice.setAttribute('role', 'status');
+      notice.innerHTML =
+        '<span class="dashicons dashicons-info-outline" aria-hidden="true"></span>' +
+        '<div><strong></strong><p></p></div>';
       publishActions.parentNode.insertBefore(notice, publishActions);
     }
 
-    notice.innerHTML =
-      '<span class="dashicons dashicons-info-outline" aria-hidden="true"></span>' +
-      '<div><strong></strong><p></p></div>';
-    notice.querySelector('strong').textContent = feedback.title || '';
-    notice.querySelector('p').textContent = feedback.message || '';
+    var title = notice.querySelector('strong');
+    var message = notice.querySelector('p');
+    if (title && title.textContent !== (feedback.title || '')) title.textContent = feedback.title || '';
+    if (message && message.textContent !== (feedback.message || '')) message.textContent = feedback.message || '';
   }
 
   function showFallbackError(message) {
@@ -99,18 +102,9 @@
     });
   }
 
-  function watchPublishAction() {
+  function initializePublishActions() {
     unlockPublishAction();
     bindDirectPublish();
-
-    var publishButton = document.getElementById('publish');
-    if (publishButton && window.MutationObserver && !observer) {
-      observer = new MutationObserver(unlockPublishAction);
-      observer.observe(publishButton, {
-        attributes: true,
-        attributeFilter: ['disabled', 'class', 'aria-disabled']
-      });
-    }
 
     var postForm = document.getElementById('post');
     if (postForm && postForm.dataset.assesscraftSubmitBound !== 'true') {
@@ -122,8 +116,9 @@
       }, true);
     }
 
-    // Some admin optimization plugins defer scripts. Recheck briefly after load
-    // so the native WordPress button cannot be left disabled by a late script.
+    // Run only a small, finite set of rechecks for deferred admin scripts.
+    // Do not observe the Publish button's attributes: an observer that writes
+    // those same attributes can create a self-triggering browser loop.
     [0, 100, 300, 750, 1500, 3000].forEach(function (delay) {
       window.setTimeout(function () {
         unlockPublishAction();
@@ -133,10 +128,13 @@
   }
 
   if ('loading' === document.readyState) {
-    document.addEventListener('DOMContentLoaded', watchPublishAction);
+    document.addEventListener('DOMContentLoaded', initializePublishActions, { once: true });
   } else {
-    watchPublishAction();
+    initializePublishActions();
   }
 
-  window.addEventListener('pageshow', watchPublishAction);
+  window.addEventListener('pageshow', function () {
+    unlockPublishAction();
+    bindDirectPublish();
+  });
 }());
