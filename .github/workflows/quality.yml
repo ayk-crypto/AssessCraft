@@ -79,6 +79,10 @@ jobs:
           unzip -p "build/$FREE_ZIP" assesscraft/readme.txt | grep -Fq "Stable tag: $FREE_VERSION"
           unzip -p "build/$FREE_ZIP" assesscraft/includes/class-assesscraft-features.php | grep -Fq "AssessCraft_Pro_License::is_active()"
           unzip -p "build/$FREE_ZIP" assesscraft/admin/assets/import-polish.js | grep -Fq "ac-json-upload-control"
+          unzip -p "build/$FREE_ZIP" assesscraft/admin/assets/publish-feedback.js | grep -Fq "MutationObserver"
+          unzip -p "build/$FREE_ZIP" assesscraft/admin/assets/publish-feedback.js | grep -Fq "novalidate"
+          unzip -p "build/$FREE_ZIP" assesscraft/admin/class-assesscraft-maintenance.php | grep -Fq "Publish through AssessCraft"
+          unzip -p "build/$FREE_ZIP" assesscraft/admin/class-assesscraft-maintenance.php | grep -Fq "admin_post_assesscraft_publish_assessment"
           ! unzip -l "build/$FREE_ZIP" | grep -E '(assesscraft-pro|/tests/|/docs/|/\.wordpress-org/|composer\.json|phpunit\.xml|phpcs\.xml|RELEASE_NOTES\.md|CHECKSUMS\.txt)'
       - name: Create Free checksum
         run: cd build && sha256sum "$FREE_ZIP" > "$FREE_ZIP.sha256"
