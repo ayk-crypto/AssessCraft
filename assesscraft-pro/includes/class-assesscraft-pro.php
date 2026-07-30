@@ -25,6 +25,7 @@ final class AssessCraft_Pro {
 
 		$this->license = new AssessCraft_Pro_License();
 		$this->license->register();
+		self::initialize_site();
 
 		$this->admin = new AssessCraft_Pro_Admin( $this->license );
 		$this->admin->register();
@@ -44,7 +45,47 @@ final class AssessCraft_Pro {
 		return AssessCraft_Pro_Admin::url();
 	}
 
-	public static function activate(): void {
+	public static function activate( bool $network_wide = false ): void {
+		if ( is_multisite() && $network_wide ) {
+			$site_ids = get_sites(
+				array(
+					'fields' => 'ids',
+					'number' => 0,
+				)
+			);
+
+			foreach ( $site_ids as $site_id ) {
+				switch_to_blog( (int) $site_id );
+				self::initialize_site();
+				restore_current_blog();
+			}
+			return;
+		}
+
+		self::initialize_site();
+	}
+
+	public static function deactivate( bool $network_wide = false ): void {
+		if ( is_multisite() && $network_wide ) {
+			$site_ids = get_sites(
+				array(
+					'fields' => 'ids',
+					'number' => 0,
+				)
+			);
+
+			foreach ( $site_ids as $site_id ) {
+				switch_to_blog( (int) $site_id );
+				wp_clear_scheduled_hook( AssessCraft_Pro_License::CRON_HOOK );
+				restore_current_blog();
+			}
+			return;
+		}
+
+		wp_clear_scheduled_hook( AssessCraft_Pro_License::CRON_HOOK );
+	}
+
+	private static function initialize_site(): void {
 		if ( ! get_option( 'assesscraft_pro_license_status', false ) ) {
 			update_option( 'assesscraft_pro_license_status', 'inactive', false );
 		}
@@ -52,9 +93,5 @@ final class AssessCraft_Pro {
 		if ( ! wp_next_scheduled( AssessCraft_Pro_License::CRON_HOOK ) ) {
 			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', AssessCraft_Pro_License::CRON_HOOK );
 		}
-	}
-
-	public static function deactivate(): void {
-		wp_clear_scheduled_hook( AssessCraft_Pro_License::CRON_HOOK );
 	}
 }
