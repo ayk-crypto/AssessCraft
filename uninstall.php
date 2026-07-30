@@ -25,7 +25,7 @@ wp_clear_scheduled_hook( 'assesscraft_cleanup_leads' );
 foreach ( array(
 	'assesscraft_migration_version', 'assesscraft_migration_log', 'assesscraft_leads_db_version',
 	'assesscraft_lead_retention_days', 'assesscraft_uninstall_behavior', 'assesscraft_onboarding_complete',
-	'assesscraft_error_log', 'assesscraft_custom_templates',
+	'assesscraft_error_log', 'assesscraft_mail_diagnostics', 'assesscraft_custom_templates',
 ) as $option ) {
 	delete_option( $option );
 }
